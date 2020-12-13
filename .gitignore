@@ -1,5 +1,8 @@
+# IDE stuff
+.idea
+
 # CMake stuff
-build
+cmake-*
 
 # Prerequisites
 *.d

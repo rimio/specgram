@@ -13,7 +13,7 @@
 #include <csignal>
 
 /* main loop exit condition */
-bool main_loop_running = true;
+volatile bool main_loop_running = true;
 
 /*
  * SIGINT handler
@@ -37,7 +37,7 @@ main(int argc, char** argv)
     }
 
     /* create input parser */
-    auto input = Input::FromDataType(conf.GetDataType(), conf.GetBlockSize());
+    auto input = InputParser::FromDataType(conf.GetDataType());
     if (input == nullptr) {
         return 1;
     }
@@ -53,16 +53,25 @@ main(int argc, char** argv)
                      input->GetDataTypeSize() * 8, conf.GetRate());
     }
 
+    /* create input reader */
+    InputReader reader(std::cin, input->GetDataTypeSize() * conf.GetBlockSize());
+
     /* install SIGINT handler for CTRL+C */
     std::signal(SIGINT, sigint_handler);
 
     /* main loop */
     while (main_loop_running) {
-        /* take whatever is available from input stream */
-        auto r = input->ConsumeStream(std::cin);
-        if (r > 0) {
-            spdlog::info("Read {} bytes", r);
+        /* check for a complete block */
+        auto block = reader.GetBlock();
+        if (!block) {
+            /* block not finished yet */
+            continue;
         }
+
+        /* take whatever is available from input stream */
+        auto pvc = input->ParseBlock(*block);
+        assert(pvc == block->size() / input->GetDataTypeSize());
+        spdlog::info("Read {} values", pvc);
 
         /* check if we have enough for a new FFT window */
         if ((input->GetBufferedValueCount() < conf.GetFFTWidth())
@@ -71,7 +80,9 @@ main(int argc, char** argv)
             continue;
         }
 
-        /* TODO: remove values that won't be used further */
+        /* retrieve window and remove values that won't be used further */
+        auto window_values = input->PeekValues(conf.GetFFTWidth());
+        input->RemoveValues(std::min<std::size_t>(conf.GetFFTWidth(), conf.GetFFTStride()));
 
         /* TODO: compute FFT */
 
@@ -79,7 +90,7 @@ main(int argc, char** argv)
 
         /* TODO: colorize FFT */
     }
-    spdlog::info("Exiting ...");
+    spdlog::info("Terminating ...");
 
     /* TODO: save file */
 

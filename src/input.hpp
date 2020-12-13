@@ -11,44 +11,80 @@
 #include <memory>
 #include <vector>
 #include <complex>
+#include <mutex>
+#include <thread>
 
 /*
- * Input base class
+ * Input data type
  */
-class Input {
-protected:
-    std::size_t block_size_;
-    std::vector<std::complex<double>> values_;
+enum DataType {
+    kSignedInt8,
+    kSignedInt16,
+    kSignedInt32,
+    kUnsignedInt8,
+    kUnsignedInt16,
+    kUnsignedInt32,
+};
 
-    char *buffer_;
-    unsigned int leftover_;
+/*
+ * Input reader
+ */
+class InputReader {
+private:
+    std::istream &stream_;
+    const std::size_t block_size_bytes_;
 
-    Input(std::size_t block_size);
+    /* buffer where we read up until one block */
+    volatile char *buffer_;
+    volatile std::size_t bytes_in_buffer_;
 
-    virtual void Parse() = 0;
+    /* mutex for accessing buffer */
+    std::mutex buffer_mutex_;
+    std::mutex running_mutex_;
+
+    /* thread for reading from input stream */
+    std::thread reader_thread_;
+    volatile bool running_;
+
+    void Read();
 
 public:
-    enum DataType {
-        kSignedInt8,
-        kSignedInt16,
-        kSignedInt32,
-        kUnsignedInt8,
-        kUnsignedInt16,
-        kUnsignedInt32,
-    };
+    InputReader() = delete;
+    InputReader(const InputReader &c) = delete;
+    InputReader(InputReader &&) = delete;
+    InputReader & operator=(const InputReader&) = delete;
 
-    Input() = delete;
-    Input(const Input &c) = delete;
-    Input(Input &&) = delete;
-    Input & operator=(const Input&) = delete;
-    virtual ~Input();
+    InputReader(std::istream &stream, std::size_t block_size_bytes);
+    virtual ~InputReader();
 
-    static std::unique_ptr<Input> FromDataType(DataType dtype, std::size_t block_size);
+    bool HasBlock();
+    std::optional<std::vector<char>> GetBlock();
+    std::vector<char> GetBuffer();
+};
 
-    std::streamsize ConsumeStream(std::istream &stream);
+/*
+ * Input parser base class
+ */
+class InputParser {
+protected:
+    std::vector<std::complex<double>> values_;
+
+    InputParser() = default;
+
+public:
+    InputParser(const InputParser &c) = delete;
+    InputParser(InputParser &&) = delete;
+    InputParser & operator=(const InputParser&) = delete;
+    virtual ~InputParser() = default;
+
+    static std::unique_ptr<InputParser> FromDataType(DataType dtype);
 
     std::size_t GetBufferedValueCount() const;
 
+    std::vector<std::complex<double>> PeekValues(std::size_t count) const;
+    void RemoveValues(std::size_t count);
+
+    virtual std::size_t ParseBlock(const std::vector<char> &block) = 0;
     virtual std::size_t GetDataTypeSize() const = 0;
     virtual bool IsSigned() const = 0;
     virtual bool IsFloatingPoint() const = 0;
@@ -56,19 +92,18 @@ public:
 };
 
 /*
- * Integer input
+ * Integer input parser
  */
 template <class T>
-class IntegerInput : public Input {
-protected:
-    virtual void Parse();
-
+class IntegerInputParser : public InputParser {
 public:
-    IntegerInput(std::size_t block_size);
+    IntegerInputParser() = default;
+
+    virtual std::size_t ParseBlock(const std::vector<char> &block);
 
     virtual std::size_t GetDataTypeSize() const { return sizeof(T); };
     virtual bool IsSigned() const { return std::numeric_limits<T>::is_signed; };
-    virtual bool IsFloatingPoint() const { return !std::numeric_limits<T>::is_exact; };
+    virtual bool IsFloatingPoint() const { return false; };
     virtual bool IsComplex() const { return false; };
 };
 

@@ -18,7 +18,7 @@ Configuration::Configuration()
 
     this->block_size_ = 256;
     this->rate_ = 44100;
-    this->datatype_ = Input::DataType::kSignedInt16;
+    this->datatype_ = DataType::kSignedInt16;
 
     this->fft_width_ = 512;
     this->fft_stride_ = 512;
@@ -37,7 +37,7 @@ Configuration::FromArgs(int argc, char **argv)
     args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
     args::Flag version(parser, "version", "Display version", {'v', "version"});
 
-    args::Group input_opts(parser, "Input options:", args::Group::Validators::DontCare);
+    args::Group input_opts(parser, "InputParser options:", args::Group::Validators::DontCare);
     args::ValueFlag<int>
         rate(input_opts, "integer", "Sampling rate of input in Hz (default: 44100)", {'r', "rate"});
     args::ValueFlag<std::string>
@@ -126,7 +126,7 @@ Configuration::FromArgs(int argc, char **argv)
     if (datatype) {
         auto& dtype = args::get(datatype);
         if (dtype == "s16") {
-            conf.datatype_ = Input::DataType::kSignedInt16;
+            conf.datatype_ = DataType::kSignedInt16;
         } else {
             std::cerr << "Unknown data type '" << dtype << "'" << std::endl;
             return std::make_tuple(conf, 1, true);

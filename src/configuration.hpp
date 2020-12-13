@@ -20,7 +20,7 @@ private:
 
     std::size_t block_size_;
     unsigned int rate_;
-    Input::DataType datatype_;
+    DataType datatype_;
 
     std::size_t fft_width_;
     std::size_t fft_stride_;
