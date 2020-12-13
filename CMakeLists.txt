@@ -34,7 +34,7 @@ set (SPECGRAM_SOURCES
   "${SRC_DIR}/specgram.cpp"
   "${SRC_DIR}/configuration.cpp"
   "${SRC_DIR}/input.cpp"
-)
+        src/fft.cpp)
 
 # Targets
 add_executable (${PROJECT_NAME} ${SPECGRAM_SOURCES})

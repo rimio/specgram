@@ -58,10 +58,12 @@ InputReader::Read()
         /* yield execution if nothing to read */
         if (to_read == 0) {
             std::this_thread::yield();
+            continue;
         }
 
         /* blocking read */
         this->stream_.read(local_buffer, to_read);
+        assert(this->stream_.gcount() == to_read);
 
         /* write to buffer */
         this->buffer_mutex_.lock();
@@ -92,7 +94,9 @@ InputReader::GetBlock()
     if (this->bytes_in_buffer_ < this->block_size_bytes_) {
         return {};
     } else {
-        return std::vector<char>(this->buffer_, this->buffer_ + this->bytes_in_buffer_);
+        auto bcount = this->bytes_in_buffer_;
+        this->bytes_in_buffer_ = 0;
+        return std::vector<char>(this->buffer_, this->buffer_ + bcount);
     }
 }
 

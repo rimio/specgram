@@ -99,12 +99,12 @@ class IntegerInputParser : public InputParser {
 public:
     IntegerInputParser() = default;
 
-    virtual std::size_t ParseBlock(const std::vector<char> &block);
+    std::size_t ParseBlock(const std::vector<char> &block) override;
 
-    virtual std::size_t GetDataTypeSize() const { return sizeof(T); };
-    virtual bool IsSigned() const { return std::numeric_limits<T>::is_signed; };
-    virtual bool IsFloatingPoint() const { return false; };
-    virtual bool IsComplex() const { return false; };
+    std::size_t GetDataTypeSize() const override { return sizeof(T); };
+    bool IsSigned() const override { return std::numeric_limits<T>::is_signed; };
+    bool IsFloatingPoint() const override { return false; };
+    bool IsComplex() const override { return false; };
 };
 
 #endif
