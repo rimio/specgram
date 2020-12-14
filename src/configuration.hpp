@@ -9,6 +9,7 @@
 #define _CONFIGURATION_HPP_
 
 #include "input.hpp"
+#include "fft.hpp"
 
 #include <string>
 #include <optional>
@@ -24,6 +25,15 @@ private:
 
     std::size_t fft_width_;
     std::size_t fft_stride_;
+    bool alias_negative_;
+
+    std::size_t width_;
+    int min_freq_;
+    int max_freq_;
+    FFTScale scale_;
+
+    bool live_;
+    std::string title_;
 
     Configuration();
 
@@ -42,6 +52,17 @@ public:
     /* FFT getters */
     auto GetFFTWidth() const { return fft_width_; }
     auto GetFFTStride() const { return fft_stride_; }
+    auto IsAliasingNegativeFrequencies() const { return alias_negative_; }
+
+    /* display getters */
+    auto GetWidth() const { return width_; }
+    auto GetMinFreq() const { return min_freq_; }
+    auto GetMaxFreq() const { return max_freq_; }
+    auto GetScale() const { return scale_; }
+
+    /* live options */
+    auto IsLive() const { return live_; }
+    auto GetTitle() const { return title_; }
 };
 
 #endif

@@ -13,6 +13,37 @@
 #include <vector>
 #include <complex>
 
+enum FFTScale {
+    kdBFS
+};
+
+class ValueMap {
+protected:
+    const int lower_;
+    const int upper_;
+
+    ValueMap(int lower_, int upper);
+public:
+    ValueMap() = delete;
+
+    auto GetLowerBound() const { return lower_; }
+    auto GetUpperBound() const { return upper_; }
+
+    virtual std::vector<double> Normalize(const std::vector<std::complex<double>>& input) = 0;
+    virtual std::string GetUnit() const = 0;
+    virtual std::string GetName() const = 0;
+};
+
+class dBFSValueMap : public ValueMap {
+private:
+public:
+    explicit dBFSValueMap(const int mindb);
+
+    std::vector<double> Normalize(const std::vector<std::complex<double>>& input) override;
+    std::string GetUnit() const override { return "dB"; }
+    std::string GetName() const override { return "dBFS"; }
+};
+
 class FFT {
 private:
     /* FFT window width */
@@ -31,10 +62,14 @@ public:
     FFT(FFT &&) = delete;
     FFT & operator=(const FFT&) = delete;
 
-    FFT(std::size_t win_width);
+    explicit FFT(std::size_t win_width);
     virtual ~FFT();
 
     std::vector<std::complex<double>> Compute(const std::vector<std::complex<double>>& input);
+
+    static std::vector<std::complex<double>> Resample(const std::vector<std::complex<double>>& input,
+                                                      unsigned int rate, std::size_t width,
+                                                      unsigned int fmin, unsigned int fmax);
 };
 
 #endif

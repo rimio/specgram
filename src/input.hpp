@@ -39,8 +39,7 @@ private:
     volatile std::size_t bytes_in_buffer_;
 
     /* mutex for accessing buffer */
-    std::mutex buffer_mutex_;
-    std::mutex running_mutex_;
+    std::mutex mutex_;
 
     /* thread for reading from input stream */
     std::thread reader_thread_;

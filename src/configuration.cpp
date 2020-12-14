@@ -8,6 +8,7 @@
 #include "configuration.hpp"
 #include "specgram.hpp"
 
+#include <spdlog/spdlog.h>
 #include <args.hxx>
 #include <tuple>
 
@@ -22,6 +23,14 @@ Configuration::Configuration()
 
     this->fft_width_ = 512;
     this->fft_stride_ = 512;
+    this->alias_negative_ = true;
+
+    this->width_ = 512;
+    this->min_freq_ = 0;
+    this->max_freq_ = this->rate_ / 2;
+
+    this->live_ = false;
+    this->title_ = "Spectrogram";
 }
 
 std::tuple<Configuration, int, bool>
@@ -50,6 +59,9 @@ Configuration::FromArgs(int argc, char **argv)
         fft_width(fft_opts, "integer", "FFT window width (default: 512)", {'f', "fft_width"});
     args::ValueFlag<int>
         fft_stride(fft_opts, "integer", "FFT window stride (default: 512)", {'g', "fft_stride"});
+    args::ValueFlag<bool>
+        alias(fft_opts, "boolean", "Alias negative and positive frequencies (default: 0 (no) for complex data types, 1 (yes) otherwise)",
+              {'s', "alias"});
 
     args::Group display_opts(parser, "Display options:", args::Group::Validators::DontCare);
     args::ValueFlag<int>
@@ -67,9 +79,9 @@ Configuration::FromArgs(int argc, char **argv)
     args::Flag
         legend(display_opts, "legend", "Display legend", {'e', "legend"});
     args::Flag
-        horizontal(display_opts, "horisontal", "Display horizontally", {'z', "horizontal"});
+        horizontal(display_opts, "horizontal", "Display horizontally", {'z', "horizontal"});
 
-    args::Group live_opts(parser, "Display options:", args::Group::Validators::DontCare);
+    args::Group live_opts(parser, "Live options:", args::Group::Validators::DontCare);
     args::Flag
         live(live_opts, "live", "Display live spectrogram", {'l', "live"});
     args::ValueFlag<int>
@@ -87,7 +99,7 @@ Configuration::FromArgs(int argc, char **argv)
         std::cerr << e.what() << std::endl;
         std::cerr << parser;
         return std::make_tuple(conf, 1, true);
-    } catch (args::ValidationError e) {
+    } catch (args::ValidationError& e) {
         std::cerr << e.what() << std::endl;
         std::cerr << parser;
         return std::make_tuple(conf, 1, true);
@@ -125,13 +137,31 @@ Configuration::FromArgs(int argc, char **argv)
     }
     if (datatype) {
         auto& dtype = args::get(datatype);
-        if (dtype == "s16") {
+        if (dtype == "s8") {
+            conf.datatype_ = DataType::kSignedInt8;
+            conf.alias_negative_ = true;
+        } else if (dtype == "s16") {
             conf.datatype_ = DataType::kSignedInt16;
+            conf.alias_negative_ = true;
+        } else if (dtype == "s32") {
+            conf.datatype_ = DataType::kSignedInt32;
+            conf.alias_negative_ = true;
+        } else if (dtype == "u8") {
+            conf.datatype_ = DataType::kUnsignedInt8;
+            conf.alias_negative_ = true;
+        } else if (dtype == "u16") {
+            conf.datatype_ = DataType::kUnsignedInt16;
+            conf.alias_negative_ = true;
+        } else if (dtype == "u32") {
+            conf.datatype_ = DataType::kUnsignedInt32;
+            conf.alias_negative_ = true;
         } else {
             std::cerr << "Unknown data type '" << dtype << "'" << std::endl;
             return std::make_tuple(conf, 1, true);
         }
     }
+    conf.min_freq_ = conf.alias_negative_ ? 0 : -conf.rate_ / 2;
+    conf.max_freq_ = conf.rate_ / 2;
 
     if (fft_width) {
         if (args::get(fft_width) <= 0) {
@@ -148,6 +178,40 @@ Configuration::FromArgs(int argc, char **argv)
         } else {
             conf.fft_stride_ = args::get(fft_stride);
         }
+    }
+    if (alias) {
+        conf.alias_negative_ = args::get(alias);
+    }
+
+    if (width) {
+        if (args::get(width) <= 0) {
+            std::cerr << "'width' must be positive." << std::endl;
+            return std::make_tuple(conf, 1, true);
+        } else {
+            conf.width_ = args::get(width);
+        }
+    }
+    if (fmin) {
+        conf.min_freq_ = args::get(fmin);
+    }
+    if (fmax) {
+        conf.max_freq_ = args::get(fmax);
+    }
+    if (scale) {
+        auto& scale_str = args::get(scale);
+        if (scale_str == "dbfs" || scale_str == "dBFS") {
+            conf.scale_ = kdBFS;
+        } else {
+            std::cerr << "Unknown scale '" << scale_str << "'" << std::endl;
+            return std::make_tuple(conf, 1, true);
+        }
+    }
+
+    if (live) {
+        conf.live_ = true;
+    }
+    if (title) {
+        conf.title_ = args::get(title);
     }
 
     /* normal usage mode, don't exit */

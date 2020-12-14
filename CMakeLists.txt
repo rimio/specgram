@@ -25,16 +25,18 @@ include_directories (${SOURCE_DIR})
 
 # Configurations
 configure_file (
-  "${SRC_DIR}/specgram.hpp.in"
-  "${SRC_DIR}/specgram.hpp"
+    "${SRC_DIR}/specgram.hpp.in"
+    "${SRC_DIR}/specgram.hpp"
 )
 
 # Source setup
 set (SPECGRAM_SOURCES
-  "${SRC_DIR}/specgram.cpp"
-  "${SRC_DIR}/configuration.cpp"
-  "${SRC_DIR}/input.cpp"
-        src/fft.cpp)
+    "${SRC_DIR}/specgram.cpp"
+    "${SRC_DIR}/configuration.cpp"
+    "${SRC_DIR}/input.cpp"
+    "${SRC_DIR}/fft.cpp"
+    "${SRC_DIR}/colormap.cpp"
+)
 
 # Targets
 add_executable (${PROJECT_NAME} ${SPECGRAM_SOURCES})
