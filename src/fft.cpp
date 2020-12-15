@@ -136,9 +136,79 @@ FFT::Compute(const std::vector<std::complex<double>>& input, bool alias)
     return output;
 }
 
+double
+FFT::sinc(double x)
+{
+    /* this function is straight up lifted from boost, as I have absolutely no inclination of linking to it */
+    static const double taylor_0_bound = std::numeric_limits<double>::epsilon();
+    static const double taylor_2_bound = sqrt(taylor_0_bound);
+    static const double taylor_n_bound = sqrt(taylor_2_bound);
+
+    if (std::abs(x) >= taylor_n_bound) {
+        return std::sin(x) / x;
+    } else {
+        double result = 1.0f;
+
+        if (abs(x) >= taylor_0_bound) {
+            double x2 = x * x;
+            result -= x2 / 6.0f;
+
+            if (abs(x) >= taylor_2_bound) {
+                result += (x2 * x2) / 120.0f;
+            }
+        }
+
+        return result;
+    }
+}
+
+std::tuple<double, double>
+FFT::FrequencyLimits(unsigned int rate, std::size_t width)
+{
+    if (width % 2 == 0) {
+        std::size_t half = width / 2;
+        return std::make_tuple(-(double)(half-1) / (double)width * (double)rate,
+                               +(double)half / (double)width * (double)rate);
+    } else {
+        std::size_t half = width / 2;
+        return std::make_tuple(-(double)half / (double)width * (double)rate,
+                               +(double)half / (double)width * (double)rate);
+    }
+}
+
 std::vector<std::complex<double>>
 FFT::Resample(const std::vector<std::complex<double>>& input, unsigned int rate,
-              std::size_t width, unsigned int fmin, unsigned int fmax)
+              std::size_t width, int fmin, int fmax, std::size_t lanc_a)
 {
-    return input;
+    /* get input bounds */
+    auto [in_fmin, in_fmax] = FFT::FrequencyLimits(rate, input.size());
+    assert(fmin < fmax);
+
+    /* prepare output */
+    std::vector<std::complex<double>> output;
+    output.resize(width);
+
+    /* find corresponding indices for fmin/fmax */
+    /* [0..input.size()-1] -> [in_fmin, in_fmax] */
+    /*   [i_fmin..i_fmax]  ->    [fmin, fmax]    */
+    double i_fmin = (fmin - in_fmin) / (in_fmax - in_fmin) * (input.size() - 1);
+    double i_fmax = (fmax - in_fmin) / (in_fmax - in_fmin) * (input.size() - 1);
+
+    /* [0..width] -> [i_fmin..i_fmax] */
+    for (std::size_t j = 0; j < width; j++) {
+        double x = (double)j / (double)(width - 1) * (i_fmax - i_fmin) + i_fmin;
+        std::complex<double> sum = 0.0f;
+
+        /* convolve */
+        for (int i = std::floor(x - lanc_a + 1); i <= std::floor(x + lanc_a); i ++) {
+            if (i >= 0 && i < input.size()) {
+                double lanc_xi = (std::abs(x - i) < lanc_a) ? (FFT::sinc(x - i) * FFT::sinc((x - i) / lanc_a)) : 0.0f;
+                sum += input[i] * lanc_xi;
+            }
+        }
+
+        output[j] = sum;
+    }
+
+    return output;
 }

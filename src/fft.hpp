@@ -65,6 +65,8 @@ private:
     bool apply_window_function_;
     std::vector<double> window_;
 
+    static double sinc(double x);
+
 public:
     FFT() = delete;
     FFT(const FFT &c) = delete;
@@ -76,9 +78,11 @@ public:
 
     std::vector<std::complex<double>> Compute(const std::vector<std::complex<double>>& input, bool alias);
 
+    static std::tuple<double, double> FrequencyLimits(unsigned int rate, std::size_t width);
     static std::vector<std::complex<double>> Resample(const std::vector<std::complex<double>>& input,
                                                       unsigned int rate, std::size_t width,
-                                                      unsigned int fmin, unsigned int fmax);
+                                                      int fmin, int fmax,
+                                                      std::size_t lanc_a = 3);
 };
 
 #endif
