@@ -9,18 +9,28 @@
 #define _COLORMAP_HPP_
 
 #include <vector>
+#include <memory>
+#include <cstdint>
+
+enum ColorMapType {
+    kGray
+};
 
 class ColorMap {
 protected:
     ColorMap() = default;
 
 public:
-    //std::vector<>
+    static std::unique_ptr<ColorMap> FromType(ColorMapType type);
+
+    virtual std::vector<uint8_t> Map(const std::vector<double>& input) = 0;
 };
 
-class GrayColorMap {
+class GrayColorMap : public ColorMap {
 public:
-    GrayColorMap();
+    GrayColorMap() = default;
+
+    std::vector<uint8_t> Map(const std::vector<double>& input) override;
 };
 
 #endif

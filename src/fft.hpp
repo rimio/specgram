@@ -13,6 +13,11 @@
 #include <vector>
 #include <complex>
 
+enum FFTWindowFunction {
+    kNone,
+    kHann
+};
+
 enum FFTScale {
     kdBFS
 };
@@ -29,7 +34,7 @@ public:
     auto GetLowerBound() const { return lower_; }
     auto GetUpperBound() const { return upper_; }
 
-    virtual std::vector<double> Normalize(const std::vector<std::complex<double>>& input) = 0;
+    virtual std::vector<double> Map(const std::vector<std::complex<double>>& input) = 0;
     virtual std::string GetUnit() const = 0;
     virtual std::string GetName() const = 0;
 };
@@ -39,7 +44,7 @@ private:
 public:
     explicit dBFSValueMap(const int mindb);
 
-    std::vector<double> Normalize(const std::vector<std::complex<double>>& input) override;
+    std::vector<double> Map(const std::vector<std::complex<double>>& input) override;
     std::string GetUnit() const override { return "dB"; }
     std::string GetName() const override { return "dBFS"; }
 };
@@ -56,16 +61,20 @@ private:
     /* fftw plan */
     fftw_plan plan_;
 
+    /* window function */
+    bool apply_window_function_;
+    std::vector<double> window_;
+
 public:
     FFT() = delete;
     FFT(const FFT &c) = delete;
     FFT(FFT &&) = delete;
     FFT & operator=(const FFT&) = delete;
 
-    explicit FFT(std::size_t win_width);
+    FFT(std::size_t win_width, FFTWindowFunction wf);
     virtual ~FFT();
 
-    std::vector<std::complex<double>> Compute(const std::vector<std::complex<double>>& input);
+    std::vector<std::complex<double>> Compute(const std::vector<std::complex<double>>& input, bool alias);
 
     static std::vector<std::complex<double>> Resample(const std::vector<std::complex<double>>& input,
                                                       unsigned int rate, std::size_t width,

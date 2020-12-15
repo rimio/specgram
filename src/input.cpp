@@ -77,7 +77,7 @@ InputReader::Read()
         }
         assert(to_read + this->bytes_in_buffer_ <= this->block_size_bytes_);
         auto k = to_read;
-        for (volatile char *a = local_buffer, *b = this->buffer_ + this->bytes_in_buffer_; k > 0; *a++ = *b++, k--) /* nop */;
+        for (volatile char *a = local_buffer, *b = this->buffer_ + this->bytes_in_buffer_; k > 0; *b++ = *a++, k--) /* nop */;
         this->bytes_in_buffer_ += to_read;
         this->mutex_.unlock();
     }
@@ -149,7 +149,7 @@ InputParser::FromDataType(DataType dtype)
         return std::make_unique<IntegerInputParser<unsigned int>>();
     } else {
         assert(false);
-        spdlog::error("Unknown datatype!");
+        spdlog::error("Internal error: unknown datatype!");
         return nullptr;
     }
 }

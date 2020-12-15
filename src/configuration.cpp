@@ -24,12 +24,16 @@ Configuration::Configuration()
     this->fft_width_ = 512;
     this->fft_stride_ = 512;
     this->alias_negative_ = true;
+    this->window_function_ = FFTWindowFunction::kHann;
 
     this->width_ = 512;
     this->min_freq_ = 0;
     this->max_freq_ = this->rate_ / 2;
+    this->scale_ = FFTScale::kdBFS;
+    this->color_map_ = ColorMapType::kGray;
 
     this->live_ = false;
+    this->count_ = 512;
     this->title_ = "Spectrogram";
 }
 
@@ -59,6 +63,8 @@ Configuration::FromArgs(int argc, char **argv)
         fft_width(fft_opts, "integer", "FFT window width (default: 512)", {'f', "fft_width"});
     args::ValueFlag<int>
         fft_stride(fft_opts, "integer", "FFT window stride (default: 512)", {'g', "fft_stride"});
+    args::ValueFlag<std::string>
+        win_func(fft_opts, "string", "Window function (default: hann)", {'n', "window_function"});
     args::ValueFlag<bool>
         alias(fft_opts, "boolean", "Alias negative and positive frequencies (default: 0 (no) for complex data types, 1 (yes) otherwise)",
               {'s', "alias"});
@@ -85,7 +91,7 @@ Configuration::FromArgs(int argc, char **argv)
     args::Flag
         live(live_opts, "live", "Display live spectrogram", {'l', "live"});
     args::ValueFlag<int>
-        window_count(live_opts, "integer", "Number of FFT windows in displayed history (default: 512)", {'k', "count"});
+        count(live_opts, "integer", "Number of FFT windows in displayed history (default: 512)", {'k', "count"});
     args::ValueFlag<std::string>
         title(live_opts, "string", "Window title", {'t', "title"});
 
@@ -179,6 +185,17 @@ Configuration::FromArgs(int argc, char **argv)
             conf.fft_stride_ = args::get(fft_stride);
         }
     }
+    if (win_func) {
+        auto& wf_str = args::get(win_func);
+        if (wf_str == "none") {
+            conf.window_function_ = FFTWindowFunction::kNone;
+        } else if (wf_str == "hann") {
+            conf.window_function_ = FFTWindowFunction::kHann;
+        } else {
+            std::cerr << "Unknown window function '" << wf_str << "'" << std::endl;
+            return std::make_tuple(conf, 1, true);
+        }
+    }
     if (alias) {
         conf.alias_negative_ = args::get(alias);
     }
@@ -200,15 +217,32 @@ Configuration::FromArgs(int argc, char **argv)
     if (scale) {
         auto& scale_str = args::get(scale);
         if (scale_str == "dbfs" || scale_str == "dBFS") {
-            conf.scale_ = kdBFS;
+            conf.scale_ = FFTScale::kdBFS;
         } else {
             std::cerr << "Unknown scale '" << scale_str << "'" << std::endl;
+            return std::make_tuple(conf, 1, true);
+        }
+    }
+    if (colormap) {
+        auto& cmap_str = args::get(colormap);
+        if (cmap_str == "gray") {
+            conf.color_map_ = ColorMapType::kGray;
+        } else {
+            std::cerr << "Unknown colormap '" << cmap_str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);
         }
     }
 
     if (live) {
         conf.live_ = true;
+    }
+    if (count) {
+        if (args::get(count) <= 0) {
+            std::cerr << "'count' must be positive." << std::endl;
+            return std::make_tuple(conf, 1, true);
+        } else {
+            conf.count_ = args::get(count);
+        }
     }
     if (title) {
         conf.title_ = args::get(title);

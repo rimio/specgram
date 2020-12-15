@@ -36,6 +36,7 @@ set (SPECGRAM_SOURCES
     "${SRC_DIR}/input.cpp"
     "${SRC_DIR}/fft.cpp"
     "${SRC_DIR}/colormap.cpp"
+    "${SRC_DIR}/live.cpp"
 )
 
 # Targets

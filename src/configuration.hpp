@@ -10,6 +10,7 @@
 
 #include "input.hpp"
 #include "fft.hpp"
+#include "colormap.hpp"
 
 #include <string>
 #include <optional>
@@ -25,14 +26,17 @@ private:
 
     std::size_t fft_width_;
     std::size_t fft_stride_;
+    FFTWindowFunction window_function_;
     bool alias_negative_;
 
     std::size_t width_;
     int min_freq_;
     int max_freq_;
     FFTScale scale_;
+    ColorMapType color_map_;
 
     bool live_;
+    std::size_t count_;
     std::string title_;
 
     Configuration();
@@ -52,6 +56,7 @@ public:
     /* FFT getters */
     auto GetFFTWidth() const { return fft_width_; }
     auto GetFFTStride() const { return fft_stride_; }
+    auto GetWindowFunction() const { return window_function_; }
     auto IsAliasingNegativeFrequencies() const { return alias_negative_; }
 
     /* display getters */
@@ -59,9 +64,11 @@ public:
     auto GetMinFreq() const { return min_freq_; }
     auto GetMaxFreq() const { return max_freq_; }
     auto GetScale() const { return scale_; }
+    auto GetColorMap() const { return color_map_; }
 
     /* live options */
     auto IsLive() const { return live_; }
+    auto GetCount() const { return count_; }
     auto GetTitle() const { return title_; }
 };
 

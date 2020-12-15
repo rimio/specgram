@@ -4,7 +4,6 @@
  * specgram is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.
  */
-
 #ifndef _INPUT_HPP_
 #define _INPUT_HPP_
 
