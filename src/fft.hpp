@@ -78,11 +78,13 @@ public:
 
     std::vector<std::complex<double>> Compute(const std::vector<std::complex<double>>& input, bool alias);
 
-    static std::tuple<double, double> FrequencyLimits(unsigned int rate, std::size_t width);
-    static std::vector<std::complex<double>> Resample(const std::vector<std::complex<double>>& input,
-                                                      unsigned int rate, std::size_t width,
-                                                      int fmin, int fmax,
-                                                      std::size_t lanc_a = 3);
+    static std::tuple<double, double> GetFrequencyLimits(unsigned int rate, std::size_t width);
+    static double GetFrequencyIndex(unsigned int rate, std::size_t width, double f);
+    static std::vector<double> Resample(const std::vector<double>& input,
+                                        unsigned int rate, std::size_t width,
+                                        int fmin, int fmax);
+    static std::vector<double> Crop(const std::vector<double>& input,
+                                    unsigned int rate, int fmin, int fmax);
 };
 
 #endif

@@ -163,7 +163,7 @@ FFT::sinc(double x)
 }
 
 std::tuple<double, double>
-FFT::FrequencyLimits(unsigned int rate, std::size_t width)
+FFT::GetFrequencyLimits(unsigned int rate, std::size_t width)
 {
     if (width % 2 == 0) {
         std::size_t half = width / 2;
@@ -176,39 +176,71 @@ FFT::FrequencyLimits(unsigned int rate, std::size_t width)
     }
 }
 
-std::vector<std::complex<double>>
-FFT::Resample(const std::vector<std::complex<double>>& input, unsigned int rate,
-              std::size_t width, int fmin, int fmax, std::size_t lanc_a)
+double
+FFT::GetFrequencyIndex(unsigned int rate, std::size_t width, double f)
 {
-    /* get input bounds */
-    auto [in_fmin, in_fmax] = FFT::FrequencyLimits(rate, input.size());
-    assert(fmin < fmax);
+    auto [in_fmin, in_fmax] = FFT::GetFrequencyLimits(rate, width);
+    return (f - in_fmin) / (in_fmax - in_fmin) * (width - 1);
+}
 
-    /* prepare output */
-    std::vector<std::complex<double>> output;
-    output.resize(width);
+std::vector<double>
+FFT::Resample(const std::vector<double>& input, unsigned int rate,
+              std::size_t width, int fmin, int fmax)
+{
+    assert(fmin < fmax);
 
     /* find corresponding indices for fmin/fmax */
     /* [0..input.size()-1] -> [in_fmin, in_fmax] */
     /*   [i_fmin..i_fmax]  ->    [fmin, fmax]    */
-    double i_fmin = (fmin - in_fmin) / (in_fmax - in_fmin) * (input.size() - 1);
-    double i_fmax = (fmax - in_fmin) / (in_fmax - in_fmin) * (input.size() - 1);
+    double i_fmin = FFT::GetFrequencyIndex(rate, input.size(), fmin);
+    double i_fmax = FFT::GetFrequencyIndex(rate, input.size(), fmax);
+
+    /* prepare output */
+    std::vector<double> output;
+    output.resize(width);
 
     /* [0..width] -> [i_fmin..i_fmax] */
+    /* Lanczos resampling */
+    static constexpr std::size_t lanc_a = 3;
     for (std::size_t j = 0; j < width; j++) {
         double x = (double)j / (double)(width - 1) * (i_fmax - i_fmin) + i_fmin;
-        std::complex<double> sum = 0.0f;
+        double sum = 0.0f;
+        double lsum = 0.0f;
 
         /* convolve */
-        for (int i = std::floor(x - lanc_a + 1); i <= std::floor(x + lanc_a); i ++) {
+        for (int i = std::floor(x) - lanc_a + 1; i <= std::floor(x) + lanc_a; i ++) {
             if (i >= 0 && i < input.size()) {
-                double lanc_xi = (std::abs(x - i) < lanc_a) ? (FFT::sinc(x - i) * FFT::sinc((x - i) / lanc_a)) : 0.0f;
+                double lanc_xi = FFT::sinc(x - i) * FFT::sinc((x - i) / lanc_a);
                 sum += input[i] * lanc_xi;
+                lsum += lanc_xi;
             }
         }
 
-        output[j] = sum;
+        output[j] = std::clamp<double>(sum / lsum, 0.0f, 1.0f);
     }
 
     return output;
+}
+
+std::vector<double>
+FFT::Crop(const std::vector<double>& input, unsigned int rate, int fmin, int fmax)
+{
+    assert(fmin < fmax);
+
+    /* find corresponding indices for fmin/fmax */
+    /* [0..input.size()-1] -> [in_fmin, in_fmax] */
+    /*   [i_fmin..i_fmax]  ->    [fmin, fmax]    */
+    double di_fmin = std::round(FFT::GetFrequencyIndex(rate, input.size(), fmin));
+    double di_fmax = std::round(FFT::GetFrequencyIndex(rate, input.size(), fmax));
+    assert(di_fmin >= 0);
+    assert(di_fmax < input.size());
+    assert(di_fmin < di_fmax);
+
+    /* we're cropping, so no interpolation allowed */
+    std::size_t i_fmin = static_cast<std::size_t>(di_fmin);
+    std::size_t i_fmax = static_cast<std::size_t>(di_fmax);
+    assert(i_fmax - i_fmin > 0);
+
+    /* return corresponding subvector */
+    return std::vector<double>(input.begin() + i_fmin, input.begin() + i_fmax);
 }

@@ -123,17 +123,23 @@ main(int argc, char** argv)
 
         /* retrieve window and remove values that won't be used further */
         auto window_values = input->PeekValues(conf.GetFFTWidth());
-        input->RemoveValues(std::min<std::size_t>(conf.GetFFTWidth(), conf.GetFFTStride()));
+        input->RemoveValues(conf.GetFFTStride());
 
         /* compute FFT on fetched window */
         auto fft_values = fft.Compute(window_values, conf.IsAliasingNegativeFrequencies());
 
-        /* resample FFT to display width */
-        auto fft_resampled_values =
-                FFT::Resample(fft_values, conf.GetRate(), conf.GetWidth(), conf.GetMinFreq(), conf.GetMaxFreq());
-
         /* map FFT to [0..1] domain */
-        auto fft_normalized_values = value_map->Map(fft_resampled_values);
+        auto fft_normalized_values = value_map->Map(fft_values);
+
+        if (conf.CanResample()) {
+            /* resample FFT to display width */
+            fft_normalized_values = FFT::Resample(fft_normalized_values, conf.GetRate(), conf.GetWidth(),
+                                                  conf.GetMinFreq(), conf.GetMaxFreq());
+        } else {
+            /* crop FFT to display width */
+            fft_normalized_values = FFT::Crop(fft_normalized_values, conf.GetRate(),
+                                              conf.GetMinFreq(), conf.GetMaxFreq());
+        }
 
         /* colorize FFT */
         auto fft_colorized = color_map->Map(fft_normalized_values);

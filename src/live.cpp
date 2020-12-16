@@ -13,6 +13,7 @@ LiveOutput::LiveOutput(std::size_t disp_width, std::size_t hist_size, const std:
     : display_width_(disp_width), history_size_(hist_size), title_(title)
 {
     this->window_.create(sf::VideoMode(disp_width, hist_size), title, sf::Style::Close);
+    this->window_.setFramerateLimit(0);
     this->window_texture_.create(disp_width, hist_size);
     this->fft_area_texture_.create(disp_width, hist_size);
 

@@ -29,6 +29,7 @@ private:
     FFTWindowFunction window_function_;
     bool alias_negative_;
 
+    bool no_resampling_;
     std::size_t width_;
     int min_freq_;
     int max_freq_;
@@ -60,6 +61,7 @@ public:
     auto IsAliasingNegativeFrequencies() const { return alias_negative_; }
 
     /* display getters */
+    auto CanResample() const { return !no_resampling_; }
     auto GetWidth() const { return width_; }
     auto GetMinFreq() const { return min_freq_; }
     auto GetMaxFreq() const { return max_freq_; }

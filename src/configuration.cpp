@@ -26,6 +26,7 @@ Configuration::Configuration()
     this->alias_negative_ = true;
     this->window_function_ = FFTWindowFunction::kHann;
 
+    this->no_resampling_ = false;
     this->width_ = 512;
     this->min_freq_ = 0;
     this->max_freq_ = this->rate_ / 2;
@@ -70,6 +71,9 @@ Configuration::FromArgs(int argc, char **argv)
               {'s', "alias"});
 
     args::Group display_opts(parser, "Display options:", args::Group::Validators::DontCare);
+    args::Flag
+        no_resampling(display_opts, "no_resampling", "No resampling; width will be computed from FFT parameters and fmin/fmax",
+                      {'q', "no_resampling"});
     args::ValueFlag<int>
         width(display_opts, "integer", "Display width (default: 512)", {'w', "width"});
     args::ValueFlag<int>
@@ -200,9 +204,15 @@ Configuration::FromArgs(int argc, char **argv)
         conf.alias_negative_ = args::get(alias);
     }
 
+    if (no_resampling) {
+        conf.no_resampling_ = true;
+    }
     if (width) {
         if (args::get(width) <= 0) {
             std::cerr << "'width' must be positive." << std::endl;
+            return std::make_tuple(conf, 1, true);
+        } else if (conf.no_resampling_) {
+            std::cerr << "'width' cannot be specified when not resampling (-q, --no_resampling)." << std::endl;
             return std::make_tuple(conf, 1, true);
         } else {
             conf.width_ = args::get(width);
@@ -246,6 +256,40 @@ Configuration::FromArgs(int argc, char **argv)
     }
     if (title) {
         conf.title_ = args::get(title);
+    }
+
+    /* compute width for --no_resampling case */
+    if (conf.no_resampling_) {
+        int mini = static_cast<int>(std::round(FFT::GetFrequencyIndex(conf.rate_, conf.fft_width_, conf.min_freq_)));
+        int maxi = static_cast<int>(std::round(FFT::GetFrequencyIndex(conf.rate_, conf.fft_width_, conf.max_freq_)));
+
+        if (mini < 0) {
+            std::cerr
+                    << "'fmin' is outside of FFT window, which is not allowed when not resampling (-q, --no_resampling)."
+                    << std::endl;
+            return std::make_tuple(conf, 1, true);
+        }
+        if (maxi >= static_cast<int>(conf.fft_width_)) {
+            std::cerr
+                    << "'fmax' is outside of FFT window, which is not allowed when not resampling (-q, --no_resampling)."
+                    << std::endl;
+            return std::make_tuple(conf, 1, true);
+        }
+
+        conf.width_ = maxi - mini;
+        if (conf.width_ == 0) {
+            std::cerr
+                    << "'fmin' and 'fmax' are either equal or very close, which is not allowed when not resampling (-q, --no_resampling)."
+                    << std::endl;
+            return std::make_tuple(conf, 1, true);
+        }
+        /* (maxi-mini) < 0 should be caught lower */
+    }
+
+    /* fmin/fmax checks */
+    if (conf.min_freq_ >= conf.max_freq_) {
+        std::cerr << "'fmin' must be less than 'fmax'." << std::endl;
+        return std::make_tuple(conf, 1, true);
     }
 
     /* normal usage mode, don't exit */
