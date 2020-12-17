@@ -9,21 +9,28 @@
 #include <cassert>
 #include <cstring>
 
-LiveOutput::LiveOutput(std::size_t disp_width, std::size_t hist_size, const std::string& title)
-    : display_width_(disp_width), history_size_(hist_size), title_(title)
+LiveOutput::LiveOutput(const Configuration& conf) : configuration_(conf), renderer_(conf.GetForLive(), conf.GetCount())
 {
-    this->window_.create(sf::VideoMode(disp_width, hist_size), title, sf::Style::Close);
-    this->window_.setFramerateLimit(0);
-    this->window_texture_.create(disp_width, hist_size);
-    this->fft_area_texture_.create(disp_width, hist_size);
+    auto width = conf.IsHorizontal() ? renderer_.GetHeight() : renderer_.GetWidth();
+    auto height = conf.IsHorizontal() ? renderer_.GetWidth() : renderer_.GetHeight();
 
-    this->fft_area_.resize(disp_width * hist_size * 4); /* RGBA pixel array */
+    /* create non-resizable window */
+    this->window_.create(sf::VideoMode(width, height),
+                         conf.GetTitle(),
+                         sf::Style::Close);
+    this->window_.setFramerateLimit(0);
+
+    /* FFT area raw memory used to update the area texture */
+    this->fft_area_.resize(conf.GetWidth() * conf.GetCount() * 4); /* RGBA pixel array */
+
+    /* render UI */
+    this->renderer_.RenderUserInterface();
 }
 
 void
 LiveOutput::AddWindow(const std::vector<uint8_t>& window)
 {
-    std::size_t wlen_bytes = this->display_width_ * 4;
+    std::size_t wlen_bytes = this->configuration_.GetWidth() * 4;
     assert(window.size() == wlen_bytes);
     /* scroll down one window */
     std::memmove(reinterpret_cast<void *>(this->fft_area_.data() + wlen_bytes),
@@ -33,11 +40,11 @@ LiveOutput::AddWindow(const std::vector<uint8_t>& window)
     std::memcpy(reinterpret_cast<void *>(this->fft_area_.data()),
                 reinterpret_cast<const void *>(window.data()),
                 wlen_bytes);
+    /* update renderer */
+    renderer_.RenderFFTArea(this->fft_area_);
 
-    /* recreate FFT area texture */
-    this->fft_area_texture_.update(this->fft_area_.data());
-    /* render window texture again */
-    this->window_texture_.draw(sf::Sprite(this->fft_area_texture_));
+    /* draw window */
+    this->Render();
 }
 
 bool
@@ -54,7 +61,14 @@ LiveOutput::HandleEvents()
 void
 LiveOutput::Render()
 {
+    sf::Texture canvas_texture = this->renderer_.GetCanvas();
+    sf::Sprite canvas_sprite(canvas_texture);
+    if (this->configuration_.IsHorizontal()) {
+        canvas_sprite.setRotation(-90.0f);
+        canvas_sprite.setPosition(0.0f, canvas_texture.getSize().y);
+    }
+
     this->window_.clear();
-    this->window_.draw(sf::Sprite(this->window_texture_.getTexture()));
+    this->window_.draw(canvas_sprite);
     this->window_.display();
 }

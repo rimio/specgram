@@ -7,22 +7,20 @@
 #ifndef _LIVE_HPP_
 #define _LIVE_HPP_
 
+#include "configuration.hpp"
+#include "renderer.hpp"
 #include <SFML/Graphics.hpp>
 
 class LiveOutput {
 private:
-    /* dimensions and options */
-    const std::size_t display_width_;
-    const std::size_t history_size_;
+    /* configuration */
+    const Configuration configuration_;
+    Renderer renderer_;
 
-    const std::string title_;
-
-    /* SFML stuff */
+    /* live window */
     sf::RenderWindow window_;
-    sf::RenderTexture window_texture_;
-    sf::Texture fft_area_texture_;
 
-    /* raw fft history */
+    /* raw FFT history */
     std::vector<uint8_t> fft_area_;
 
 public:
@@ -31,7 +29,7 @@ public:
     LiveOutput(LiveOutput &&) = delete;
     LiveOutput & operator=(const LiveOutput&) = delete;
 
-    LiveOutput(std::size_t disp_width, std::size_t hist_size, const std::string& title);
+    LiveOutput(const Configuration& conf);
 
     void AddWindow(const std::vector<uint8_t>& window);
     bool HandleEvents();

@@ -1,0 +1,145 @@
+/*
+ * Copyright (c) 2020 Vasile Vilvoiu <vasi.vilvoiu@gmail.com>
+ *
+ * specgram is free software; you can redistribute it and/or modify
+ * it under the terms of the MIT license. See LICENSE for details.
+ */
+#include "renderer.hpp"
+#include "share-tech-mono.hpp"
+
+#include <cassert>
+
+Renderer::Renderer(const Configuration& conf, std::size_t fft_count) : configuration_(conf), fft_count_(fft_count)
+{
+    /* load font */
+    if (!this->font_.loadFromMemory(ShareTechMono_Regular_ttf, ShareTechMono_Regular_ttf_len)) {
+        assert(false);
+    }
+
+    /* compute various sizes */
+    this->width_ = conf.GetWidth();
+    this->width_ += conf.HasAxes() ? 2 * conf.GetMarginSize() : 0;
+
+    this->height_ = 0;
+
+    /* compute origins */
+    this->legend_origin_ = sf::Vector2f(0.0f, 0.0f);
+    if (this->configuration_.HasLegend()) {
+        if (this->configuration_.HasAxes()) {
+            this->legend_origin_ += sf::Vector2f(conf.GetMarginSize(), conf.GetMarginSize());
+            this->height_ += conf.GetMarginSize();
+        }
+        this->height_ += conf.GetLegendHeight();
+    }
+
+    this->fft_live_origin_ = sf::Vector2f(0.0f, this->height_);
+    if (conf.HasLiveWindow()) {
+        if (this->configuration_.HasAxes()) {
+            this->fft_live_origin_ += sf::Vector2f(conf.GetMarginSize(), conf.GetMarginSize());
+            this->height_ += conf.GetMarginSize();
+        }
+        this->height_ += conf.GetLiveFFTHeight();
+    }
+
+    this->fft_area_origin_ = sf::Vector2f(0.0f, this->height_);
+    if (conf.HasAxes()) {
+        this->fft_area_origin_ += sf::Vector2f(conf.GetMarginSize(), conf.GetMarginSize());
+        this->height_ += conf.GetMarginSize() * 2;
+    }
+    this->height_ += this->fft_count_;
+
+    /* allocate canvas render texture */
+    this->canvas_.create(this->width_, this->height_);
+
+    /* allocate FFT area texture */
+    this->fft_area_texture_.create(conf.GetWidth(), fft_count);
+}
+
+void
+Renderer::RenderAxis(sf::RenderTexture& texture,
+                     const sf::Vector2f& origin, float rot, float length,
+                     float v_min, float v_max, std::string v_unit,
+                     float est_tick_dist)
+{
+    assert(v_min < v_max);
+
+    /* find factor */
+    float v_diff = v_max - v_min;
+    float px_per_unit = length / v_diff;
+    float units_per_tick = est_tick_dist / px_per_unit;
+
+    float factor = 1.0;
+
+    sf::Text text;
+    text.setCharacterSize(this->configuration_.GetLegendFontSize());
+    text.setFont(this->font_);
+    text.setString("Hello!");
+    this->canvas_.draw(text);
+}
+
+void
+Renderer::RenderUserInterface()
+{
+    if (this->configuration_.HasAxes()) {
+        /* legend box */
+        sf::RectangleShape legend_box(sf::Vector2f(this->configuration_.GetWidth(),
+                                                   this->configuration_.GetLegendHeight()));
+        legend_box.setFillColor(this->configuration_.GetBackgroundColor());
+        legend_box.setOutlineColor(this->configuration_.GetAxesColor());
+        legend_box.setOutlineThickness(1);
+        legend_box.setPosition(this->legend_origin_);
+        this->canvas_.draw(legend_box);
+
+        /* FFT live box */
+        sf::RectangleShape fft_live_box(sf::Vector2f(this->configuration_.GetWidth(),
+                                                     this->configuration_.GetLiveFFTHeight()));
+        fft_live_box.setFillColor(this->configuration_.GetBackgroundColor());
+        fft_live_box.setOutlineColor(this->configuration_.GetAxesColor());
+        fft_live_box.setOutlineThickness(1);
+        fft_live_box.setPosition(this->fft_live_origin_);
+        this->canvas_.draw(fft_live_box);
+
+        /* FFT area box */
+        sf::RectangleShape fft_area_box(sf::Vector2f(this->configuration_.GetWidth(), this->fft_count_));
+        fft_area_box.setFillColor(this->configuration_.GetBackgroundColor());
+        fft_area_box.setOutlineColor(this->configuration_.GetAxesColor());
+        fft_area_box.setOutlineThickness(1);
+        fft_area_box.setPosition(this->fft_area_origin_);
+        this->canvas_.draw(fft_area_box);
+
+        /* Frequency axis */
+        this->RenderAxis(this->canvas_, this->fft_area_origin_, 0.0f, this->configuration_.GetWidth(),
+                         this->configuration_.GetMinFreq(), this->configuration_.GetMaxFreq(),
+                         "Hz", 50.0f);
+    }
+
+    this->canvas_.display();
+}
+
+void
+Renderer::RenderFFTArea(const std::vector<uint8_t>& memory)
+{
+    assert(memory.size() == configuration_.GetWidth() * this->fft_count_ * 4);
+
+    /* update FFT area texture */
+    this->fft_area_texture_.update(reinterpret_cast<const uint8_t *>(memory.data()));
+
+    /* render FFT area on canvas */
+    sf::Sprite fft_area_sprite(this->fft_area_texture_);
+    fft_area_sprite.setPosition(this->fft_area_origin_);
+    this->canvas_.draw(fft_area_sprite);
+
+    this->canvas_.display();
+}
+
+void
+Renderer::RenderLiveFFT(const std::vector<double>& window)
+{
+    assert(window.size() == this->configuration_.GetWidth());
+}
+
+sf::Texture
+Renderer::GetCanvas() const
+{
+    return this->canvas_.getTexture();
+}

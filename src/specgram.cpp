@@ -45,7 +45,7 @@ main(int argc, char** argv)
     /* create live window */
     std::unique_ptr<LiveOutput> live = nullptr;
     if (conf.IsLive()) {
-        live = std::make_unique<LiveOutput>(conf.GetWidth(), conf.GetCount(), conf.GetTitle());
+        live = std::make_unique<LiveOutput>(conf);
     }
 
     /* create FFT */
@@ -98,9 +98,6 @@ main(int argc, char** argv)
                 /* uninstall signal so that reader thread can exit successfully */
                 std::signal(SIGINT, nullptr);
             }
-
-            /* draw stuff */
-            live->Render();
         }
 
         /* check for a complete block */
@@ -145,7 +142,14 @@ main(int argc, char** argv)
         auto fft_colorized = color_map->Map(fft_normalized_values);
 
         /* add to live */
-        live->AddWindow(fft_colorized);
+        if (live != nullptr) {
+            live->AddWindow(fft_colorized);
+        }
+
+        /* TODO: add to history */
+        if (conf.GetFilename().has_value()) {
+            /* TODO */
+        }
     }
     spdlog::info("Terminating ...");
 

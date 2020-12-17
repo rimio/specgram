@@ -32,10 +32,35 @@ Configuration::Configuration()
     this->max_freq_ = this->rate_ / 2;
     this->scale_ = FFTScale::kdBFS;
     this->color_map_ = ColorMapType::kGray;
+    this->has_axes_ = false;
+    this->has_legend_ = false;
+    this->is_horizontal_ = false;
 
     this->live_ = false;
     this->count_ = 512;
     this->title_ = "Spectrogram";
+
+
+    this->has_live_window_ = false;
+    this->margin_size_ = 30;
+    this->legend_height_ = 20;
+    this->live_fft_height_ = 100;
+    this->legend_font_size_ = 14;
+    this->background_color_ = sf::Color(0, 0, 0);
+    this->axes_color_ = sf::Color(255, 255, 255);
+}
+
+Configuration
+Configuration::GetForLive() const
+{
+    Configuration c(*this);
+
+    /* overridden configuration for live output */
+    c.has_axes_ = true;
+    c.has_legend_ = true;
+    c.has_live_window_ = true;
+
+    return c;
 }
 
 std::tuple<Configuration, int, bool>
@@ -241,6 +266,15 @@ Configuration::FromArgs(int argc, char **argv)
             std::cerr << "Unknown colormap '" << cmap_str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);
         }
+    }
+    if (axes) {
+        conf.has_axes_ = true;
+    }
+    if (legend) {
+        conf.has_legend_ = true;
+    }
+    if (horizontal) {
+        conf.is_horizontal_ = true;
     }
 
     if (live) {

@@ -37,6 +37,9 @@ set (SPECGRAM_SOURCES
     "${SRC_DIR}/fft.cpp"
     "${SRC_DIR}/colormap.cpp"
     "${SRC_DIR}/live.cpp"
+    "${SRC_DIR}/renderer.cpp"
+
+    "${SRC_DIR}/share-tech-mono.cpp"
 )
 
 # Targets

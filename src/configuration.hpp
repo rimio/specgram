@@ -12,6 +12,7 @@
 #include "fft.hpp"
 #include "colormap.hpp"
 
+#include <SFML/Graphics.hpp>
 #include <string>
 #include <optional>
 #include <tuple>
@@ -35,10 +36,22 @@ private:
     int max_freq_;
     FFTScale scale_;
     ColorMapType color_map_;
+    bool has_axes_;
+    bool has_legend_;
+    bool is_horizontal_;
 
     bool live_;
     std::size_t count_;
     std::string title_;
+
+    bool has_live_window_;
+
+    std::size_t margin_size_;
+    std::size_t legend_height_;
+    std::size_t live_fft_height_;
+    std::size_t legend_font_size_;
+    sf::Color background_color_;
+    sf::Color axes_color_;
 
     Configuration();
 
@@ -47,6 +60,7 @@ public:
     static std::tuple<Configuration, int, bool> FromArgs(int argc, char **argv);
 
     /* generic getters */
+    Configuration GetForLive() const;
     const auto & GetFilename() const { return filename_; }
 
     /* input getters */
@@ -67,11 +81,26 @@ public:
     auto GetMaxFreq() const { return max_freq_; }
     auto GetScale() const { return scale_; }
     auto GetColorMap() const { return color_map_; }
+    auto HasAxes() const { return has_axes_; }
+    auto HasLegend() const { return has_axes_; }
+    auto IsHorizontal() const { return is_horizontal_; }
 
     /* live options */
     auto IsLive() const { return live_; }
     auto GetCount() const { return count_; }
     auto GetTitle() const { return title_; }
+
+    /* internal options */
+    auto HasLiveWindow() const { return has_live_window_; }
+
+    auto GetMarginSize() const { return margin_size_; }
+    auto GetLegendHeight() const { return legend_height_; }
+    auto GetLiveFFTHeight() const { return live_fft_height_; }
+
+    auto GetLegendFontSize() const { return legend_font_size_; }
+
+    auto GetBackgroundColor() const { return background_color_; }
+    auto GetAxesColor() const { return axes_color_; }
 };
 
 #endif
