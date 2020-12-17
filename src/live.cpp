@@ -9,7 +9,8 @@
 #include <cassert>
 #include <cstring>
 
-LiveOutput::LiveOutput(const Configuration& conf) : configuration_(conf), renderer_(conf.GetForLive(), conf.GetCount())
+LiveOutput::LiveOutput(const Configuration& conf, const ColorMap& cmap)
+    : configuration_(conf), renderer_(conf.GetForLive(), conf.GetCount())
 {
     auto width = conf.IsHorizontal() ? renderer_.GetHeight() : renderer_.GetWidth();
     auto height = conf.IsHorizontal() ? renderer_.GetWidth() : renderer_.GetHeight();
@@ -25,10 +26,18 @@ LiveOutput::LiveOutput(const Configuration& conf) : configuration_(conf), render
 
     /* render UI */
     this->renderer_.RenderUserInterface();
+
+    /* render legend */
+    std::vector<double> legend_values;
+    for (std::size_t i = 0; i < conf.GetWidth(); i++) {
+        legend_values.push_back((double) i / (double) (conf.GetWidth()-1));
+    }
+    auto legend_colors = cmap.Map(legend_values);
+    this->renderer_.RenderLegend(legend_colors);
 }
 
 void
-LiveOutput::AddWindow(const std::vector<uint8_t>& window)
+LiveOutput::AddWindow(const std::vector<uint8_t>& window, const std::vector<double>& win_values)
 {
     std::size_t wlen_bytes = this->configuration_.GetWidth() * 4;
     assert(window.size() == wlen_bytes);
@@ -40,8 +49,10 @@ LiveOutput::AddWindow(const std::vector<uint8_t>& window)
     std::memcpy(reinterpret_cast<void *>(this->fft_area_.data()),
                 reinterpret_cast<const void *>(window.data()),
                 wlen_bytes);
+
     /* update renderer */
     renderer_.RenderFFTArea(this->fft_area_);
+    renderer_.RenderLiveFFT(win_values);
 
     /* draw window */
     this->Render();

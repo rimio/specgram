@@ -90,15 +90,6 @@ Renderer::RenderUserInterface()
         legend_box.setPosition(this->legend_origin_);
         this->canvas_.draw(legend_box);
 
-        /* FFT live box */
-        sf::RectangleShape fft_live_box(sf::Vector2f(this->configuration_.GetWidth(),
-                                                     this->configuration_.GetLiveFFTHeight()));
-        fft_live_box.setFillColor(this->configuration_.GetBackgroundColor());
-        fft_live_box.setOutlineColor(this->configuration_.GetAxesColor());
-        fft_live_box.setOutlineThickness(1);
-        fft_live_box.setPosition(this->fft_live_origin_);
-        this->canvas_.draw(fft_live_box);
-
         /* FFT area box */
         sf::RectangleShape fft_area_box(sf::Vector2f(this->configuration_.GetWidth(), this->fft_count_));
         fft_area_box.setFillColor(this->configuration_.GetBackgroundColor());
@@ -127,8 +118,8 @@ Renderer::RenderFFTArea(const std::vector<uint8_t>& memory)
     /* render FFT area on canvas */
     sf::Sprite fft_area_sprite(this->fft_area_texture_);
     fft_area_sprite.setPosition(this->fft_area_origin_);
-    this->canvas_.draw(fft_area_sprite);
 
+    this->canvas_.draw(fft_area_sprite);
     this->canvas_.display();
 }
 
@@ -136,6 +127,43 @@ void
 Renderer::RenderLiveFFT(const std::vector<double>& window)
 {
     assert(window.size() == this->configuration_.GetWidth());
+
+    /* FFT live box (so we overwrite old one */
+    sf::RectangleShape fft_live_box(sf::Vector2f(this->configuration_.GetWidth(),
+                                                 this->configuration_.GetLiveFFTHeight()));
+    fft_live_box.setFillColor(this->configuration_.GetBackgroundColor());
+    fft_live_box.setOutlineColor(this->configuration_.GetAxesColor());
+    fft_live_box.setOutlineThickness(1);
+    fft_live_box.setPosition(this->fft_live_origin_);
+    this->canvas_.draw(fft_live_box);
+
+    /* graphic */
+    std::vector<sf::Vertex> vertices;
+    for (std::size_t i = 0; i < window.size(); i++) {
+        float x = this->fft_live_origin_.x + i;
+        float y = this->fft_live_origin_.y + (1.0f - window[i]) * this->configuration_.GetLiveFFTHeight();
+        vertices.push_back(sf::Vertex(sf::Vector2f(x, y)));
+    }
+
+    this->canvas_.draw(reinterpret_cast<sf::Vertex *>(vertices.data()), vertices.size(), sf::LineStrip);
+
+    this->canvas_.display();
+}
+
+void
+Renderer::RenderLegend(const std::vector<uint8_t>& memory)
+{
+    assert(memory.size() == configuration_.GetWidth() * 4);
+
+    sf::Texture tex;
+    tex.create(this->configuration_.GetWidth(), 1);
+    tex.update(reinterpret_cast<const uint8_t *>(memory.data()));
+    sf::Sprite spr(tex);
+    spr.setPosition(this->legend_origin_);
+    spr.setScale(sf::Vector2f(1.0f, this->configuration_.GetLegendHeight()));
+
+    this->canvas_.draw(spr);
+    this->canvas_.display();
 }
 
 sf::Texture

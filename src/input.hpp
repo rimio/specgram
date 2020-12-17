@@ -48,8 +48,8 @@ private:
 
 public:
     InputReader() = delete;
-    InputReader(const InputReader &c) = delete;
-    InputReader(InputReader &&) = delete;
+    InputReader(const InputReader&) = delete;
+    InputReader(InputReader&&) = delete;
     InputReader & operator=(const InputReader&) = delete;
 
     InputReader(std::istream &stream, std::size_t block_size_bytes);

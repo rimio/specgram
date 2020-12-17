@@ -262,6 +262,8 @@ Configuration::FromArgs(int argc, char **argv)
         auto& cmap_str = args::get(colormap);
         if (cmap_str == "gray") {
             conf.color_map_ = ColorMapType::kGray;
+        } else if (cmap_str == "jet") {
+            conf.color_map_ = ColorMapType::kJet;
         } else {
             std::cerr << "Unknown colormap '" << cmap_str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);

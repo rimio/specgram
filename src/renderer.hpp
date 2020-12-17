@@ -40,6 +40,7 @@ public:
     void RenderUserInterface();
     void RenderFFTArea(const std::vector<uint8_t>& memory);
     void RenderLiveFFT(const std::vector<double>& window);
+    void RenderLegend(const std::vector<uint8_t>& memory);
 
     /* canvas builder */
     sf::Texture GetCanvas() const;

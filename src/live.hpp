@@ -9,6 +9,7 @@
 
 #include "configuration.hpp"
 #include "renderer.hpp"
+#include "colormap.hpp"
 #include <SFML/Graphics.hpp>
 
 class LiveOutput {
@@ -29,9 +30,9 @@ public:
     LiveOutput(LiveOutput &&) = delete;
     LiveOutput & operator=(const LiveOutput&) = delete;
 
-    LiveOutput(const Configuration& conf);
+    LiveOutput(const Configuration& conf, const ColorMap& cmap);
 
-    void AddWindow(const std::vector<uint8_t>& window);
+    void AddWindow(const std::vector<uint8_t>& window, const std::vector<double>& win_values);
     bool HandleEvents();
     void Render();
 };

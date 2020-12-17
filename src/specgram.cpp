@@ -42,12 +42,6 @@ main(int argc, char** argv)
         return conf_rc;
     }
 
-    /* create live window */
-    std::unique_ptr<LiveOutput> live = nullptr;
-    if (conf.IsLive()) {
-        live = std::make_unique<LiveOutput>(conf);
-    }
-
     /* create FFT */
     FFT fft(conf.GetFFTWidth(), conf.GetWindowFunction());
 
@@ -64,6 +58,12 @@ main(int argc, char** argv)
 
     /* create color map */
     auto color_map = ColorMap::FromType(conf.GetColorMap());
+
+    /* create live window */
+    std::unique_ptr<LiveOutput> live = nullptr;
+    if (conf.IsLive()) {
+        live = std::make_unique<LiveOutput>(conf, *color_map);
+    }
 
     /* create input parser */
     auto input = InputParser::FromDataType(conf.GetDataType());
@@ -143,7 +143,7 @@ main(int argc, char** argv)
 
         /* add to live */
         if (live != nullptr) {
-            live->AddWindow(fft_colorized);
+            live->AddWindow(fft_colorized, fft_normalized_values);
         }
 
         /* TODO: add to history */
