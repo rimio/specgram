@@ -9,6 +9,8 @@
 
 #include "configuration.hpp"
 #include <SFML/Graphics.hpp>
+#include <vector>
+#include <list>
 
 class Renderer {
 private:
@@ -39,7 +41,8 @@ public:
     /* render commands */
     void RenderUserInterface();
     void RenderFFTArea(const std::vector<uint8_t>& memory);
-    void RenderLiveFFT(const std::vector<double>& window);
+    void RenderFFTArea(const std::list<std::vector<uint8_t>>& history);
+    void RenderLiveFFT(const std::vector<double>& window, const std::vector<uint8_t>& colors);
     void RenderLegend(const std::vector<uint8_t>& memory);
 
     /* canvas builder */

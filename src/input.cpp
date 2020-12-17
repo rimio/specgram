@@ -67,7 +67,11 @@ InputReader::Read()
 
         /* blocking read */
         this->stream_.read(local_buffer, to_read);
-        assert(this->stream_.gcount() == to_read);
+        if (this->stream_.fail()) {
+            break;
+        } else {
+            assert(this->stream_.gcount() == to_read);
+        }
 
         /* write to buffer */
         this->mutex_.lock();

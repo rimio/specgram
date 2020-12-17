@@ -13,6 +13,7 @@
 #include <spdlog/spdlog.h>
 #include <iostream>
 #include <csignal>
+#include <list>
 
 /* main loop exit condition */
 volatile bool main_loop_running = true;
@@ -88,6 +89,9 @@ main(int argc, char** argv)
     /* install SIGINT handler for CTRL+C */
     std::signal(SIGINT, sigint_handler);
 
+    /* FFT window history */
+    std::list<std::vector<uint8_t>> history;
+
     /* main loop */
     while (main_loop_running) {
         /* check for window events (if necessary) */
@@ -146,14 +150,35 @@ main(int argc, char** argv)
             live->AddWindow(fft_colorized, fft_normalized_values);
         }
 
-        /* TODO: add to history */
+        /* add to history */
         if (conf.GetFilename().has_value()) {
-            /* TODO */
+            history.push_back(fft_colorized);
         }
     }
     spdlog::info("Terminating ...");
 
-    /* TODO: save file */
+    /* save file */
+    if (conf.GetFilename().has_value()) {
+        Renderer file_renderer(conf, history.size());
+
+        /* render UI (axes etc) */
+        file_renderer.RenderUserInterface();
+
+        /* render legend */
+        if (conf.HasLegend()) {
+            std::vector<double> legend_values;
+            for (std::size_t i = 0; i < conf.GetWidth(); i++) {
+                legend_values.push_back((double) i / (double) (conf.GetWidth() - 1));
+            }
+            auto legend_colors = color_map->Map(legend_values);
+            file_renderer.RenderLegend(legend_colors);
+        }
+
+        /* render windows */
+        file_renderer.RenderFFTArea(history);
+
+        file_renderer.GetCanvas().copyToImage().saveToFile(*conf.GetFilename());
+    }
 
     /* all ok */
     return 0;

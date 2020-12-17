@@ -8,6 +8,7 @@
 #include "share-tech-mono.hpp"
 
 #include <cassert>
+#include <cstring>
 
 Renderer::Renderer(const Configuration& conf, std::size_t fft_count) : configuration_(conf), fft_count_(fft_count)
 {
@@ -50,6 +51,7 @@ Renderer::Renderer(const Configuration& conf, std::size_t fft_count) : configura
 
     /* allocate canvas render texture */
     this->canvas_.create(this->width_, this->height_);
+    this->canvas_.clear(sf::Color(0, 0, 0, 255));
 
     /* allocate FFT area texture */
     this->fft_area_texture_.create(conf.GetWidth(), fft_count);
@@ -80,7 +82,7 @@ Renderer::RenderAxis(sf::RenderTexture& texture,
 void
 Renderer::RenderUserInterface()
 {
-    if (this->configuration_.HasAxes()) {
+    if (this->configuration_.HasLegend()) {
         /* legend box */
         sf::RectangleShape legend_box(sf::Vector2f(this->configuration_.GetWidth(),
                                                    this->configuration_.GetLegendHeight()));
@@ -89,7 +91,9 @@ Renderer::RenderUserInterface()
         legend_box.setOutlineThickness(1);
         legend_box.setPosition(this->legend_origin_);
         this->canvas_.draw(legend_box);
+    }
 
+    if (this->configuration_.HasAxes()) {
         /* FFT area box */
         sf::RectangleShape fft_area_box(sf::Vector2f(this->configuration_.GetWidth(), this->fft_count_));
         fft_area_box.setFillColor(this->configuration_.GetBackgroundColor());
@@ -124,13 +128,32 @@ Renderer::RenderFFTArea(const std::vector<uint8_t>& memory)
 }
 
 void
-Renderer::RenderLiveFFT(const std::vector<double>& window)
+Renderer::RenderFFTArea(const std::list<std::vector<uint8_t>>& history)
+{
+    assert(history.size() == this->fft_count_);
+
+    std::vector<uint8_t> memory;
+    memory.resize(this->fft_count_ * this->configuration_.GetWidth() * 4);
+
+    std::size_t i = 0;
+    for (auto& win : history) {
+        std::memcpy(reinterpret_cast<void *>(memory.data() + i * this->configuration_.GetWidth() * 4),
+                    reinterpret_cast<const void *>(win.data()),
+                    this->configuration_.GetWidth() * 4);
+        i++;
+    }
+
+    return this->RenderFFTArea(memory);
+}
+
+void
+Renderer::RenderLiveFFT(const std::vector<double>& window, const std::vector<uint8_t>& colors)
 {
     assert(window.size() == this->configuration_.GetWidth());
 
     /* FFT live box (so we overwrite old one */
     sf::RectangleShape fft_live_box(sf::Vector2f(this->configuration_.GetWidth(),
-                                                 this->configuration_.GetLiveFFTHeight()));
+                                                 this->configuration_.GetLiveFFTHeight() + 1.0f));
     fft_live_box.setFillColor(this->configuration_.GetBackgroundColor());
     fft_live_box.setOutlineColor(this->configuration_.GetAxesColor());
     fft_live_box.setOutlineThickness(1);
@@ -142,7 +165,8 @@ Renderer::RenderLiveFFT(const std::vector<double>& window)
     for (std::size_t i = 0; i < window.size(); i++) {
         float x = this->fft_live_origin_.x + i;
         float y = this->fft_live_origin_.y + (1.0f - window[i]) * this->configuration_.GetLiveFFTHeight();
-        vertices.push_back(sf::Vertex(sf::Vector2f(x, y)));
+        vertices.push_back(sf::Vertex(sf::Vector2f(x, y),
+                                      sf::Color(colors[i * 4 + 0], colors[i * 4 + 1], colors[i * 4 + 2])));
     }
 
     this->canvas_.draw(reinterpret_cast<sf::Vertex *>(vertices.data()), vertices.size(), sf::LineStrip);

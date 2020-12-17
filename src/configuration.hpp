@@ -81,8 +81,8 @@ public:
     auto GetMaxFreq() const { return max_freq_; }
     auto GetScale() const { return scale_; }
     auto GetColorMap() const { return color_map_; }
-    auto HasAxes() const { return has_axes_; }
-    auto HasLegend() const { return has_axes_; }
+    auto HasAxes() const { return has_axes_ || has_legend_; }
+    auto HasLegend() const { return has_legend_; }
     auto IsHorizontal() const { return is_horizontal_; }
 
     /* live options */

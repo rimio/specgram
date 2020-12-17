@@ -52,7 +52,7 @@ LiveOutput::AddWindow(const std::vector<uint8_t>& window, const std::vector<doub
 
     /* update renderer */
     renderer_.RenderFFTArea(this->fft_area_);
-    renderer_.RenderLiveFFT(win_values);
+    renderer_.RenderLiveFFT(win_values, window);
 
     /* draw window */
     this->Render();
@@ -76,7 +76,7 @@ LiveOutput::Render()
     sf::Sprite canvas_sprite(canvas_texture);
     if (this->configuration_.IsHorizontal()) {
         canvas_sprite.setRotation(-90.0f);
-        canvas_sprite.setPosition(0.0f, canvas_texture.getSize().y);
+        canvas_sprite.setPosition(0.0f, canvas_texture.getSize().x);
     }
 
     this->window_.clear();
