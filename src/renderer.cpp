@@ -190,7 +190,6 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         this->canvas_.draw(sf::Sprite(tex), this->legend_transform_ * sf::Transform().scale(1.0f, this->configuration_.GetLegendHeight()));
 
         if (this->configuration_.HasAxes()) {
-            /* legend */
             this->RenderAxis(this->canvas_, this->legend_transform_,
                              true, this->configuration_.IsHorizontal() ? 1 : 0,
                              this->configuration_.GetWidth(), legend_ticks);
@@ -240,11 +239,8 @@ Renderer::RenderAxis(sf::RenderTexture& texture,
 {
     for (auto& tick : ticks) {
         /* draw tick line */
-        sf::Vertex line[] = {
-            sf::Vertex(sf::Vector2f(length * std::get<0>(tick), 0.0f)),
-            sf::Vertex(sf::Vector2f(length * std::get<0>(tick), 5.0f * (lhs ? -1.0f : 1.0f)))
-        };
-        texture.draw(line, 2, sf::Lines, t);
+        double x = (length - 1) * std::get<0>(tick);
+        texture.draw(sf::RectangleShape(sf::Vector2f(1.0, (lhs ? -5.0f : 5.0f))), t * sf::Transform().translate(x, 0.0f));
 
         /* draw text */
         sf::Text text;
