@@ -25,28 +25,31 @@ private:
     std::size_t width_;
     std::size_t height_;
 
-    sf::Vector2f legend_origin_;
-    sf::Vector2f fft_live_origin_;
-    sf::Vector2f fft_area_origin_;
+    sf::Transform legend_transform_;
+    sf::Transform fft_live_transform_;
+    sf::Transform fft_area_transform_;
+
+
+    std::string ValueToShortString(double value, const std::string& unit);
+
+    std::list<std::tuple<double, std::string>> GetLinearTicks(float v_min, float v_max,
+                                                              const std::string& v_unit, unsigned int num_ticks);
 
     void RenderAxis(sf::RenderTexture& texture,
-                    const sf::Vector2f& origin, float rot, float length,
-                    float v_min, float v_max, std::string v_unit,
-                    float est_tick_dist = 50.0f);
+                    const sf::Transform& t, bool lhs, int orientation, float length,
+                    const std::list<std::tuple<double, std::string>>& ticks);
 
 public:
     Renderer() = delete;
-    Renderer(const Configuration& conf, std::size_t fft_count);
+    Renderer(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap, std::size_t fft_count);
 
     /* render commands */
-    void RenderUserInterface();
     void RenderFFTArea(const std::vector<uint8_t>& memory);
     void RenderFFTArea(const std::list<std::vector<uint8_t>>& history);
     void RenderLiveFFT(const std::vector<double>& window, const std::vector<uint8_t>& colors);
-    void RenderLegend(const std::vector<uint8_t>& memory);
 
     /* canvas builder */
-    sf::Texture GetCanvas() const;
+    sf::Texture GetCanvas();
 
     /* size getters */
     auto GetWidth() const { return width_; }

@@ -27,6 +27,7 @@ public:
     static std::unique_ptr<ColorMap> FromType(ColorMapType type);
 
     virtual std::vector<uint8_t> Map(const std::vector<double>& input) const = 0;
+    std::vector<uint8_t> Gradient(std::size_t width) const;
 };
 
 class GrayColorMap : public ColorMap {

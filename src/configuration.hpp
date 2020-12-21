@@ -47,9 +47,10 @@ private:
     bool has_live_window_;
 
     std::size_t margin_size_;
+    std::size_t minimum_margin_size_;
     std::size_t legend_height_;
     std::size_t live_fft_height_;
-    std::size_t legend_font_size_;
+    std::size_t axis_font_size_;
     sf::Color background_color_;
     sf::Color axes_color_;
 
@@ -94,10 +95,11 @@ public:
     auto HasLiveWindow() const { return has_live_window_; }
 
     auto GetMarginSize() const { return margin_size_; }
+    auto GetMinimumMarginSize() const { return minimum_margin_size_; }
     auto GetLegendHeight() const { return legend_height_; }
     auto GetLiveFFTHeight() const { return live_fft_height_; }
 
-    auto GetLegendFontSize() const { return legend_font_size_; }
+    auto GetAxisFontSize() const { return axis_font_size_; }
 
     auto GetBackgroundColor() const { return background_color_; }
     auto GetAxesColor() const { return axes_color_; }

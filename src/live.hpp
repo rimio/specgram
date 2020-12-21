@@ -30,7 +30,7 @@ public:
     LiveOutput(LiveOutput &&) = delete;
     LiveOutput & operator=(const LiveOutput&) = delete;
 
-    LiveOutput(const Configuration& conf, const ColorMap& cmap);
+    LiveOutput(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap);
 
     void AddWindow(const std::vector<uint8_t>& window, const std::vector<double>& win_values);
     bool HandleEvents();

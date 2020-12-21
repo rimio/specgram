@@ -63,7 +63,7 @@ main(int argc, char** argv)
     /* create live window */
     std::unique_ptr<LiveOutput> live = nullptr;
     if (conf.IsLive()) {
-        live = std::make_unique<LiveOutput>(conf, *color_map);
+        live = std::make_unique<LiveOutput>(conf, *color_map, *value_map);
     }
 
     /* create input parser */
@@ -159,24 +159,8 @@ main(int argc, char** argv)
 
     /* save file */
     if (conf.GetFilename().has_value()) {
-        Renderer file_renderer(conf, history.size());
-
-        /* render UI (axes etc) */
-        file_renderer.RenderUserInterface();
-
-        /* render legend */
-        if (conf.HasLegend()) {
-            std::vector<double> legend_values;
-            for (std::size_t i = 0; i < conf.GetWidth(); i++) {
-                legend_values.push_back((double) i / (double) (conf.GetWidth() - 1));
-            }
-            auto legend_colors = color_map->Map(legend_values);
-            file_renderer.RenderLegend(legend_colors);
-        }
-
-        /* render windows */
+        Renderer file_renderer(conf, *color_map, *value_map, history.size());
         file_renderer.RenderFFTArea(history);
-
         file_renderer.GetCanvas().copyToImage().saveToFile(*conf.GetFilename());
     }
 

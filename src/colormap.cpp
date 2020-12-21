@@ -25,6 +25,16 @@ ColorMap::FromType(ColorMapType type)
 }
 
 std::vector<uint8_t>
+ColorMap::Gradient(std::size_t width) const
+{
+    std::vector<double> values;
+    for (std::size_t i = 0; i < width; i++) {
+        values.push_back((double) i / (double) (width-1));
+    }
+    return this->Map(values);
+}
+
+std::vector<uint8_t>
 GrayColorMap::Map(const std::vector<double>& input) const
 {
     std::vector<uint8_t> output;

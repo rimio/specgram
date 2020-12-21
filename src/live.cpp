@@ -9,8 +9,8 @@
 #include <cassert>
 #include <cstring>
 
-LiveOutput::LiveOutput(const Configuration& conf, const ColorMap& cmap)
-    : configuration_(conf), renderer_(conf.GetForLive(), conf.GetCount())
+LiveOutput::LiveOutput(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap)
+    : configuration_(conf), renderer_(conf.GetForLive(), cmap, vmap, conf.GetCount())
 {
     auto width = conf.IsHorizontal() ? renderer_.GetHeight() : renderer_.GetWidth();
     auto height = conf.IsHorizontal() ? renderer_.GetWidth() : renderer_.GetHeight();
@@ -23,17 +23,6 @@ LiveOutput::LiveOutput(const Configuration& conf, const ColorMap& cmap)
 
     /* FFT area raw memory used to update the area texture */
     this->fft_area_.resize(conf.GetWidth() * conf.GetCount() * 4); /* RGBA pixel array */
-
-    /* render UI */
-    this->renderer_.RenderUserInterface();
-
-    /* render legend */
-    std::vector<double> legend_values;
-    for (std::size_t i = 0; i < conf.GetWidth(); i++) {
-        legend_values.push_back((double) i / (double) (conf.GetWidth()-1));
-    }
-    auto legend_colors = cmap.Map(legend_values);
-    this->renderer_.RenderLegend(legend_colors);
 }
 
 void
@@ -51,8 +40,8 @@ LiveOutput::AddWindow(const std::vector<uint8_t>& window, const std::vector<doub
                 wlen_bytes);
 
     /* update renderer */
-    renderer_.RenderFFTArea(this->fft_area_);
-    renderer_.RenderLiveFFT(win_values, window);
+    this->renderer_.RenderFFTArea(this->fft_area_);
+    this->renderer_.RenderLiveFFT(win_values, window);
 
     /* draw window */
     this->Render();
@@ -79,7 +68,6 @@ LiveOutput::Render()
         canvas_sprite.setPosition(0.0f, canvas_texture.getSize().x);
     }
 
-    this->window_.clear();
     this->window_.draw(canvas_sprite);
     this->window_.display();
 }

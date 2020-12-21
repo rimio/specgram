@@ -21,8 +21,8 @@ Configuration::Configuration()
     this->rate_ = 44100;
     this->datatype_ = DataType::kSignedInt16;
 
-    this->fft_width_ = 512;
-    this->fft_stride_ = 512;
+    this->fft_width_ = 1024;
+    this->fft_stride_ = 1024;
     this->alias_negative_ = true;
     this->window_function_ = FFTWindowFunction::kHann;
 
@@ -43,9 +43,10 @@ Configuration::Configuration()
 
     this->has_live_window_ = false;
     this->margin_size_ = 30;
+    this->minimum_margin_size_ = 15;
     this->legend_height_ = 20;
     this->live_fft_height_ = 100;
-    this->legend_font_size_ = 14;
+    this->axis_font_size_ = 12;
     this->background_color_ = sf::Color(0, 0, 0);
     this->axes_color_ = sf::Color(255, 255, 255);
 }
@@ -86,9 +87,9 @@ Configuration::FromArgs(int argc, char **argv)
 
     args::Group fft_opts(parser, "FFT options:", args::Group::Validators::DontCare);
     args::ValueFlag<int>
-        fft_width(fft_opts, "integer", "FFT window width (default: 512)", {'f', "fft_width"});
+        fft_width(fft_opts, "integer", "FFT window width (default: 1024)", {'f', "fft_width"});
     args::ValueFlag<int>
-        fft_stride(fft_opts, "integer", "FFT window stride (default: 512)", {'g', "fft_stride"});
+        fft_stride(fft_opts, "integer", "FFT window stride (default: 1024)", {'g', "fft_stride"});
     args::ValueFlag<std::string>
         win_func(fft_opts, "string", "Window function (default: hann)", {'n', "window_function"});
     args::ValueFlag<bool>

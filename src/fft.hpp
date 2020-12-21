@@ -45,7 +45,7 @@ public:
     explicit dBFSValueMap(const int mindb);
 
     std::vector<double> Map(const std::vector<std::complex<double>>& input) override;
-    std::string GetUnit() const override { return "dB"; }
+    std::string GetUnit() const override { return "dBFS"; }
     std::string GetName() const override { return "dBFS"; }
 };
 
