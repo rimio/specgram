@@ -29,13 +29,13 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
 
     std::list<std::tuple<double, std::string>> legend_ticks, live_ticks;
     if (vmap.GetName() == "dBFS") {
-        legend_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                                 vmap.GetUnit(), 9);
-        live_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                               "", 5); /* no unit, keep it short */
+        unsigned int lticks = 1 + this->configuration_.GetWidth() / 60;
+        lticks = std::clamp<unsigned int>(lticks, 2, 13); /* at maximum 10dBFS spacing */
+        legend_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), vmap.GetUnit(), lticks);
+        live_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), "", 5); /* no unit, keep it short */
     } else {
         legend_ticks = this->GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                            vmap.GetUnit(), this->configuration_.GetWidth(), 75);
+                                            vmap.GetUnit(), this->configuration_.GetWidth(), 60);
         live_ticks = this->GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
                                           "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
     }
@@ -254,7 +254,7 @@ Renderer::GetLinearTicks(float v_min, float v_max, const std::string& v_unit, un
 
     int prec = 0;
     double dist = (v_max - v_min) / ((double) num_ticks - 1);
-    while (dist > 10.0f) {
+    while (dist >= 10.0f) {
         prec--;
         dist /= 10.0f;
     }
