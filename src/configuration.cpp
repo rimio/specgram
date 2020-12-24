@@ -11,7 +11,7 @@
 #include <spdlog/spdlog.h>
 #include <args.hxx>
 #include <tuple>
-
+#include <regex>
 
 Configuration::Configuration()
 {
@@ -265,9 +265,40 @@ Configuration::FromArgs(int argc, char **argv)
             conf.color_map_ = ColorMapType::kGray;
         } else if (cmap_str == "jet") {
             conf.color_map_ = ColorMapType::kJet;
+        } else if (cmap_str == "purple") {
+            conf.color_map_ = ColorMapType::kPurple;
+        } else if (cmap_str == "blue") {
+            conf.color_map_ = ColorMapType::kBlue;
+        } else if (cmap_str == "green") {
+            conf.color_map_ = ColorMapType::kGreen;
+        } else if (cmap_str == "orange") {
+            conf.color_map_ = ColorMapType::kOrange;
+        } else if (cmap_str == "red") {
+            conf.color_map_ = ColorMapType::kRed;
         } else {
-            std::cerr << "Unknown colormap '" << cmap_str << "'" << std::endl;
-            return std::make_tuple(conf, 1, true);
+            try {
+                if (std::regex_match(cmap_str, std::regex("[0-9a-fA-F]{6}"))) {
+                    unsigned int color = std::strtoul(cmap_str.c_str(), 0, 16);
+                    conf.color_map_custom_color_ = sf::Color(
+                            ((color >> 16) & 0xff),
+                            ((color >> 8) & 0xff),
+                            (color & 0xff),
+                            255);
+                } else if (std::regex_match(cmap_str, std::regex("[0-9a-fA-F]{8}"))) {
+                    unsigned int color = std::strtoul(cmap_str.c_str(), 0, 16);
+                    conf.color_map_custom_color_ = sf::Color(
+                            ((color >> 24) & 0xff),
+                            ((color >> 16) & 0xff),
+                            ((color >> 8) & 0xff),
+                            (color & 0xff));
+                } else {
+                    throw std::exception();
+                }
+                conf.color_map_ = ColorMapType::kCustom;
+            } catch (const std::exception& e) {
+                std::cerr << "Unknown colormap '" << cmap_str << "'" << std::endl;
+                return std::make_tuple(conf, 1, true);
+            }
         }
     }
     if (axes) {

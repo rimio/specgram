@@ -58,7 +58,9 @@ main(int argc, char** argv)
     }
 
     /* create color map */
-    auto color_map = ColorMap::FromType(conf.GetColorMap());
+    auto color_map = ColorMap::FromType(conf.GetColorMap(),
+                                        conf.GetBackgroundColor(),
+                                        conf.GetColorMapCustomColor());
 
     /* create live window */
     std::unique_ptr<LiveOutput> live = nullptr;

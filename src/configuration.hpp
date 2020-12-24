@@ -36,6 +36,7 @@ private:
     int max_freq_;
     FFTScale scale_;
     ColorMapType color_map_;
+    sf::Color color_map_custom_color_;
     bool has_axes_;
     bool has_legend_;
     bool is_horizontal_;
@@ -82,6 +83,7 @@ public:
     auto GetMaxFreq() const { return max_freq_; }
     auto GetScale() const { return scale_; }
     auto GetColorMap() const { return color_map_; }
+    auto GetColorMapCustomColor() const { return color_map_custom_color_; }
     auto HasAxes() const { return has_axes_ || has_legend_; }
     auto HasLegend() const { return has_legend_; }
     auto IsHorizontal() const { return is_horizontal_; }

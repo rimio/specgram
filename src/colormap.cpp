@@ -11,12 +11,32 @@
 #include <spdlog/spdlog.h>
 
 std::unique_ptr<ColorMap>
-ColorMap::FromType(ColorMapType type)
+ColorMap::FromType(ColorMapType type,
+                   const sf::Color& bg_color,
+                   const sf::Color& custom_color)
 {
     if (type == ColorMapType::kGray) {
         return std::make_unique<GrayColorMap>();
     } else if (type == ColorMapType::kJet) {
         return std::make_unique<JetColorMap>();
+    } else if (type == ColorMapType::kPurple) {
+        return std::make_unique<TwoColorMap>(bg_color,
+                                             sf::Color(206, 153, 255, 255));
+    } else if (type == ColorMapType::kBlue) {
+        return std::make_unique<TwoColorMap>(bg_color,
+                                             sf::Color(102, 163, 255, 255));
+    } else if (type == ColorMapType::kGreen) {
+        return std::make_unique<TwoColorMap>(bg_color,
+                                             sf::Color(91, 215, 91, 255));
+    } else if (type == ColorMapType::kOrange) {
+        return std::make_unique<TwoColorMap>(bg_color,
+                                             sf::Color(255, 102, 0, 255));
+    } else if (type == ColorMapType::kRed) {
+        return std::make_unique<TwoColorMap>(bg_color,
+                                             sf::Color(230, 0, 0, 255));
+    } else if (type == ColorMapType::kCustom) {
+        return std::make_unique<TwoColorMap>(bg_color,
+                                             custom_color);
     } else {
         assert(false);
         spdlog::error("Internal error: unknown color map");
@@ -49,7 +69,7 @@ GrayColorMap::Map(const std::vector<double>& input) const
     return output;
 }
 
-InterpolationColorMap::InterpolationColorMap(const std::vector<std::vector<uint8_t>>& colors,
+InterpolationColorMap::InterpolationColorMap(const std::vector<sf::Color>& colors,
                                              const std::vector<double>& vals) : colors_(colors), values_(vals)
 {
     /* respect boundaries */
@@ -74,10 +94,10 @@ InterpolationColorMap::GetColor(double value) const
     float fl = 1.0f - fu;
 
     return {
-        static_cast<uint8_t>(std::round(fl * this->colors_[k][0] + fu * this->colors_[k+1][0])),
-        static_cast<uint8_t>(std::round(fl * this->colors_[k][1] + fu * this->colors_[k+1][1])),
-        static_cast<uint8_t>(std::round(fl * this->colors_[k][2] + fu * this->colors_[k+1][2])),
-        static_cast<uint8_t>(std::round(fl * this->colors_[k][3] + fu * this->colors_[k+1][3])),
+        static_cast<uint8_t>(std::round(fl * this->colors_[k].r + fu * this->colors_[k+1].r)),
+        static_cast<uint8_t>(std::round(fl * this->colors_[k].g + fu * this->colors_[k+1].g)),
+        static_cast<uint8_t>(std::round(fl * this->colors_[k].b + fu * this->colors_[k+1].b)),
+        static_cast<uint8_t>(std::round(fl * this->colors_[k].a + fu * this->colors_[k+1].a)),
     };
 }
 
@@ -99,15 +119,20 @@ InterpolationColorMap::Map(const std::vector<double>& input) const
     return output;
 }
 
+TwoColorMap::TwoColorMap(const sf::Color& c1, const sf::Color& c2)
+    : InterpolationColorMap({ c1, c2 }, { 0.0f, 1.0f })
+{
+}
+
 JetColorMap::JetColorMap() : InterpolationColorMap(
             { /* MATLAB jet colormap */
-                { 0, 0, 143, 255 },
-                { 0, 0, 255, 255 },
-                { 0, 255, 255, 255 },
-                { 255, 255, 0, 255 },
-                { 255, 127, 0, 255 },
-                { 255, 0, 0, 255 },
-                { 127, 0, 0, 255 },
+                sf::Color(0, 0, 143, 255),
+                sf::Color(0, 0, 255, 255),
+                sf::Color(0, 255, 255, 255),
+                sf::Color(255, 255, 0, 255),
+                sf::Color(255, 127, 0, 255),
+                sf::Color(255, 0, 0, 255),
+                sf::Color(127, 0, 0, 255),
             },
             { 0.0f, 1.0f / 9.0f, 23.0f / 63.0f, 13.0f / 21.0f, 47.0f / 63.0f, 55.0 / 63.0, 1.0f }
         )
