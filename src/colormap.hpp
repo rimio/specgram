@@ -14,13 +14,11 @@
 #include <SFML/Graphics.hpp>
 
 enum ColorMapType {
-    /* luma gray */
-    kGray,
-
     /* MATLAB jet map */
     kJet,
 
     /* bicolor maps */
+    kGray,
     kPurple,
     kBlue,
     kGreen,
@@ -44,13 +42,6 @@ public:
 
     virtual std::vector<uint8_t> Map(const std::vector<double>& input) const = 0;
     std::vector<uint8_t> Gradient(std::size_t width) const;
-};
-
-class GrayColorMap : public ColorMap {
-public:
-    GrayColorMap() = default;
-
-    std::vector<uint8_t> Map(const std::vector<double>& input) const override;
 };
 
 class InterpolationColorMap : public ColorMap {

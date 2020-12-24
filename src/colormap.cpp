@@ -15,10 +15,11 @@ ColorMap::FromType(ColorMapType type,
                    const sf::Color& bg_color,
                    const sf::Color& custom_color)
 {
-    if (type == ColorMapType::kGray) {
-        return std::make_unique<GrayColorMap>();
-    } else if (type == ColorMapType::kJet) {
+    if (type == ColorMapType::kJet) {
         return std::make_unique<JetColorMap>();
+    } else if (type == ColorMapType::kGray) {
+        return std::make_unique<TwoColorMap>(bg_color,
+                                             sf::Color(255, 255, 255, 255));
     } else if (type == ColorMapType::kPurple) {
         return std::make_unique<TwoColorMap>(bg_color,
                                              sf::Color(206, 153, 255, 255));
@@ -52,21 +53,6 @@ ColorMap::Gradient(std::size_t width) const
         values.push_back((double) i / (double) (width-1));
     }
     return this->Map(values);
-}
-
-std::vector<uint8_t>
-GrayColorMap::Map(const std::vector<double>& input) const
-{
-    std::vector<uint8_t> output;
-    output.resize(input.size() * 4);
-    for (std::size_t i = 0; i < input.size(); i ++) {
-        output[i * 4 + 0] = std::floor(input[i] * 255);
-        output[i * 4 + 1] = std::floor(input[i] * 255);
-        output[i * 4 + 2] = std::floor(input[i] * 255);
-        output[i * 4 + 3] = 255;
-    }
-
-    return output;
 }
 
 InterpolationColorMap::InterpolationColorMap(const std::vector<sf::Color>& colors,

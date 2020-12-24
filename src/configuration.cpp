@@ -31,7 +31,7 @@ Configuration::Configuration()
     this->min_freq_ = 0;
     this->max_freq_ = this->rate_ / 2;
     this->scale_ = FFTScale::kdBFS;
-    this->color_map_ = ColorMapType::kGray;
+    this->color_map_ = ColorMapType::kJet;
     this->has_axes_ = false;
     this->has_legend_ = false;
     this->is_horizontal_ = false;
