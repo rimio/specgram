@@ -109,7 +109,7 @@ Configuration::FromArgs(int argc, char **argv)
     args::ValueFlag<std::string>
         scale(display_opts, "string", "Display scale (default: dBFS)", {'s', "scale"});
     args::ValueFlag<std::string>
-        colormap(display_opts, "string", "Colormap (default: gray)", {'c', "colormap"});
+        colormap(display_opts, "string", "Colormap (default: jet)", {'c', "colormap"});
     args::Flag
         axes(display_opts, "axes", "Display axes (inferred for -e, --legend)", {'a', "axes"});
     args::Flag
