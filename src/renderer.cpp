@@ -8,6 +8,8 @@
 #include "share-tech-mono.hpp"
 #include "fft.hpp"
 
+#include <iomanip>
+#include <sstream>
 #include <cassert>
 #include <cstring>
 
@@ -20,14 +22,24 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     }
 
     /* compute tickmarks */
-    auto freq_ticks = this->GetLinearTicks(this->configuration_.GetMinFreq(), this->configuration_.GetMaxFreq(),
-                                           "Hz", 10);
-    auto time_ticks = this->GetLinearTicks(0.0f, (double)fft_count * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
-                                           "s", 10);
-    auto legend_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                             vmap.GetUnit(), 7);
-    auto live_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                           "", 5); /* no unit, keep it short */
+    auto freq_ticks = this->GetNiceTicks(this->configuration_.GetMinFreq(), this->configuration_.GetMaxFreq(),
+                                         "Hz", this->configuration_.GetWidth(), 75);
+    auto time_ticks = this->GetNiceTicks(0.0f, (double)fft_count * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
+                                         "s", fft_count, 50);
+
+    std::list<std::tuple<double, std::string>> legend_ticks, live_ticks;
+    if (vmap.GetName() == "dBFS") {
+        legend_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+                                                 vmap.GetUnit(), 9);
+        live_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+                                               "", 5); /* no unit, keep it short */
+    } else {
+        legend_ticks = this->GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+                                            vmap.GetUnit(), this->configuration_.GetWidth(), 75);
+        live_ticks = this->GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+                                          "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
+    }
+
     typeof(freq_ticks) freq_no_text_ticks;
     for (auto& t : freq_ticks) {
         freq_no_text_ticks.emplace_back(std::make_tuple(std::get<0>(t), ""));
@@ -211,9 +223,27 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
 }
 
 std::string
-Renderer::ValueToShortString(double value, const std::string& unit)
+Renderer::ValueToShortString(double value, int prec, const std::string& unit)
 {
-    return std::to_string(static_cast<int>(value)) + unit;
+    static constexpr const char *PREFIXES[] = { "n", "μ", "m", "", "k", "M", "G" };
+    int pidx = 3;
+
+    while ((prec >= 3) && (pidx > 0)) {
+        prec -= 3;
+        pidx--;
+        value *= 1000.0f;
+    }
+    while ((prec <= -3) && (pidx < 6)) {
+        prec += 3;
+        pidx++;
+        value /= 1000.0f;
+    }
+
+    prec++;
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(prec > 0 ? prec : 0) << value << PREFIXES[pidx] << unit;
+    return ss.str();
 }
 
 std::list<std::tuple<double, std::string>>
@@ -222,11 +252,79 @@ Renderer::GetLinearTicks(float v_min, float v_max, const std::string& v_unit, un
     assert(num_ticks > 1);
     assert(v_min < v_max);
 
+    int prec = 0;
+    double dist = (v_max - v_min) / ((double) num_ticks - 1);
+    while (dist > 10.0f) {
+        prec--;
+        dist /= 10.0f;
+    }
+    while (dist < 1.0f) {
+        prec++;
+        dist *= 10.0f;
+    }
+
     std::list<std::tuple<double, std::string>> ticks;
     for (unsigned int i = 0; i < num_ticks; i ++) {
         double k = (double) i / (double)(num_ticks - 1);
         double v = v_min + k * (v_max - v_min);
-        ticks.emplace_back(std::make_tuple(k, this->ValueToShortString(v, v_unit)));
+        ticks.emplace_back(std::make_tuple(k, this->ValueToShortString(v, prec, v_unit)));
+    }
+
+    return ticks;
+}
+
+std::list<std::tuple<double, std::string>>
+Renderer::GetNiceTicks(float v_min, float v_max, const std::string& v_unit, unsigned int length_px,
+                       unsigned int est_tick_length_px)
+{
+    assert(v_min < v_max);
+
+    std::list<std::tuple<double, std::string>> ticks;
+
+    /* find a factor that brings some span close to est_tick_length to a nice value */
+    double v_diff = v_max - v_min;
+    double px_per_v = length_px / v_diff;
+
+    double mdist = 1e12, mfact;
+
+    constexpr double NICE_FACTORS[] = { 0.15f, 0.2f, 0.25f, 0.3f, 0.5f };
+    for (double f = 1e-9; f < 1e+9; f *= 10.0f) {
+        for (unsigned int k = 0; k < 5; k++) {
+            double factor = f * NICE_FACTORS[k];
+            double dist = std::abs(est_tick_length_px - px_per_v * factor);
+            if (dist < mdist) {
+                mdist = dist;
+                mfact = factor;
+            }
+        }
+    }
+
+    /* compute precision */
+    int prec = 0;
+    double dist = mfact;
+    while (dist > 10.0f) {
+        prec--;
+        dist /= 10.0f;
+    }
+    while (dist < 1.0f) {
+        prec++;
+        dist *= 10.0f;
+    }
+
+    /* find the first nice value */
+    double fval = v_min / mfact;
+    constexpr double ROUND_EPSILON = 1e-6;
+    if (std::abs(fval - std::floor(fval)) > ROUND_EPSILON) {
+        fval = std::floor(fval) + 1.0f;
+    }
+    fval *= mfact;
+    assert(v_min <= fval);
+    assert(fval <= v_max);
+
+    /* add ticks */
+    for (double value = fval; value < v_max; value += mfact) {
+        double k = (value - v_min) / (v_max - v_min);
+        ticks.emplace_back(std::make_tuple(k, this->ValueToShortString(value, prec, v_unit)));
     }
 
     return ticks;

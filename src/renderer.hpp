@@ -30,10 +30,12 @@ private:
     sf::Transform fft_area_transform_;
 
 
-    std::string ValueToShortString(double value, const std::string& unit);
+    std::string ValueToShortString(double value, int prec, const std::string& unit);
 
-    std::list<std::tuple<double, std::string>> GetLinearTicks(float v_min, float v_max,
-                                                              const std::string& v_unit, unsigned int num_ticks);
+    std::list<std::tuple<double, std::string>> GetLinearTicks(float v_min, float v_max, const std::string& v_unit,
+                                                              unsigned int num_ticks);
+    std::list<std::tuple<double, std::string>> GetNiceTicks(float v_min, float v_max, const std::string& v_unit,
+                                                            unsigned int length_px, unsigned int est_tick_length_px);
 
     void RenderAxis(sf::RenderTexture& texture,
                     const sf::Transform& t, bool lhs, int orientation, float length,
