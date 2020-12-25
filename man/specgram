@@ -1,11 +1,12 @@
-.TH SPECGRAM 1
+.TH SPECGRAM 1 "2020-12-25"
 
 .SH NAME
-specgram \- create spectrograms from standard input
+specgram \- create spectrograms from raw files or standard input
 
 .SH SYNOPSIS
 .B specgram
 [\fB\-aehlqvz\fR]
+[\fB\-i, --input\fR=\fIRATE\fR]
 [\fB\-r, --rate\fR=\fIRATE\fR]
 [\fB\-d, --datatype\fR=\fIDATA_TYPE\fR]
 [\fB\-b, --block_size\fR=\fIBLOCK_SIZE\fR]
@@ -23,7 +24,23 @@ specgram \- create spectrograms from standard input
 .IR [outfile]
 
 .SH DESCRIPTION
-\fIspecgram\fR is a tool that generates spectrograms from raw data provided via standard input (stdin). It can display them in real time, save them to an image file, or both.
+\fBspecgram\fR generates nice looking spectrograms from raw data, based on the options provided in the command line.
+
+The program has two output modes: file output when \fIoutfile\fR is provided and live output when \fB\-l, \-\-live\fR is provided.
+The two modes are not necessarily mutually exclusive, but behaviour may differ based on other options.
+
+The program has two input modes: file input when the \fB\-i, \-\-input\fR option is provided, or stdin input otherwise (default behaviour).
+
+In file input mode, the file is read in a synchronous manner until EOF is reached, and the spectrogram is generated into \fIoutfile\fR.
+Only file output is allowed in this mode, so \fIoutfile\fR is mandatory and \fB\-l, \-\-live\fR is disallowed.
+
+In stdin input mode, data is read in an asynchronous manner and for an indefinite amount of time.
+The spectrogram is updated as new data arrives and output is buffered in memory.
+
+In either input modes, when receiving SIGINT (i.e. by user pressing CTRL+C in the terminal), the program stops listening to data and exits gracefully, writing \fIoutfile\fR if provided.
+If the program receives SIGINT again it will forcefully quit.
+
+See \fBEXAMPLES\fR for common use cases.
 
 .SH OPTIONS
 
@@ -43,6 +60,14 @@ Display program version.
 
 .TP
 \fBINPUT OPTIONS\fR
+
+.TP
+.BR \-i ", " \-\-input =\fIINFILE\fR
+Input file name.
+If option is provided, \fIINFILE\fR is handled as a raw dump of values (i.e. input file format is not considered).
+The program will stop when EOF is encountered.
+
+If option is not provided, data will be read indefinitely from stdin.
 
 .TP
 .BR \-r ", " \-\-rate =\fIRATE\fR
@@ -190,6 +215,25 @@ Default is 'Spectrogram'.
 
 .SH BUGS
 
+Frequency bounds (\fB\-x, \-\-fmin\fR and \fB\-y, \-\-fmax\fR) may exceed FFT window frequency limits when resampling is enabled (i.e. default behaviour), but may not do so when resampling is disabled (\fB\-q, \-\-no_resampling\fR).
+This inconsistency is known behaviour and, while not necessarily nice, does not impact usability in a meaningful manner.
+Ideally exceeding these limits should be allowed in both cases, and zero padding should be performed.
+
+Moreover, when using the \fB\-q, \-\-no_resampling\fR flag, the frequency limits are
+±\fIRATE\fR*(\fIFFT_WIDTH\fR-1)/(2*\fIFFT_WIDTH\fR) when \fIFFT_WIDTH\fR is odd
+and -\fIRATE\fR*(\fIFFT_WIDTH\fR-2)/(2*\fIFFT_WIDTH\fR) to \fIRATE\fR/2 when \fIFFT_WIDTH\fR is even.
+This is a bit different from the behaviour of NumPy's implementation of fftfreq and aims to make it easier to display the Nyquist frequency component for non-complex inputs.
+
+The above upper limits are enforced silently in the default values of \fB\-x, \-\-fmin\fR and \fB\-y, \-\-fmax\fR, but for brevity are not mentioned in this manpage's \fBOPTIONS\fR section or in the program help screen.
+
 .SH AUTHORS
 
+Copyright (c) 2020 Vasile Vilvoiu <vasi.vilvoiu@gmail.com>
+
+\fBspecgram\fR is free software; you can redistribute it and/or modify it under the terms of the MIT license.
+
 .SH ACKNOWLEDGEMENTS
+
+Program icon by Flavia Fabian, released under the CC-BY-SA 4.0 license.
+
+Share Tech Mono font by Carrois Type Design, released under Open Font License.
