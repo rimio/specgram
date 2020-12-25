@@ -1,0 +1,195 @@
+.TH SPECGRAM 1
+
+.SH NAME
+specgram \- create spectrograms from standard input
+
+.SH SYNOPSIS
+.B specgram
+[\fB\-aehlqvz\fR]
+[\fB\-r, --rate\fR=\fIRATE\fR]
+[\fB\-d, --datatype\fR=\fIDATA_TYPE\fR]
+[\fB\-b, --block_size\fR=\fIBLOCK_SIZE\fR]
+[\fB\-f, --fft_width\fR=\fIFFT_WIDTH\fR]
+[\fB\-g, --fft_stride\fR=\fIFFT_STRIDE\fR]
+[\fB\-n, --window_function\fR=\fIWIN_FUNC\fR]
+[\fB\-s, --alias\fR=\fIALIAS\fR]
+[\fB\-w, --width\fR=\fIWIDTH\fR]
+[\fB\-x, --fmin\fR=\fIFMIN\fR]
+[\fB\-y, --fmax\fR=\fIFMAX\fR]
+[\fB\-s, --scale\fR=\fISCALE\fR]
+[\fB\-c, --colormap\fR=\fICOLORMAP\fR]
+[\fB\-k, --count\fR=\fICOUNT\fR]
+[\fB\-t, --title\fR=\fITITLE\fR]
+.IR [outfile]
+
+.SH DESCRIPTION
+\fIspecgram\fR is a tool that generates spectrograms from raw data provided via standard input (stdin). It can display them in real time, save them to an image file, or both.
+
+.SH OPTIONS
+
+.TP
+.BR \fIoutfile\fR
+Optional output image file. Check \fISFML\fR documentation for supported file types, but PNG files are recommended.
+
+Either \fIoutfile\fR must be specified, \fB\-l, \-\-live\fR must be set, or both.
+
+.TP
+.BR \-h ", " \-\-help
+Display help message.
+
+.TP
+.BR \-v ", " \-\-version
+Display program version.
+
+.TP
+\fBINPUT OPTIONS\fR
+
+.TP
+.BR \-r ", " \-\-rate =\fIRATE\fR
+Rate, in Hz, of the input data.
+Used for display purposes and computation of other parameters.
+Program will not perform rate limiting based on this parameter and will consume data as fast as it is available on stdin.
+
+Default is 44100.
+
+.TP
+.BR \-d ", " \-\-datatype =\fIDATA_TYPE\fR
+Data type of the input data.
+Is formed from a type prefix (\fIu\fR for unsigned integer, \fIs\fR for signed integer, \fIf\fR for floating point, \fIc\fR for complex) and a size suffix (in bits: 8, 16, 32, 64, 128).
+
+Valid values are: u8, u16, u32, u64, s8, s16, s32, s64, f32, f64, c64, c128.
+
+Complex types are pairs of two floating point values containing the real and imaginary part of the number, in this order.
+The size of the complex data type includes both parts (e.g. c64 indicates that both the real and imaginary parts are stored as 32-bit floating point numbers).
+
+Default is s16.
+
+.TP
+.BR \-b ", " \-\-block_size =\fIBLOCK_SIZE\fR
+Block size, in data type sized values, that are to be read at a time from stdin.
+The larger this value, the larger the latency of the live spectrogram.
+
+Default is 256.
+
+
+.TP
+\fBFFT OPTIONS\fR
+
+.TP
+.BR \-f ", " \-\-fft_width =\fIFFT_WIDTH\fR
+FFT window width.
+Lower values provide worse frequency resolution but better temporal resolution. Higher values provide better frequency resolution but worse temporal resolution.
+
+Default is 1024.
+
+.TP
+.BR \-g ", " \-\-fft_stride =\fIFFT_STRIDE\fR
+Stride (distance) between two subsequent FFT windows in the input.
+Value can be less than \fIFFT_WIDTH\fR in which case there is overlap between windows, larger than \fIFFT_WIDTH\fR in which case information is lost, or equal to \fIFFT_WIDTH\fR.
+
+Default is 1024.
+
+.TP
+.BR \-n ", " \-\-window_function =\fIWIN_FUNC\fR
+Window function to be applied to the input window before FFT is computed.
+Because of the discrete nature of the FFT, a periodic assumption is made of the input window.
+In reality the input window is mostly never periodic, so window functions are used to taper off the ends of the window and avoid jumps between the beginning and end of the input window.
+
+Valid values are: none, hann.
+
+Default is hann.
+
+.TP
+.BR \-s ", " \-\-alias =\fIALIAS\fR
+Specifies whether aliasing between negative and positive frequencies exists.
+If set to true (\fI1\fR), then the bins of corresponding negative and positive frequencies are summed on both sides.
+
+Default is \fI0\fR (no) for complex data types and \fI1\fR (yes) otherwise.
+
+.TP
+\fBDISPLAY OPTIONS\fR
+
+.TP
+.BR \-q ", " \-\-no_resampling
+Disables resampling of output FFT windows, generating clean and crisp output.
+This invalidates the use of \fB\-w, \-\-width\fR, as the actual display width is computed from other parameters.
+
+.TP
+.BR \-w ", " \-\-width =\fIWIDTH\fR
+Display width of spectrogram.
+Output FFT windows are resampled to this width, colorized and displayed.
+Cannot be used with \fB\-q, \-\-no_resampling\fR.
+
+Default is 512.
+
+.TP
+.BR \-x ", " \-\-fmin =\fIFMIN\fR
+Lower bound of the displayed frequency spectrum, in Hz.
+
+Default is -\fIRATE\fR/2 for complex data types, 0 otherwise.
+
+.TP
+.BR \-y ", " \-\-fmax =\fIFMAX\fR
+Upper bound of the displayed frequency spectrum, in Hz.
+
+Default is \fIRATE\fR/2.
+
+.TP
+.BR \-s ", " \-\-scale =\fISCALE\fR
+Spectrogram scale.
+Valid values are: dBFS.
+
+Default is dBFS.
+
+.TP
+.BR \-c ", " \-\-colormap =\fICOLORMAP\fR
+Color scheme.
+Valid values are: jet, gray, purple, blue, green, orange, red.
+
+If \fICOLORMAP\fR is neither of these values, then it is interpreted either as a 6 character hex string (RGB color) or an 8 character hex string (RGBA color).
+In this case, a gradient between the background color and the color specified by the hex string will be used as a color map.
+
+Default is jet.
+
+.TP
+.BR \-a ", " \-\-axes
+Displays axes.
+
+.TP
+.BR \-e ", " \-\-legend
+Displays legend. Entails \fB\-a, \-\-axes\fR.
+
+This is enabled in live view, but only for the live window (i.e. if both live view and file output are used, then file output will only display a legend if this flag is set by the user).
+
+.TP
+.BR \-z ", " \-\-horizontal
+Rotates histogram 90 degrees counter clockwise, making it readable left to right.
+
+.TP
+\fBLIVE OPTIONS\fR
+
+.TP
+.BR \-l ", " \-\-live
+Displays a live rendering of the spectrogram being computed.
+
+Either this flag must be set, \fIoutfile\fR must be specified, or both.
+
+.TP
+.BR \-k ", " \-\-count =\fICOUNT\fR
+Number of FFT windows displayed in live spectrogram.
+
+Default is 512.
+
+.TP
+.BR \-t ", " \-\-title =\fITITLE\fR
+Title of live window.
+
+Default is 'Spectrogram'.
+
+.SH EXAMPLE
+
+.SH BUGS
+
+.SH AUTHORS
+
+.SH ACKNOWLEDGEMENTS
