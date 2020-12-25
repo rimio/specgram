@@ -11,20 +11,57 @@
 #include <memory>
 #include <csignal>
 
-InputReader::InputReader(std::istream &stream, std::size_t block_size_bytes)
+InputReader::InputReader(std::istream * stream, std::size_t block_size_bytes)
     : stream_(stream), block_size_bytes_(block_size_bytes)
+{
+}
+
+SyncInputReader::SyncInputReader(std::istream * stream, std::size_t block_size_bytes)
+    : InputReader(stream, block_size_bytes)
+{
+}
+
+bool
+SyncInputReader::ReachedEOF() const
+{
+    return stream_->eof();
+}
+
+std::optional<std::vector<char>>
+SyncInputReader::GetBlock()
+{
+    auto buffer = this->GetBuffer();
+    if (buffer.size() == this->block_size_bytes_) {
+        return buffer;
+    } else {
+        return {};
+    }
+}
+
+std::vector<char>
+SyncInputReader::GetBuffer()
+{
+    std::vector<char> local_buffer;
+    local_buffer.resize(this->block_size_bytes_);
+
+    this->stream_->read(local_buffer.data(), this->block_size_bytes_);
+    return std::vector<char>(local_buffer.data(), local_buffer.data() + this->stream_->gcount());
+}
+
+AsyncInputReader::AsyncInputReader(std::istream * stream, std::size_t block_size_bytes)
+    : InputReader(stream, block_size_bytes)
 {
     assert(block_size_bytes > 0);
     this->buffer_ = new char[block_size_bytes];
     assert(this->buffer_ != nullptr);
     this->bytes_in_buffer_ = 0;
-    this->running_ = true;
 
     /* start reader thread */
-    this->reader_thread_ = std::thread(&InputReader::Read, this);
+    this->running_ = true;
+    this->reader_thread_ = std::thread(&AsyncInputReader::Read, this);
 }
 
-InputReader::~InputReader()
+AsyncInputReader::~AsyncInputReader()
 {
     /* end reader thread */
     this->mutex_.lock();
@@ -43,10 +80,9 @@ InputReader::~InputReader()
 }
 
 void
-InputReader::Read()
+AsyncInputReader::Read()
 {
     char *local_buffer = new char[this->block_size_bytes_];
-    std::size_t local_count = 0;
 
     while (true) {
         /* find out how much we need to populate in the buffer */
@@ -66,11 +102,11 @@ InputReader::Read()
         }
 
         /* blocking read */
-        this->stream_.read(local_buffer, to_read);
-        if (this->stream_.fail()) {
+        this->stream_->read(local_buffer, to_read);
+        if (this->stream_->fail()) {
             break;
         } else {
-            assert(this->stream_.gcount() == to_read);
+            assert(this->stream_->gcount() == to_read);
         }
 
         /* write to buffer */
@@ -82,20 +118,21 @@ InputReader::Read()
         assert(to_read + this->bytes_in_buffer_ <= this->block_size_bytes_);
         auto k = to_read;
         for (volatile char *a = local_buffer, *b = this->buffer_ + this->bytes_in_buffer_; k > 0; *b++ = *a++, k--) /* nop */;
-        this->bytes_in_buffer_ += to_read;
+        this->bytes_in_buffer_ = this->bytes_in_buffer_ + to_read;
         this->mutex_.unlock();
     }
 }
 
 bool
-InputReader::HasBlock()
+AsyncInputReader::ReachedEOF() const
 {
-    const std::lock_guard<std::mutex> lock(this->mutex_);
-    return (this->bytes_in_buffer_ == this->block_size_bytes_);
+    /* we will never reach end of file in async mode */
+    /* only way out is SIGINT from user */
+    return false;
 }
 
 std::optional<std::vector<char>>
-InputReader::GetBlock()
+AsyncInputReader::GetBlock()
 {
     const std::lock_guard<std::mutex> lock(this->mutex_);
     if (this->bytes_in_buffer_ < this->block_size_bytes_) {
@@ -108,7 +145,7 @@ InputReader::GetBlock()
 }
 
 std::vector<char>
-InputReader::GetBuffer()
+AsyncInputReader::GetBuffer()
 {
     const std::lock_guard<std::mutex> lock(this->mutex_);
     std::vector<char> wrapper(this->buffer_, this->buffer_ + this->bytes_in_buffer_);

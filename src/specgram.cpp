@@ -12,6 +12,7 @@
 
 #include <spdlog/spdlog.h>
 #include <iostream>
+#include <fstream>
 #include <csignal>
 #include <list>
 
@@ -44,6 +45,7 @@ main(int argc, char** argv)
     }
 
     /* create FFT */
+    spdlog::info("Creating {}-wide FFTW plan", conf.GetFFTWidth());
     FFT fft(conf.GetFFTWidth(), conf.GetWindowFunction());
 
     /* create value map */
@@ -74,6 +76,24 @@ main(int argc, char** argv)
         return 1;
     }
 
+    /* create input reader */
+    std::istream *input_stream = nullptr;
+    std::unique_ptr<InputReader> reader = nullptr;
+    if (conf.GetInputFilename().has_value()) {
+        input_stream = new std::ifstream(*conf.GetInputFilename(), std::ios::in | std::ios::binary);
+        assert(input_stream != nullptr);
+        if (!input_stream->good()) {
+            spdlog::error("Failed to open input file '{}'", *conf.GetInputFilename());
+            return 1;
+        }
+        reader = std::make_unique<SyncInputReader>(input_stream,
+                                                   input->GetDataTypeSize() * conf.GetBlockSize());
+    } else {
+        input_stream = &std::cin;
+        reader = std::make_unique<AsyncInputReader>(input_stream,
+                                                    input->GetDataTypeSize() * conf.GetBlockSize());
+    }
+
     /* display initialization info */
     if (input->IsComplex()) {
         spdlog::info("Input stream: {}bit complex at {}Hz", input->GetDataTypeSize() * 8, conf.GetRate());
@@ -85,9 +105,6 @@ main(int argc, char** argv)
                      input->GetDataTypeSize() * 8, conf.GetRate());
     }
 
-    /* create input reader */
-    InputReader reader(std::cin, input->GetDataTypeSize() * conf.GetBlockSize());
-
     /* install SIGINT handler for CTRL+C */
     std::signal(SIGINT, sigint_handler);
 
@@ -95,7 +112,7 @@ main(int argc, char** argv)
     std::list<std::vector<uint8_t>> history;
 
     /* main loop */
-    while (main_loop_running) {
+    while (main_loop_running && !reader->ReachedEOF()) {
         /* check for window events (if necessary) */
         if (live != nullptr) {
             if (!live->HandleEvents()) {
@@ -107,7 +124,7 @@ main(int argc, char** argv)
         }
 
         /* check for a complete block */
-        auto block = reader.GetBlock();
+        auto block = reader->GetBlock();
         if (!block) {
             /* block not finished yet */
             continue;
@@ -153,17 +170,25 @@ main(int argc, char** argv)
         }
 
         /* add to history */
-        if (conf.GetFilename().has_value()) {
+        if (conf.GetOutputFilename().has_value()) {
             history.push_back(fft_colorized);
         }
     }
     spdlog::info("Terminating ...");
 
+    /* close input file */
+    if (conf.GetInputFilename().has_value()) {
+        assert(input_stream != nullptr);
+        assert(input_stream != &std::cin);
+        delete input_stream;
+        input_stream = nullptr;
+    }
+
     /* save file */
-    if (conf.GetFilename().has_value()) {
+    if (conf.GetOutputFilename().has_value()) {
         Renderer file_renderer(conf, *color_map, *value_map, history.size());
         file_renderer.RenderFFTArea(history);
-        file_renderer.GetCanvas().copyToImage().saveToFile(*conf.GetFilename());
+        file_renderer.GetCanvas().copyToImage().saveToFile(*conf.GetOutputFilename());
     }
 
     /* all ok */

@@ -15,7 +15,8 @@
 
 Configuration::Configuration()
 {
-    this->filename_ = {};
+    this->input_filename_ = {};
+    this->output_filename_ = {};
 
     this->block_size_ = 256;
     this->rate_ = 44100;
@@ -72,12 +73,14 @@ Configuration::FromArgs(int argc, char **argv)
     /* build parser */
     args::ArgumentParser parser("Generate spectrogram from stdin.", "For more info see https://github.com/rimio/specgram");
 
-    args::Positional<std::string> file(parser, "file", "Output PNG file");
+    args::Positional<std::string> outfile(parser, "outfile", "Output PNG file");
 
     args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
     args::Flag version(parser, "version", "Display version", {'v', "version"});
 
     args::Group input_opts(parser, "Input options:", args::Group::Validators::DontCare);
+    args::ValueFlag<std::string>
+        infile(input_opts, "string", "Input file name", {'i', "input"});
     args::ValueFlag<int>
         rate(input_opts, "integer", "Sampling rate of input in Hz (default: 44100)", {'r', "rate"});
     args::ValueFlag<std::string>
@@ -148,13 +151,16 @@ Configuration::FromArgs(int argc, char **argv)
     }
 
     /* check and store command line arguments */
-    if (file) {
-        conf.filename_ = args::get(file);
+    if (outfile) {
+        conf.output_filename_ = args::get(outfile);
     } else if (!live) {
         std::cerr << "Either specify file or '--live', otherwise nothing to do." << std::endl;
         return std::make_tuple(conf, 1, true);
     }
 
+    if (infile) {
+        conf.input_filename_ = args::get(infile);
+    }
     if (block_size) {
         if (args::get(block_size) <= 0) {
             std::cerr << "'block_size' must be positive." << std::endl;
@@ -313,6 +319,10 @@ Configuration::FromArgs(int argc, char **argv)
 
     if (live) {
         conf.live_ = true;
+        if (infile) {
+            std::cerr << "live view not allowed on file input (-i, --input)" << std::endl;
+            return std::make_tuple(conf, 1, true);
+        }
     }
     if (count) {
         if (args::get(count) <= 0) {

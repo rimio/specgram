@@ -19,7 +19,8 @@
 
 class Configuration {
 private:
-    std::optional<std::string> filename_;
+    std::optional<std::string> input_filename_;
+    std::optional<std::string> output_filename_;
 
     std::size_t block_size_;
     unsigned int rate_;
@@ -63,7 +64,8 @@ public:
 
     /* generic getters */
     Configuration GetForLive() const;
-    const auto & GetFilename() const { return filename_; }
+    const auto & GetInputFilename() const { return input_filename_; }
+    const auto & GetOutputFilename() const { return output_filename_; }
 
     /* input getters */
     auto GetBlockSize() const { return block_size_; }

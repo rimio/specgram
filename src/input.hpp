@@ -26,13 +26,44 @@ enum DataType {
 };
 
 /*
- * Input reader
+ * Input reader base class
  */
 class InputReader {
-private:
-    std::istream &stream_;
+protected:
+    std::istream * const stream_;
     const std::size_t block_size_bytes_;
 
+public:
+    InputReader() = delete;
+    InputReader(const InputReader&) = delete;
+    InputReader(InputReader&&) = delete;
+    InputReader & operator=(const InputReader&) = delete;
+
+    InputReader(std::istream * stream, std::size_t block_size_bytes);
+    virtual ~InputReader() = default;
+
+    virtual bool ReachedEOF() const = 0;
+    virtual std::optional<std::vector<char>> GetBlock() = 0;
+    virtual std::vector<char> GetBuffer() = 0;
+};
+
+/*
+ * Synchronous input reader
+ */
+class SyncInputReader : public InputReader {
+public:
+    SyncInputReader(std::istream * stream, std::size_t block_size_bytes);
+
+    bool ReachedEOF() const override;
+    std::optional<std::vector<char>> GetBlock() override;
+    std::vector<char> GetBuffer() override;
+};
+
+/*
+ * Asynchronous input reader
+ */
+class AsyncInputReader : public InputReader {
+private:
     /* buffer where we read up until one block */
     volatile char *buffer_;
     volatile std::size_t bytes_in_buffer_;
@@ -47,17 +78,12 @@ private:
     void Read();
 
 public:
-    InputReader() = delete;
-    InputReader(const InputReader&) = delete;
-    InputReader(InputReader&&) = delete;
-    InputReader & operator=(const InputReader&) = delete;
+    AsyncInputReader(std::istream * stream, std::size_t block_size_bytes);
+    ~AsyncInputReader() override;
 
-    InputReader(std::istream &stream, std::size_t block_size_bytes);
-    virtual ~InputReader();
-
-    bool HasBlock();
-    std::optional<std::vector<char>> GetBlock();
-    std::vector<char> GetBuffer();
+    bool ReachedEOF() const override;
+    std::optional<std::vector<char>> GetBlock() override;
+    std::vector<char> GetBuffer() override;
 };
 
 /*
