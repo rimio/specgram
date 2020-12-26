@@ -156,7 +156,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
 
     /* allocate canvas render texture */
     this->canvas_.create(this->width_, this->height_);
-    this->canvas_.clear(sf::Color(0, 0, 0, 255));
+    this->canvas_.clear(this->configuration_.GetBackgroundColor());
 
     /* allocate FFT area texture */
     this->fft_area_texture_.create(conf.GetWidth(), fft_count);
@@ -170,7 +170,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         /* FFT area box */
         sf::RectangleShape fft_area_box(sf::Vector2f(this->configuration_.GetWidth(), this->fft_count_));
         fft_area_box.setFillColor(this->configuration_.GetBackgroundColor());
-        fft_area_box.setOutlineColor(this->configuration_.GetAxesColor());
+        fft_area_box.setOutlineColor(this->configuration_.GetForegroundColor());
         fft_area_box.setOutlineThickness(1);
         this->canvas_.draw(fft_area_box, this->fft_area_transform_);
 
@@ -190,7 +190,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         sf::RectangleShape legend_box(sf::Vector2f(this->configuration_.GetWidth(),
                                                    this->configuration_.GetLegendHeight()));
         legend_box.setFillColor(this->configuration_.GetBackgroundColor());
-        legend_box.setOutlineColor(this->configuration_.GetAxesColor());
+        legend_box.setOutlineColor(this->configuration_.GetForegroundColor());
         legend_box.setOutlineThickness(1);
         this->canvas_.draw(legend_box, this->legend_transform_);
 
@@ -338,10 +338,13 @@ Renderer::RenderAxis(sf::RenderTexture& texture,
     for (auto& tick : ticks) {
         /* draw tick line */
         double x = (length - 1) * std::get<0>(tick);
-        texture.draw(sf::RectangleShape(sf::Vector2f(1.0, (lhs ? -5.0f : 5.0f))), t * sf::Transform().translate(x, 0.0f));
+        sf::RectangleShape tick_shape(sf::Vector2f(1.0, (lhs ? -5.0f : 5.0f)));
+        tick_shape.setFillColor(this->configuration_.GetForegroundColor());
+        texture.draw(tick_shape, t * sf::Transform().translate(x, 0.0f));
 
         /* draw text */
         sf::Text text;
+        text.setFillColor(this->configuration_.GetForegroundColor());
         text.setCharacterSize(this->configuration_.GetAxisFontSize());
         text.setFont(this->font_);
         text.setString(std::get<1>(tick));
@@ -426,7 +429,7 @@ Renderer::RenderLiveFFT(const std::vector<double>& window, const std::vector<uin
     sf::RectangleShape fft_live_box(sf::Vector2f(this->configuration_.GetWidth(),
                                                  this->configuration_.GetLiveFFTHeight() + 1.0f));
     fft_live_box.setFillColor(this->configuration_.GetBackgroundColor());
-    fft_live_box.setOutlineColor(this->configuration_.GetAxesColor());
+    fft_live_box.setOutlineColor(this->configuration_.GetForegroundColor());
     fft_live_box.setOutlineThickness(1);
     this->canvas_.draw(fft_live_box, this->fft_live_transform_);
 

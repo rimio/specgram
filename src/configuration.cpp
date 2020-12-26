@@ -33,6 +33,8 @@ Configuration::Configuration()
     this->max_freq_ = this->rate_ / 2;
     this->scale_ = FFTScale::kdBFS;
     this->color_map_ = ColorMapType::kJet;
+    this->background_color_ = sf::Color(0, 0, 0);
+    this->foreground_color_ = sf::Color(255, 255, 255);
     this->has_axes_ = false;
     this->has_legend_ = false;
     this->is_horizontal_ = false;
@@ -48,8 +50,6 @@ Configuration::Configuration()
     this->legend_height_ = 20;
     this->live_fft_height_ = 100;
     this->axis_font_size_ = 12;
-    this->background_color_ = sf::Color(0, 0, 0);
-    this->axes_color_ = sf::Color(255, 255, 255);
 }
 
 Configuration
@@ -63,6 +63,32 @@ Configuration::GetForLive() const
     c.has_live_window_ = true;
 
     return c;
+}
+
+std::optional<sf::Color>
+Configuration::StringToColor(const std::string& str)
+{
+    try {
+        if (std::regex_match(str, std::regex("[0-9a-fA-F]{6}"))) {
+            unsigned int color = std::strtoul(str.c_str(), 0, 16);
+            return sf::Color(
+                    ((color >> 16) & 0xff),
+                    ((color >> 8) & 0xff),
+                    (color & 0xff),
+                    255);
+        } else if (std::regex_match(str, std::regex("[0-9a-fA-F]{8}"))) {
+            unsigned int color = std::strtoul(str.c_str(), 0, 16);
+            return sf::Color(
+                    ((color >> 24) & 0xff),
+                    ((color >> 16) & 0xff),
+                    ((color >> 8) & 0xff),
+                    (color & 0xff));
+        } else {
+            return {};
+        }
+    } catch (const std::exception& e) {
+        return {};
+    }
 }
 
 std::tuple<Configuration, int, bool>
@@ -113,6 +139,10 @@ Configuration::FromArgs(int argc, char **argv)
         scale(display_opts, "string", "Display scale (default: dBFS)", {'s', "scale"});
     args::ValueFlag<std::string>
         colormap(display_opts, "string", "Colormap (default: jet)", {'c', "colormap"});
+    args::ValueFlag<std::string>
+            bgcolor(display_opts, "string", "Background color (default: 000000)", {"bg-color"});
+    args::ValueFlag<std::string>
+            fgcolor(display_opts, "string", "Foreground color (default: ffffff)", {"fg-color"});
     args::Flag
         axes(display_opts, "axes", "Display axes (inferred for -e, --legend)", {'a', "axes"});
     args::Flag
@@ -288,29 +318,34 @@ Configuration::FromArgs(int argc, char **argv)
         } else if (cmap_str == "red") {
             conf.color_map_ = ColorMapType::kRed;
         } else {
-            try {
-                if (std::regex_match(cmap_str, std::regex("[0-9a-fA-F]{6}"))) {
-                    unsigned int color = std::strtoul(cmap_str.c_str(), 0, 16);
-                    conf.color_map_custom_color_ = sf::Color(
-                            ((color >> 16) & 0xff),
-                            ((color >> 8) & 0xff),
-                            (color & 0xff),
-                            255);
-                } else if (std::regex_match(cmap_str, std::regex("[0-9a-fA-F]{8}"))) {
-                    unsigned int color = std::strtoul(cmap_str.c_str(), 0, 16);
-                    conf.color_map_custom_color_ = sf::Color(
-                            ((color >> 24) & 0xff),
-                            ((color >> 16) & 0xff),
-                            ((color >> 8) & 0xff),
-                            (color & 0xff));
-                } else {
-                    throw std::exception();
-                }
-                conf.color_map_ = ColorMapType::kCustom;
-            } catch (const std::exception& e) {
+            auto color = Configuration::StringToColor(cmap_str);
+            if (!color.has_value()) {
                 std::cerr << "Unknown colormap '" << cmap_str << "'" << std::endl;
                 return std::make_tuple(conf, 1, true);
+            } else {
+                conf.color_map_custom_color_ = *color;
+                conf.color_map_ = ColorMapType::kCustom;
             }
+        }
+    }
+    if (bgcolor) {
+        auto& str = args::get(bgcolor);
+        auto color = Configuration::StringToColor(str);
+        if (!color.has_value()) {
+            std::cerr << "Invalid background color '" << str << "'" << std::endl;
+            return std::make_tuple(conf, 1, true);
+        } else {
+            conf.background_color_ = *color;
+        }
+    }
+    if (fgcolor) {
+        auto& str = args::get(fgcolor);
+        auto color = Configuration::StringToColor(str);
+        if (!color.has_value()) {
+            std::cerr << "Invalid foreground color '" << str << "'" << std::endl;
+            return std::make_tuple(conf, 1, true);
+        } else {
+            conf.foreground_color_ = *color;
         }
     }
     if (axes) {

@@ -38,6 +38,8 @@ private:
     FFTScale scale_;
     ColorMapType color_map_;
     sf::Color color_map_custom_color_;
+    sf::Color background_color_;
+    sf::Color foreground_color_;
     bool has_axes_;
     bool has_legend_;
     bool is_horizontal_;
@@ -53,10 +55,10 @@ private:
     std::size_t legend_height_;
     std::size_t live_fft_height_;
     std::size_t axis_font_size_;
-    sf::Color background_color_;
-    sf::Color axes_color_;
 
     Configuration();
+
+    static std::optional<sf::Color> StringToColor(const std::string& str);
 
 public:
     /* parse command line arguments and return a configuration object */
@@ -86,6 +88,8 @@ public:
     auto GetScale() const { return scale_; }
     auto GetColorMap() const { return color_map_; }
     auto GetColorMapCustomColor() const { return color_map_custom_color_; }
+    auto GetBackgroundColor() const { return background_color_; }
+    auto GetForegroundColor() const { return foreground_color_; }
     auto HasAxes() const { return has_axes_ || has_legend_; }
     auto HasLegend() const { return has_legend_; }
     auto IsHorizontal() const { return is_horizontal_; }
@@ -104,9 +108,6 @@ public:
     auto GetLiveFFTHeight() const { return live_fft_height_; }
 
     auto GetAxisFontSize() const { return axis_font_size_; }
-
-    auto GetBackgroundColor() const { return background_color_; }
-    auto GetAxesColor() const { return axes_color_; }
 };
 
 #endif
