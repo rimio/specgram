@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.1)
 
-project (specgram LANGUAGES CXX)
+project (specgram VERSION 1.0.0 LANGUAGES CXX)
 
 # Version
 set (VERSION_MAJOR 1)
@@ -25,6 +25,15 @@ set (MAN_DIR "${PROJECT_SOURCE_DIR}/man")
 
 include_directories (${SOURCE_DIR})
 
+# Get the latest abbreviated commit hash of the working branch
+# https://jonathanhamberg.com/post/cmake-embedding-git-hash/
+execute_process(
+    COMMAND git log -1 --format=%h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 # Configurations
 configure_file (
     "${SRC_DIR}/specgram.hpp.in"
@@ -44,7 +53,7 @@ set (SPECGRAM_SOURCES
     "${SRC_DIR}/share-tech-mono.cpp"
 )
 
-# Targets
+# Executable target
 add_executable (${PROJECT_NAME} ${SPECGRAM_SOURCES})
 target_link_libraries (${PROJECT_NAME} spdlog::spdlog sfml-window sfml-graphics ${FFTW3})
 
