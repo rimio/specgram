@@ -15,7 +15,9 @@
 
 enum FFTWindowFunction {
     kNone,
-    kHann
+    kHann,
+    kHamming,
+    kBlackman
 };
 
 enum FFTScale {

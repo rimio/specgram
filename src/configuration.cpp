@@ -143,9 +143,9 @@ Configuration::FromArgs(int argc, char **argv)
     args::ValueFlag<std::string>
         colormap(display_opts, "string", "Colormap (default: jet)", {'c', "colormap"});
     args::ValueFlag<std::string>
-            bgcolor(display_opts, "string", "Background color (default: 000000)", {"bg-color"});
+        bgcolor(display_opts, "string", "Background color (default: 000000)", {"bg-color"});
     args::ValueFlag<std::string>
-            fgcolor(display_opts, "string", "Foreground color (default: ffffff)", {"fg-color"});
+        fgcolor(display_opts, "string", "Foreground color (default: ffffff)", {"fg-color"});
     args::Flag
         axes(display_opts, "axes", "Display axes (inferred for -e, --legend)", {'a', "axes"});
     args::Flag
@@ -266,6 +266,10 @@ Configuration::FromArgs(int argc, char **argv)
             conf.window_function_ = FFTWindowFunction::kNone;
         } else if (wf_str == "hann") {
             conf.window_function_ = FFTWindowFunction::kHann;
+        } else if (wf_str == "hamming") {
+            conf.window_function_ = FFTWindowFunction::kHamming;
+        } else if (wf_str == "blackman") {
+            conf.window_function_ = FFTWindowFunction::kBlackman;
         } else {
             std::cerr << "Unknown window function '" << wf_str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);

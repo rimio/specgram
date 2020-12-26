@@ -120,9 +120,9 @@ Default is 1024.
 .BR \-n ", " \-\-window_function =\fIWIN_FUNC\fR
 Window function to be applied to the input window before FFT is computed.
 Because of the discrete nature of the FFT, a periodic assumption is made of the input window.
-In reality the input window is mostly never periodic, so window functions are used to taper off the ends of the window and avoid jumps between the beginning and end of the input window.
+In reality the input window is mostly never periodic, so window functions are used to taper off the ends of the window and avoid jumps between the beginning and end samples.
 
-Valid values are: none, hann.
+Valid values are: none, hann, hamming, blackman.
 
 Default is hann.
 
