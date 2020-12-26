@@ -3,8 +3,8 @@ cmake_minimum_required (VERSION 3.1)
 project (specgram VERSION 1.0.0 LANGUAGES CXX)
 
 # Version
-set (VERSION_MAJOR 1)
-set (VERSION_MINOR 0)
+set (VERSION_MAJOR 0)
+set (VERSION_MINOR 9)
 set (VERSION_PATCH 0)
 
 # C++20
