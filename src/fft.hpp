@@ -8,18 +8,12 @@
 #ifndef _FFT_HPP_
 #define _FFT_HPP_
 
+#include "window-function.hpp"
+
 #include <cstddef>
 #include <fftw3.h>
 #include <vector>
 #include <complex>
-
-enum FFTWindowFunction {
-    kNone,
-    kHann,
-    kHamming,
-    kBlackman,
-    kNuttall
-};
 
 class FFT {
 private:
@@ -34,8 +28,7 @@ private:
     fftw_plan plan_;
 
     /* window function */
-    bool apply_window_function_;
-    std::vector<double> window_;
+    std::unique_ptr<WindowFunction> window_function_;
 
     static double sinc(double x);
 
@@ -45,7 +38,7 @@ public:
     FFT(FFT &&) = delete;
     FFT & operator=(const FFT&) = delete;
 
-    FFT(std::size_t win_width, FFTWindowFunction wf);
+    FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func);
     virtual ~FFT();
 
     std::vector<std::complex<double>> Compute(const std::vector<std::complex<double>>& input, bool alias);

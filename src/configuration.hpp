@@ -11,6 +11,7 @@
 #include "input-parser.hpp"
 #include "color-map.hpp"
 #include "value-map.hpp"
+#include "window-function.hpp"
 #include "fft.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -30,7 +31,7 @@ private:
 
     std::size_t fft_width_;
     std::size_t fft_stride_;
-    FFTWindowFunction window_function_;
+    WindowFunctionType window_function_;
     bool alias_negative_;
 
     bool no_resampling_;

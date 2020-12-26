@@ -26,7 +26,7 @@ Configuration::Configuration()
     this->fft_width_ = 1024;
     this->fft_stride_ = 1024;
     this->alias_negative_ = true;
-    this->window_function_ = FFTWindowFunction::kHann;
+    this->window_function_ = WindowFunctionType::kHann;
 
     this->no_resampling_ = false;
     this->width_ = 512;
@@ -288,15 +288,15 @@ Configuration::FromArgs(int argc, char **argv)
     if (win_func) {
         auto& wf_str = args::get(win_func);
         if (wf_str == "none") {
-            conf.window_function_ = FFTWindowFunction::kNone;
+            conf.window_function_ = WindowFunctionType::kNone;
         } else if (wf_str == "hann") {
-            conf.window_function_ = FFTWindowFunction::kHann;
+            conf.window_function_ = WindowFunctionType::kHann;
         } else if (wf_str == "hamming") {
-            conf.window_function_ = FFTWindowFunction::kHamming;
+            conf.window_function_ = WindowFunctionType::kHamming;
         } else if (wf_str == "blackman") {
-            conf.window_function_ = FFTWindowFunction::kBlackman;
+            conf.window_function_ = WindowFunctionType::kBlackman;
         } else if (wf_str == "nuttall") {
-            conf.window_function_ = FFTWindowFunction::kBlackman;
+            conf.window_function_ = WindowFunctionType::kBlackman;
         } else {
             std::cerr << "Unknown window function '" << wf_str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);

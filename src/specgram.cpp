@@ -9,6 +9,7 @@
 #include "input-reader.hpp"
 #include "color-map.hpp"
 #include "value-map.hpp"
+#include "window-function.hpp"
 #include "fft.hpp"
 #include "live.hpp"
 
@@ -46,9 +47,12 @@ main(int argc, char** argv)
         return conf_rc;
     }
 
+    /* create window function */
+    auto win_function = WindowFunction::FromType(conf.GetWindowFunction(), conf.GetFFTWidth());
+
     /* create FFT */
     spdlog::info("Creating {}-wide FFTW plan", conf.GetFFTWidth());
-    FFT fft(conf.GetFFTWidth(), conf.GetWindowFunction());
+    FFT fft(conf.GetFFTWidth(), win_function);
 
     /* create value map */
     std::unique_ptr<ValueMap> value_map = nullptr;

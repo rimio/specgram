@@ -12,7 +12,8 @@
 #include <cmath>
 #include <complex>
 
-FFT::FFT(std::size_t win_width, FFTWindowFunction wf) : window_width_(win_width)
+FFT::FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func)
+    : window_width_(win_width), window_function_(std::move(win_func))
 {
     /* allocate buffers */
     this->in_ = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * win_width);
@@ -22,69 +23,6 @@ FFT::FFT(std::size_t win_width, FFTWindowFunction wf) : window_width_(win_width)
 
     /* compute plan */
     this->plan_ = fftw_plan_dft_1d(win_width, this->in_, this->out_, FFTW_FORWARD, FFTW_ESTIMATE);
-
-    /* compute window function */
-    this->apply_window_function_ = (wf != FFTWindowFunction::kNone);
-    if (this->apply_window_function_) {
-        this->window_.resize(win_width);
-    }
-
-    switch (wf) {
-        case FFTWindowFunction::kHann: {
-                auto n = win_width;
-                for (std::size_t i = 0; i < win_width; i++) {
-                    double sv = std::sin((double) M_PI * (double) i / (double) n);
-                    this->window_[i] = sv * sv;
-                }
-            }
-            break;
-
-        case FFTWindowFunction::kHamming: {
-                auto n = win_width;
-                for (std::size_t i = 0; i < win_width; i++) {
-                    double cv = std::cos(2.0f * (double) M_PI * (double) i / (double) n);
-                    double a0 = 25.0f/46.0f;
-                    this->window_[i] = a0 - (1.0f - a0) * cv;
-                }
-            }
-            break;
-
-        case FFTWindowFunction::kBlackman: {
-                auto n = win_width;
-                for (std::size_t i = 0; i < win_width; i++) {
-                    double c1 = std::cos(2.0f * (double) M_PI * (double) i / (double) n);
-                    double c2 = std::cos(4.0f * (double) M_PI * (double) i / (double) n);
-                    double a0 = 7938.0f / 18608.0f;
-                    double a1 = 9240.0f / 18608.0f;
-                    double a2 = 1430.0f / 18608.0f;
-                    this->window_[i] = a0 - a1 * c1 + a2 * c2;
-                }
-            }
-            break;
-
-        case FFTWindowFunction::kNuttall: {
-                auto n = win_width;
-                for (std::size_t i = 0; i < win_width; i++) {
-                    double c1 = std::cos(2.0f * (double) M_PI * (double) i / (double) n);
-                    double c2 = std::cos(4.0f * (double) M_PI * (double) i / (double) n);
-                    double c3 = std::cos(6.0f * (double) M_PI * (double) i / (double) n);
-                    double a0 = 0.355768f;
-                    double a1 = 0.487396f;
-                    double a2 = 0.144232f;
-                    double a3 = 0.012604f;
-                    this->window_[i] = a0 - a1 * c1 + a2 * c2 - a3 * c3;
-                }
-            }
-            break;
-
-        case FFTWindowFunction::kNone:
-            /* nop */
-            break;
-
-        default:
-            assert(false);
-            spdlog::error("Internal error: unknown window function");
-    }
 }
 
 FFT::~FFT()
@@ -108,13 +46,10 @@ FFT::Compute(const std::vector<std::complex<double>>& input, bool alias)
 
     /* make a copy of the input and apply window function */
     auto input_ref = &input;
-    std::vector<std::complex<double>> input_copy;
-    if (this->apply_window_function_) {
-        input_copy.resize(this->window_width_);
-        for (std::size_t i = 0; i < this->window_width_; i ++) {
-            input_copy[i] = input[i] * this->window_[i];
-        }
-        input_ref = &input_copy;
+    std::vector<std::complex<double>> processed_input;
+    if (this->window_function_ != nullptr) {
+        processed_input = this->window_function_->Apply(input);
+        input_ref = &processed_input;
     }
 
     /* copy to input buffer */
