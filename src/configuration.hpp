@@ -25,6 +25,7 @@ private:
     std::size_t block_size_;
     double rate_;
     DataType datatype_;
+    double prescale_factor_;
 
     std::size_t fft_width_;
     std::size_t fft_stride_;
@@ -73,6 +74,7 @@ public:
     auto GetBlockSize() const { return block_size_; }
     auto GetRate() const { return rate_; }
     auto GetDataType() const { return datatype_; }
+    auto GetPrescaleFactor() const { return prescale_factor_; }
 
     /* FFT getters */
     auto GetFFTWidth() const { return fft_width_; }

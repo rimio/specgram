@@ -30,7 +30,6 @@ dBFSValueMap::Map(const std::vector<std::complex<double>>& input)
 
     for (unsigned int i = 0; i < n; i ++) {
         output[i] = 20.0 * std::log10(2.0f * std::abs<double>(input[i]) / n);
-        assert(output[i] <= 0.0f); /* if failed then input normalization failed somehow */
         output[i] = std::clamp<double>(output[i], this->lower_, 0.0f);
         output[i] = 1.0f - output[i] / this->lower_;
     }

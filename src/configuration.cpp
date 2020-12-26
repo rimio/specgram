@@ -21,6 +21,7 @@ Configuration::Configuration()
     this->block_size_ = 256;
     this->rate_ = 44100;
     this->datatype_ = DataType::kSignedInt16;
+    this->prescale_factor_ = 1.0f;
 
     this->fft_width_ = 1024;
     this->fft_stride_ = 1024;
@@ -114,6 +115,8 @@ Configuration::FromArgs(int argc, char **argv)
         rate(input_opts, "float", "Sampling rate of input in Hz (default: 44100)", {'r', "rate"});
     args::ValueFlag<std::string>
         datatype(input_opts, "string", "Data type of input (default: s16)", {'d', "datatype"});
+    args::ValueFlag<float>
+        prescale(input_opts, "float", "Prescaling factor (default: 1.0)", {'p', "prescale"});
     args::ValueFlag<int>
         block_size(input_opts, "integer", "Block size when reading input, in data types (default: 256)", {'b', "block_size"});
 
@@ -236,10 +239,25 @@ Configuration::FromArgs(int argc, char **argv)
         } else if (dtype == "u64") {
             conf.datatype_ = DataType::kUnsignedInt64;
             conf.alias_negative_ = true;
+        } else if (dtype == "f32") {
+            conf.datatype_ = DataType::kFloat32;
+            conf.alias_negative_ = true;
+        } else if (dtype == "f64") {
+            conf.datatype_ = DataType::kFloat64;
+            conf.alias_negative_ = true;
+        } else if (dtype == "c64") {
+            conf.datatype_ = DataType::kComplex64;
+            conf.alias_negative_ = false;
+        } else if (dtype == "c128") {
+            conf.datatype_ = DataType::kComplex128;
+            conf.alias_negative_ = false;
         } else {
             std::cerr << "Unknown data type '" << dtype << "'" << std::endl;
             return std::make_tuple(conf, 1, true);
         }
+    }
+    if (prescale) {
+        conf.prescale_factor_ = args::get(prescale);
     }
 
     if (fft_width) {
@@ -251,11 +269,12 @@ Configuration::FromArgs(int argc, char **argv)
         }
     }
     if (conf.fft_width_ % 2 == 0) {
-        conf.min_freq_ = conf.alias_negative_ ? 0 : -(conf.rate_ / 2.0f - 1.0f / conf.fft_width_);
+        double boundary = conf.rate_ * (conf.fft_width_ - 2.0f) / (2.0f * conf.fft_width_);
+        conf.min_freq_ = conf.alias_negative_ ? 0.0f : -boundary;
         conf.max_freq_ = conf.rate_ / 2.0f;
     } else {
-        double boundary = conf.rate_ / 2.0f - 1.0f / (2.0f * conf.fft_width_);
-        conf.min_freq_ = conf.alias_negative_ ? 0 : -boundary;
+        double boundary = conf.rate_ * (conf.fft_width_ - 1.0f) / (2.0f * conf.fft_width_);
+        conf.min_freq_ = conf.alias_negative_ ? 0.0f : -boundary;
         conf.max_freq_ = boundary;
     }
     if (fft_stride) {

@@ -9,6 +9,7 @@ specgram \- create spectrograms from raw files or standard input
 [\fB\-i, --input\fR=\fIRATE\fR]
 [\fB\-r, --rate\fR=\fIRATE\fR]
 [\fB\-d, --datatype\fR=\fIDATA_TYPE\fR]
+[\fB\-p, --prescale\fR=\fIPRESCALE_FACTOR\fR]
 [\fB\-b, --block_size\fR=\fIBLOCK_SIZE\fR]
 [\fB\-f, --fft_width\fR=\fIFFT_WIDTH\fR]
 [\fB\-g, --fft_stride\fR=\fIFFT_STRIDE\fR]
@@ -93,12 +94,22 @@ The size of the complex data type includes both parts (e.g. c64 indicates that b
 Default is s16.
 
 .TP
+.BR \-p ", " \-\-prescale =\fIPRESCALE_FACTOR\fR
+Input prescale factor.
+
+Integer inputs are first normalized to [-0.5 .. 0.5] for signed and [0.0 .. 1.0] for unsigned, then the prescaling is applied.
+Floating point and complex inputs are prescaled directly.
+
+This is mostly useful for adjusting your inputs to the scale, and is usually needed for floating point inputs (see \fB\-s, \-\-scale\fR).
+
+Default is 1.0.
+
+.TP
 .BR \-b ", " \-\-block_size =\fIBLOCK_SIZE\fR
 Block size, in data type sized values, that are to be read at a time from stdin.
 The larger this value, the larger the latency of the live spectrogram.
 
 Default is 256.
-
 
 .TP
 \fBFFT OPTIONS\fR
@@ -166,6 +177,11 @@ Default is \fIRATE\fR/2.
 .BR \-s ", " \-\-scale =\fISCALE\fR
 Spectrogram scale.
 Valid values are: dBFS.
+
+NOTE: The peak to peak amplitude assumed for dBFS is 1.0, so the correct floating point and complex norm input domain is [-0.5 .. 0.5].
+Values outside this domain may lead to positive dBFS values, which will be clamped to zero.
+Use prescaling (\fB\-p, \-\-prescale\fR) to adjust your input to this domain.
+Integer inputs don't usually need prescaling, as they are normalized based on their domain's limits.
 
 Default is dBFS.
 

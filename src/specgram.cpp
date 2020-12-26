@@ -71,7 +71,7 @@ main(int argc, char** argv)
     }
 
     /* create input parser */
-    auto input = InputParser::FromDataType(conf.GetDataType());
+    auto input = InputParser::FromDataType(conf.GetDataType(), conf.GetPrescaleFactor());
     if (input == nullptr) {
         return 1;
     }
