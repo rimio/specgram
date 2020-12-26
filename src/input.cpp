@@ -34,6 +34,8 @@ SyncInputReader::GetBlock()
     if (buffer.size() == this->block_size_bytes_) {
         return buffer;
     } else {
+        /* we assume the only time we're reading less than a block is at EOF */
+        assert(this->stream_->eof());
         return {};
     }
 }

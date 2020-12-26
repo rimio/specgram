@@ -23,7 +23,7 @@ private:
     std::optional<std::string> output_filename_;
 
     std::size_t block_size_;
-    unsigned int rate_;
+    double rate_;
     DataType datatype_;
 
     std::size_t fft_width_;
@@ -33,8 +33,8 @@ private:
 
     bool no_resampling_;
     std::size_t width_;
-    int min_freq_;
-    int max_freq_;
+    double min_freq_;
+    double max_freq_;
     FFTScale scale_;
     ColorMapType color_map_;
     sf::Color color_map_custom_color_;

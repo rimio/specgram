@@ -225,15 +225,15 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
 std::string
 Renderer::ValueToShortString(double value, int prec, const std::string& unit)
 {
-    static constexpr const char *PREFIXES[] = { "n", "μ", "m", "", "k", "M", "G" };
-    int pidx = 3;
+    static constexpr const char *PREFIXES[] = { "p", "n", "u", "m", "", "k", "M", "G", "T" };
+    int pidx = 4;
 
     while ((prec >= 3) && (pidx > 0)) {
         prec -= 3;
         pidx--;
         value *= 1000.0f;
     }
-    while ((prec <= -3) && (pidx < 6)) {
+    while ((prec <= -3) && (pidx < 8)) {
         prec += 3;
         pidx++;
         value /= 1000.0f;
@@ -247,7 +247,7 @@ Renderer::ValueToShortString(double value, int prec, const std::string& unit)
 }
 
 std::list<std::tuple<double, std::string>>
-Renderer::GetLinearTicks(float v_min, float v_max, const std::string& v_unit, unsigned int num_ticks)
+Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks)
 {
     assert(num_ticks > 1);
     assert(v_min < v_max);
@@ -274,7 +274,7 @@ Renderer::GetLinearTicks(float v_min, float v_max, const std::string& v_unit, un
 }
 
 std::list<std::tuple<double, std::string>>
-Renderer::GetNiceTicks(float v_min, float v_max, const std::string& v_unit, unsigned int length_px,
+Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, unsigned int length_px,
                        unsigned int est_tick_length_px)
 {
     assert(v_min < v_max);
@@ -288,7 +288,7 @@ Renderer::GetNiceTicks(float v_min, float v_max, const std::string& v_unit, unsi
     double mdist = 1e12, mfact;
 
     constexpr double NICE_FACTORS[] = { 0.15f, 0.2f, 0.25f, 0.3f, 0.5f };
-    for (double f = 1e-9; f < 1e+9; f *= 10.0f) {
+    for (double f = 1e-15; f < 1e+15; f *= 10.0f) {
         for (unsigned int k = 0; k < 5; k++) {
             double factor = f * NICE_FACTORS[k];
             double dist = std::abs(est_tick_length_px - px_per_v * factor);
@@ -332,7 +332,7 @@ Renderer::GetNiceTicks(float v_min, float v_max, const std::string& v_unit, unsi
 
 void
 Renderer::RenderAxis(sf::RenderTexture& texture,
-                     const sf::Transform& t, bool lhs, int orientation, float length,
+                     const sf::Transform& t, bool lhs, int orientation, double length,
                      const std::list<std::tuple<double, std::string>>& ticks)
 {
     for (auto& tick : ticks) {

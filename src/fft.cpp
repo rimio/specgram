@@ -12,11 +12,11 @@
 #include <cmath>
 #include <complex>
 
-ValueMap::ValueMap(int lower, int upper) : lower_(lower), upper_(upper)
+ValueMap::ValueMap(double lower, double upper) : lower_(lower), upper_(upper)
 {
 }
 
-dBFSValueMap::dBFSValueMap(const int mindb) : ValueMap(mindb, 0)
+dBFSValueMap::dBFSValueMap(double mindb) : ValueMap(mindb, 0)
 {
 }
 
@@ -123,14 +123,16 @@ FFT::Compute(const std::vector<std::complex<double>>& input, bool alias)
                 lhl * sizeof(fftw_complex));
 
     /* alias negative/positive frequencies (e.g. if input is not true complex) */
-    /* TODO: nicer way? */
-    if (window_width_ % 2) {
-        for (std::size_t i = 0; i < uhl; i++) {
-            output[i] += output[this->window_width_ - i - 1];
-        }
-    } else {
-        for (std::size_t i = 0; i < uhl; i++) {
-            output[i] += output[this->window_width_ - i - 2];
+    if (alias) {
+        /* TODO: nicer way? */
+        if (window_width_ % 2) {
+            for (std::size_t i = 0; i < uhl; i++) {
+                output[i] += output[this->window_width_ - i - 1];
+            }
+        } else {
+            for (std::size_t i = 0; i < uhl; i++) {
+                output[i] += output[this->window_width_ - i - 2];
+            }
         }
     }
     return output;
@@ -163,8 +165,9 @@ FFT::sinc(double x)
 }
 
 std::tuple<double, double>
-FFT::GetFrequencyLimits(unsigned int rate, std::size_t width)
+FFT::GetFrequencyLimits(double rate, std::size_t width)
 {
+    assert(rate > 0);
     if (width % 2 == 0) {
         std::size_t half = width / 2;
         return std::make_tuple(-(double)(half-1) / (double)width * (double)rate,
@@ -177,16 +180,17 @@ FFT::GetFrequencyLimits(unsigned int rate, std::size_t width)
 }
 
 double
-FFT::GetFrequencyIndex(unsigned int rate, std::size_t width, double f)
+FFT::GetFrequencyIndex(double rate, std::size_t width, double f)
 {
     auto [in_fmin, in_fmax] = FFT::GetFrequencyLimits(rate, width);
     return (f - in_fmin) / (in_fmax - in_fmin) * (width - 1);
 }
 
 std::vector<double>
-FFT::Resample(const std::vector<double>& input, unsigned int rate,
-              std::size_t width, int fmin, int fmax)
+FFT::Resample(const std::vector<double>& input, double rate,
+              std::size_t width, double fmin, double fmax)
 {
+    assert(rate > 0);
     assert(fmin < fmax);
 
     /* find corresponding indices for fmin/fmax */
@@ -223,7 +227,7 @@ FFT::Resample(const std::vector<double>& input, unsigned int rate,
 }
 
 std::vector<double>
-FFT::Crop(const std::vector<double>& input, unsigned int rate, int fmin, int fmax)
+FFT::Crop(const std::vector<double>& input, double rate, double fmin, double fmax)
 {
     assert(fmin < fmax);
 
@@ -237,8 +241,8 @@ FFT::Crop(const std::vector<double>& input, unsigned int rate, int fmin, int fma
     assert(di_fmin < di_fmax);
 
     /* we're cropping, so no interpolation allowed */
-    std::size_t i_fmin = static_cast<std::size_t>(di_fmin);
-    std::size_t i_fmax = static_cast<std::size_t>(di_fmax);
+    auto i_fmin = static_cast<std::size_t>(di_fmin);
+    auto i_fmax = static_cast<std::size_t>(di_fmax);
     assert(i_fmax - i_fmin > 0);
 
     /* return corresponding subvector */

@@ -24,10 +24,10 @@ enum FFTScale {
 
 class ValueMap {
 protected:
-    const int lower_;
-    const int upper_;
+    const double lower_;
+    const double upper_;
 
-    ValueMap(int lower_, int upper);
+    ValueMap(double lower_, double upper);
 public:
     ValueMap() = delete;
 
@@ -42,7 +42,7 @@ public:
 class dBFSValueMap : public ValueMap {
 private:
 public:
-    explicit dBFSValueMap(const int mindb);
+    explicit dBFSValueMap(double mindb);
 
     std::vector<double> Map(const std::vector<std::complex<double>>& input) override;
     std::string GetUnit() const override { return "dBFS"; }
@@ -78,13 +78,13 @@ public:
 
     std::vector<std::complex<double>> Compute(const std::vector<std::complex<double>>& input, bool alias);
 
-    static std::tuple<double, double> GetFrequencyLimits(unsigned int rate, std::size_t width);
-    static double GetFrequencyIndex(unsigned int rate, std::size_t width, double f);
+    static std::tuple<double, double> GetFrequencyLimits(double rate, std::size_t width);
+    static double GetFrequencyIndex(double rate, std::size_t width, double f);
     static std::vector<double> Resample(const std::vector<double>& input,
-                                        unsigned int rate, std::size_t width,
-                                        int fmin, int fmax);
+                                        double rate, std::size_t width,
+                                        double fmin, double fmax);
     static std::vector<double> Crop(const std::vector<double>& input,
-                                    unsigned int rate, int fmin, int fmax);
+                                    double rate, double fmin, double fmax);
 };
 
 #endif

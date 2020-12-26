@@ -32,13 +32,13 @@ private:
 
     std::string ValueToShortString(double value, int prec, const std::string& unit);
 
-    std::list<std::tuple<double, std::string>> GetLinearTicks(float v_min, float v_max, const std::string& v_unit,
+    std::list<std::tuple<double, std::string>> GetLinearTicks(double v_min, double v_max, const std::string& v_unit,
                                                               unsigned int num_ticks);
-    std::list<std::tuple<double, std::string>> GetNiceTicks(float v_min, float v_max, const std::string& v_unit,
+    std::list<std::tuple<double, std::string>> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
                                                             unsigned int length_px, unsigned int est_tick_length_px);
 
     void RenderAxis(sf::RenderTexture& texture,
-                    const sf::Transform& t, bool lhs, int orientation, float length,
+                    const sf::Transform& t, bool lhs, int orientation, double length,
                     const std::list<std::tuple<double, std::string>>& ticks);
 
 public:

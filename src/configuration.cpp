@@ -81,8 +81,8 @@ Configuration::FromArgs(int argc, char **argv)
     args::Group input_opts(parser, "Input options:", args::Group::Validators::DontCare);
     args::ValueFlag<std::string>
         infile(input_opts, "string", "Input file name", {'i', "input"});
-    args::ValueFlag<int>
-        rate(input_opts, "integer", "Sampling rate of input in Hz (default: 44100)", {'r', "rate"});
+    args::ValueFlag<float>
+        rate(input_opts, "float", "Sampling rate of input in Hz (default: 44100)", {'r', "rate"});
     args::ValueFlag<std::string>
         datatype(input_opts, "string", "Data type of input (default: s16)", {'d', "datatype"});
     args::ValueFlag<int>
@@ -105,10 +105,10 @@ Configuration::FromArgs(int argc, char **argv)
                       {'q', "no_resampling"});
     args::ValueFlag<int>
         width(display_opts, "integer", "Display width (default: 512)", {'w', "width"});
-    args::ValueFlag<int>
-        fmin(display_opts, "integer", "Minimum frequency in Hz (default: -0.5 * rate for complex data types, 0 otherwise)", {'x', "fmin"});
-    args::ValueFlag<int>
-        fmax(display_opts, "integer", "Maximum frequency in Hz (default: 0.5 * rate)", {'y', "fmax"});
+    args::ValueFlag<float>
+        fmin(display_opts, "float", "Minimum frequency in Hz (default: -0.5 * rate for complex data types, 0 otherwise)", {'x', "fmin"});
+    args::ValueFlag<float>
+        fmax(display_opts, "float", "Maximum frequency in Hz (default: 0.5 * rate)", {'y', "fmax"});
     args::ValueFlag<std::string>
         scale(display_opts, "string", "Display scale (default: dBFS)", {'s', "scale"});
     args::ValueFlag<std::string>
@@ -202,8 +202,6 @@ Configuration::FromArgs(int argc, char **argv)
             return std::make_tuple(conf, 1, true);
         }
     }
-    conf.min_freq_ = conf.alias_negative_ ? 0 : -conf.rate_ / 2;
-    conf.max_freq_ = conf.rate_ / 2;
 
     if (fft_width) {
         if (args::get(fft_width) <= 0) {
@@ -212,6 +210,14 @@ Configuration::FromArgs(int argc, char **argv)
         } else {
             conf.fft_width_ = args::get(fft_width);
         }
+    }
+    if (conf.fft_width_ % 2 == 0) {
+        conf.min_freq_ = conf.alias_negative_ ? 0 : -(conf.rate_ / 2.0f - 1.0f / conf.fft_width_);
+        conf.max_freq_ = conf.rate_ / 2.0f;
+    } else {
+        double boundary = conf.rate_ / 2.0f - 1.0f / (2.0f * conf.fft_width_);
+        conf.min_freq_ = conf.alias_negative_ ? 0 : -boundary;
+        conf.max_freq_ = boundary;
     }
     if (fft_stride) {
         if (args::get(fft_stride) <= 0) {
