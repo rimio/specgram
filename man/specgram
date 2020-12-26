@@ -40,6 +40,7 @@ In stdin input mode, data is read in an asynchronous manner and for an indefinit
 The spectrogram is updated as new data arrives and output is buffered in memory.
 
 In either input modes, when receiving SIGINT (i.e. by user pressing CTRL+C in the terminal), the program stops listening to data and exits gracefully, writing \fIoutfile\fR if provided.
+This also happens in live output mode, when the live window is closed.
 If the program receives SIGINT again it will forcefully quit.
 
 See \fBEXAMPLES\fR for common use cases.
