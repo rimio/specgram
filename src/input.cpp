@@ -184,12 +184,16 @@ InputParser::FromDataType(DataType dtype)
         return std::make_unique<IntegerInputParser<short>>();
     } else if (dtype == DataType::kSignedInt32) {
         return std::make_unique<IntegerInputParser<int>>();
+    } else if (dtype == DataType::kSignedInt64) {
+        return std::make_unique<IntegerInputParser<long long>>();
     } else if (dtype == DataType::kUnsignedInt8) {
         return std::make_unique<IntegerInputParser<unsigned char>>();
     } else if (dtype == DataType::kUnsignedInt16) {
         return std::make_unique<IntegerInputParser<unsigned short>>();
     } else if (dtype == DataType::kUnsignedInt32) {
         return std::make_unique<IntegerInputParser<unsigned int>>();
+    } else if (dtype == DataType::kUnsignedInt64) {
+        return std::make_unique<IntegerInputParser<unsigned long long>>();
     } else {
         assert(false);
         spdlog::error("Internal error: unknown datatype!");
@@ -217,10 +221,3 @@ IntegerInputParser<T>::ParseBlock(const std::vector<char> &block)
 
     return count;
 }
-
-template class IntegerInputParser<char>;
-template class IntegerInputParser<short>;
-template class IntegerInputParser<int>;
-template class IntegerInputParser<unsigned char>;
-template class IntegerInputParser<unsigned short>;
-template class IntegerInputParser<unsigned int>;

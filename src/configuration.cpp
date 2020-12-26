@@ -221,6 +221,9 @@ Configuration::FromArgs(int argc, char **argv)
         } else if (dtype == "s32") {
             conf.datatype_ = DataType::kSignedInt32;
             conf.alias_negative_ = true;
+        } else if (dtype == "s64") {
+            conf.datatype_ = DataType::kSignedInt64;
+            conf.alias_negative_ = true;
         } else if (dtype == "u8") {
             conf.datatype_ = DataType::kUnsignedInt8;
             conf.alias_negative_ = true;
@@ -229,6 +232,9 @@ Configuration::FromArgs(int argc, char **argv)
             conf.alias_negative_ = true;
         } else if (dtype == "u32") {
             conf.datatype_ = DataType::kUnsignedInt32;
+            conf.alias_negative_ = true;
+        } else if (dtype == "u64") {
+            conf.datatype_ = DataType::kUnsignedInt64;
             conf.alias_negative_ = true;
         } else {
             std::cerr << "Unknown data type '" << dtype << "'" << std::endl;

@@ -20,9 +20,11 @@ enum DataType {
     kSignedInt8,
     kSignedInt16,
     kSignedInt32,
+    kSignedInt64,
     kUnsignedInt8,
     kUnsignedInt16,
     kUnsignedInt32,
+    kUnsignedInt64
 };
 
 /*
