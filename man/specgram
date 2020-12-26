@@ -1,4 +1,4 @@
-.TH SPECGRAM 1 "2020-12-25"
+.TH SPECGRAM 1 "2020-12-26"
 
 .SH NAME
 specgram \- create spectrograms from raw files or standard input
@@ -19,6 +19,8 @@ specgram \- create spectrograms from raw files or standard input
 [\fB\-y, --fmax\fR=\fIFMAX\fR]
 [\fB\-s, --scale\fR=\fISCALE\fR]
 [\fB\-c, --colormap\fR=\fICOLORMAP\fR]
+[\fB--bg-color\fR=\fIBGCOLOR\fR]
+[\fB--fg-color\fR=\fIFGCOLOR\fR]
 [\fB\-k, --count\fR=\fICOUNT\fR]
 [\fB\-t, --title\fR=\fITITLE\fR]
 .IR [outfile]
@@ -177,6 +179,18 @@ In this case, a gradient between the background color and the color specified by
 Default is jet.
 
 .TP
+.BR \-\-bg-color =\fIBGCOLOR\fR
+Background color. Either a 6 character hex string (RGB color) or an 8 character hex string (RGBA color).
+
+Default is 000000 (black).
+
+.TP
+.BR \-\-fg-color =\fIFGCOLOR\fR
+Foreground color. Either a 6 character hex string (RGB color) or an 8 character hex string (RGBA color).
+
+Default is ffffff (white).
+
+.TP
 .BR \-a ", " \-\-axes
 Displays axes.
 
@@ -247,6 +261,12 @@ Generating from a file to a file, with axes and legend displayed, but zooming in
 
 .IP
 \fBspecgram\fR -e -f 2048 -x 2000 -y 4000 -i \fIinfile\fR \fIoutfile.png\fR
+
+.LP
+Render a crisp output with a transparent background, so it can be embedded in a document:
+
+.IP
+\fBspecgram\fR -qe --bg-color=00000000 -i \fIinfile\fR \fIoutfile.png\fR
 
 .SH BUGS
 
