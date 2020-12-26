@@ -62,6 +62,9 @@ Configuration::GetForLive() const
     c.has_legend_ = true;
     c.has_live_window_ = true;
 
+    /* do not allow transparent background, will generate artifacts on live view */
+    c.background_color_.a = 255;
+
     return c;
 }
 
