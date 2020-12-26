@@ -5,7 +5,8 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 #include "configuration.hpp"
-#include "input.hpp"
+#include "input-parser.hpp"
+#include "input-reader.hpp"
 #include "fft.hpp"
 #include "live.hpp"
 #include "colormap.hpp"

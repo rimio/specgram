@@ -8,7 +8,7 @@
 #ifndef _CONFIGURATION_HPP_
 #define _CONFIGURATION_HPP_
 
-#include "input.hpp"
+#include "input-parser.hpp"
 #include "fft.hpp"
 #include "colormap.hpp"
 

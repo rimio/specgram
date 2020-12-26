@@ -44,7 +44,8 @@ configure_file (
 set (SPECGRAM_SOURCES
     "${SRC_DIR}/specgram.cpp"
     "${SRC_DIR}/configuration.cpp"
-    "${SRC_DIR}/input.cpp"
+    "${SRC_DIR}/input-parser.cpp"
+    "${SRC_DIR}/input-reader.cpp"
     "${SRC_DIR}/fft.cpp"
     "${SRC_DIR}/colormap.cpp"
     "${SRC_DIR}/live.cpp"
