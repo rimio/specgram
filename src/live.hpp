@@ -9,7 +9,7 @@
 
 #include "configuration.hpp"
 #include "renderer.hpp"
-#include "colormap.hpp"
+#include "color-map.hpp"
 #include <SFML/Graphics.hpp>
 
 class LiveOutput {

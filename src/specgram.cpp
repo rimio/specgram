@@ -7,9 +7,10 @@
 #include "configuration.hpp"
 #include "input-parser.hpp"
 #include "input-reader.hpp"
+#include "color-map.hpp"
+#include "value-map.hpp"
 #include "fft.hpp"
 #include "live.hpp"
-#include "colormap.hpp"
 
 #include <spdlog/spdlog.h>
 #include <iostream>

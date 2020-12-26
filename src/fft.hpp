@@ -21,37 +21,6 @@ enum FFTWindowFunction {
     kNuttall
 };
 
-enum FFTScale {
-    kdBFS
-};
-
-class ValueMap {
-protected:
-    const double lower_;
-    const double upper_;
-
-    ValueMap(double lower_, double upper);
-public:
-    ValueMap() = delete;
-
-    auto GetLowerBound() const { return lower_; }
-    auto GetUpperBound() const { return upper_; }
-
-    virtual std::vector<double> Map(const std::vector<std::complex<double>>& input) = 0;
-    virtual std::string GetUnit() const = 0;
-    virtual std::string GetName() const = 0;
-};
-
-class dBFSValueMap : public ValueMap {
-private:
-public:
-    explicit dBFSValueMap(double mindb);
-
-    std::vector<double> Map(const std::vector<std::complex<double>>& input) override;
-    std::string GetUnit() const override { return "dBFS"; }
-    std::string GetName() const override { return "dBFS"; }
-};
-
 class FFT {
 private:
     /* FFT window width */

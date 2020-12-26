@@ -32,7 +32,7 @@ Configuration::Configuration()
     this->width_ = 512;
     this->min_freq_ = 0;
     this->max_freq_ = this->rate_ / 2;
-    this->scale_ = FFTScale::kdBFS;
+    this->scale_ = ValueMapType::kdBFS;
     this->color_map_ = ColorMapType::kJet;
     this->background_color_ = sf::Color(0, 0, 0);
     this->foreground_color_ = sf::Color(255, 255, 255);
@@ -329,7 +329,7 @@ Configuration::FromArgs(int argc, char **argv)
     if (scale) {
         auto& scale_str = args::get(scale);
         if (scale_str == "dbfs" || scale_str == "dBFS") {
-            conf.scale_ = FFTScale::kdBFS;
+            conf.scale_ = ValueMapType::kdBFS;
         } else {
             std::cerr << "Unknown scale '" << scale_str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);

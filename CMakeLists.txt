@@ -46,8 +46,9 @@ set (SPECGRAM_SOURCES
     "${SRC_DIR}/configuration.cpp"
     "${SRC_DIR}/input-parser.cpp"
     "${SRC_DIR}/input-reader.cpp"
+    "${SRC_DIR}/color-map.cpp"
+    "${SRC_DIR}/value-map.cpp"
     "${SRC_DIR}/fft.cpp"
-    "${SRC_DIR}/colormap.cpp"
     "${SRC_DIR}/live.cpp"
     "${SRC_DIR}/renderer.cpp"
 

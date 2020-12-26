@@ -9,8 +9,9 @@
 #define _CONFIGURATION_HPP_
 
 #include "input-parser.hpp"
+#include "color-map.hpp"
+#include "value-map.hpp"
 #include "fft.hpp"
-#include "colormap.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <string>
@@ -36,7 +37,7 @@ private:
     std::size_t width_;
     double min_freq_;
     double max_freq_;
-    FFTScale scale_;
+    ValueMapType scale_;
     ColorMapType color_map_;
     sf::Color color_map_custom_color_;
     sf::Color background_color_;

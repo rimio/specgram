@@ -5,8 +5,8 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#ifndef _COLORMAP_HPP_
-#define _COLORMAP_HPP_
+#ifndef _COLOR_MAP_HPP_
+#define _COLOR_MAP_HPP_
 
 #include <vector>
 #include <memory>
