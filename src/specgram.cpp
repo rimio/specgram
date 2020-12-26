@@ -188,7 +188,33 @@ main(int argc, char** argv)
     if (conf.GetOutputFilename().has_value()) {
         Renderer file_renderer(conf, *color_map, *value_map, history.size());
         file_renderer.RenderFFTArea(history);
-        file_renderer.GetCanvas().copyToImage().saveToFile(*conf.GetOutputFilename());
+        auto image = file_renderer.GetCanvas().copyToImage();
+
+        if (conf.IsHorizontal()) {
+            std::size_t w = image.getSize().x;
+            std::size_t h = image.getSize().y;
+
+            /* allocate memory */
+            auto iptr = reinterpret_cast<const uint32_t *>(image.getPixelsPtr());
+            uint32_t *optr = new uint32_t[w * h];
+
+            /* copy 4 bytes (one pixel) at a time */
+            for (std::size_t l = 0; l < h; l ++) {
+                auto in = iptr + l * w;
+                auto out = optr + (w-1) * h + l;
+                for (std::size_t c = 0; c < w; c++, in++, out -= h) {
+                    *out = *in;
+                }
+            }
+
+            /* create rotated image */
+            sf::Image rimage;
+            rimage.create(h, w, reinterpret_cast<const uint8_t *>(optr));
+            delete[] optr;
+            rimage.saveToFile(*conf.GetOutputFilename());
+        } else {
+            image.saveToFile(*conf.GetOutputFilename());
+        }
     }
 
     /* all ok */
