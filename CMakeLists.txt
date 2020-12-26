@@ -21,6 +21,8 @@ add_compile_options (-Wall -Wextra -pedantic)
 
 # Directory setup
 set (SRC_DIR "${PROJECT_SOURCE_DIR}/src")
+set (MAN_DIR "${PROJECT_SOURCE_DIR}/man")
+
 include_directories (${SOURCE_DIR})
 
 # Configurations
@@ -45,4 +47,7 @@ set (SPECGRAM_SOURCES
 # Targets
 add_executable (${PROJECT_NAME} ${SPECGRAM_SOURCES})
 target_link_libraries (${PROJECT_NAME} spdlog::spdlog sfml-window sfml-graphics ${FFTW3})
+
+# Install
 install (TARGETS ${PROJECT_NAME} DESTINATION bin)
+install (FILES "${MAN_DIR}/specgram.1" DESTINATION "share/man/man1/")
