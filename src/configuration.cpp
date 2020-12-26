@@ -270,6 +270,8 @@ Configuration::FromArgs(int argc, char **argv)
             conf.window_function_ = FFTWindowFunction::kHamming;
         } else if (wf_str == "blackman") {
             conf.window_function_ = FFTWindowFunction::kBlackman;
+        } else if (wf_str == "nuttall") {
+            conf.window_function_ = FFTWindowFunction::kBlackman;
         } else {
             std::cerr << "Unknown window function '" << wf_str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);

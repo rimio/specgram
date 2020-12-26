@@ -88,6 +88,21 @@ FFT::FFT(std::size_t win_width, FFTWindowFunction wf) : window_width_(win_width)
             }
             break;
 
+        case FFTWindowFunction::kNuttall: {
+                auto n = win_width;
+                for (std::size_t i = 0; i < win_width; i++) {
+                    double c1 = std::cos(2.0f * (double) M_PI * (double) i / (double) n);
+                    double c2 = std::cos(4.0f * (double) M_PI * (double) i / (double) n);
+                    double c3 = std::cos(6.0f * (double) M_PI * (double) i / (double) n);
+                    double a0 = 0.355768f;
+                    double a1 = 0.487396f;
+                    double a2 = 0.144232f;
+                    double a3 = 0.012604f;
+                    this->window_[i] = a0 - a1 * c1 + a2 * c2 - a3 * c3;
+                }
+            }
+            break;
+
         case FFTWindowFunction::kNone:
             /* nop */
             break;
