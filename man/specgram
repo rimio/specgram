@@ -213,6 +213,41 @@ Default is 'Spectrogram'.
 
 .SH EXAMPLE
 
+.LP
+One of the most obvious use cases is displaying a live spectrogram from the PC audio output (you can retrieve \fIyourdevice\fP using "\fBpactl --list\fR"):
+
+.IP
+parec --channels=1 --device="\fIyourdevice\fR.monitor" --raw | \fBspecgram\fR -l
+
+.LP
+This will assume your device produces 16-bit signed output at 44.1kHz, which is usually the case.
+
+If you want the same, but wider and with a crisp look:
+
+.IP
+parec --channels=1 --device="\fIyourdevice\fR.monitor" --raw | \fBspecgram\fR -lq -f 2048
+
+.LP
+If you also want to render it to an output file:
+
+.IP
+parec --channels=1 --device="\fIyourdevice\fR.monitor" --raw | \fBspecgram\fR -lq -f 2048 \fIoutfile.png\fR
+
+.LP
+Keep in mind that when reading from stdin (like the above cases), the program expects SIGINT to stop generating FFT windows (e.g. by pressing CTRL+C in terminal).
+The file \fIoutfile.png\fR will be generated after SIGINT is received.
+
+Generating from a file to a file, with axes displayed and a crisp look:
+
+.IP
+\fBspecgram\fR -aq -f 2048 -i \fIinfile\fR \fIoutfile.png\fR
+
+.LP
+Generating from a file to a file, with axes and legend displayed, but zooming in on the 2-4kHz band:
+
+.IP
+\fBspecgram\fR -e -f 2048 -x 2000 -y 4000 -i \fIinfile\fR \fIoutfile.png\fR
+
 .SH BUGS
 
 Frequency bounds (\fB\-x, \-\-fmin\fR and \fB\-y, \-\-fmax\fR) may exceed FFT window frequency limits when resampling is enabled (i.e. default behaviour), but may not do so when resampling is disabled (\fB\-q, \-\-no_resampling\fR).
