@@ -21,20 +21,25 @@ ColorMap::FromType(ColorMapType type,
         return std::make_unique<TwoColorMap>(bg_color,
                                              sf::Color(255, 255, 255, 255));
     } else if (type == ColorMapType::kPurple) {
-        return std::make_unique<TwoColorMap>(bg_color,
-                                             sf::Color(206, 153, 255, 255));
+        return std::make_unique<ThreeColorMap>(bg_color,
+                                               sf::Color(204, 51, 255, 255),
+                                               sf::Color(255, 255, 255, 255));
     } else if (type == ColorMapType::kBlue) {
-        return std::make_unique<TwoColorMap>(bg_color,
-                                             sf::Color(102, 163, 255, 255));
+        return std::make_unique<ThreeColorMap>(bg_color,
+                                               sf::Color(51, 51, 255, 255),
+                                               sf::Color(255, 255, 255, 255));
     } else if (type == ColorMapType::kGreen) {
-        return std::make_unique<TwoColorMap>(bg_color,
-                                             sf::Color(91, 215, 91, 255));
+        return std::make_unique<ThreeColorMap>(bg_color,
+                                               sf::Color(0, 150, 0, 255),
+                                               sf::Color(255, 255, 255, 255));
     } else if (type == ColorMapType::kOrange) {
-        return std::make_unique<TwoColorMap>(bg_color,
-                                             sf::Color(255, 102, 0, 255));
+        return std::make_unique<ThreeColorMap>(bg_color,
+                                               sf::Color(255, 102, 0, 255),
+                                               sf::Color(255, 255, 255, 255));
     } else if (type == ColorMapType::kRed) {
-        return std::make_unique<TwoColorMap>(bg_color,
-                                             sf::Color(230, 0, 0, 255));
+        return std::make_unique<ThreeColorMap>(bg_color,
+                                               sf::Color(230, 0, 0, 255),
+                                               sf::Color(255, 255, 255, 255));
     } else if (type == ColorMapType::kCustom) {
         return std::make_unique<TwoColorMap>(bg_color,
                                              custom_color);
@@ -108,6 +113,11 @@ InterpolationColorMap::Map(const RealWindow& input) const
 
 TwoColorMap::TwoColorMap(const sf::Color& c1, const sf::Color& c2)
     : InterpolationColorMap({ c1, c2 }, { 0.0f, 1.0f })
+{
+}
+
+ThreeColorMap::ThreeColorMap(const sf::Color& c1, const sf::Color& c2, const sf::Color& c3)
+    : InterpolationColorMap({ c1, c2, c3 }, { 0.0f, 0.5f, 1.0f })
 {
 }
 

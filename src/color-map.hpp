@@ -65,6 +65,11 @@ public:
     TwoColorMap(const sf::Color& c1, const sf::Color& c2);
 };
 
+class ThreeColorMap : public InterpolationColorMap {
+public:
+    ThreeColorMap(const sf::Color& c1, const sf::Color& c2, const sf::Color& c3);
+};
+
 class JetColorMap : public InterpolationColorMap {
 public:
     JetColorMap();
