@@ -2,6 +2,10 @@
 
 Small program that computes and plots spectrograms, either in a live window or to disk, with support for stdin input.
 
+## Preview
+
+![example](resources/readme_images/example.png?raw=true "Example")
+
 ## Build and install
 
 If you are using ArchLinux you can grab the latest release from the AUR package [specgram](https://aur.archlinux.org/packages/specgram/), or get the main branch with [specgram-git](https://aur.archlinux.org/packages/specgram-git/).

@@ -18,3 +18,8 @@ montage \
 -geometry 200x colormaps.png
 
 rm -rf colormap_*.png
+
+montage \
+-label "Live view" example_live.png \
+-label "File output" example_file.png \
+-geometry 400x example.png
