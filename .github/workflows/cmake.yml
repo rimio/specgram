@@ -1,4 +1,4 @@
-name: CMake
+name: build
 
 on: [push]
 
@@ -23,7 +23,7 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Install dependencies
-      run: sudo apt-get install ibfftw3-dev libspdlog-dev libsfml-dev
+      run: sudo apt-get install libfftw3-dev libspdlog-dev libsfml-dev
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
