@@ -19,6 +19,12 @@ make
 sudo make install
 ```
 
+## Dependencies
+
+This program dynamically links against [fftw](http://www.fftw.org/), [SFML](https://www.sfml-dev.org/), and [spdlog](https://github.com/gabime/spdlog).
+
+The source code of [Taywee/args](https://github.com/Taywee/args) is embedded in the program (see ```src/args.hxx```).
+
 ## Usage
 
 For a complete description of the program functionality please see the [manpage](man/specgram.1.pdf).
@@ -191,6 +197,8 @@ Copyright (c) 2020 Vasile Vilvoiu \<vasi.vilvoiu@gmail.com>
 **specgram** is free software; you can redistribute it and/or modify it under the terms of the MIT license.
 
 ## Acknowledgements
+
+Taywee/args library by Taylor C. Richberger and Pavel Belikov, released under the MIT license.
 
 Program icon by Flavia Fabian, released under the CC-BY-SA 4.0 license.
 
