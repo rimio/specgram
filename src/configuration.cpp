@@ -48,6 +48,7 @@ Configuration::Configuration()
 
     this->has_live_window_ = false;
     this->margin_size_ = 30;
+    this->live_margin_size_ = 16; /* this is so the two axes share the same label... more or less */
     this->minimum_margin_size_ = 15;
     this->legend_height_ = 20;
     this->live_fft_height_ = 100;

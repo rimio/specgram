@@ -52,6 +52,7 @@ private:
     bool has_live_window_;
 
     std::size_t margin_size_;
+    std::size_t live_margin_size_;
     std::size_t minimum_margin_size_;
     std::size_t legend_height_;
     std::size_t live_fft_height_;
@@ -105,6 +106,7 @@ public:
     auto HasLiveWindow() const { return has_live_window_; }
 
     auto GetMarginSize() const { return margin_size_; }
+    auto GetLiveMarginSize() const { return live_margin_size_; }
     auto GetMinimumMarginSize() const { return minimum_margin_size_; }
     auto GetLegendHeight() const { return legend_height_; }
     auto GetLiveFFTHeight() const { return live_fft_height_; }

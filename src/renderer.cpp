@@ -159,9 +159,9 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         if (this->configuration_.HasAxes()) {
             this->legend_transform_.translate(conf.GetMarginSize() + horizontal_extra_spacing,
                                               conf.GetMarginSize() + legend_axis_spacing);
-            this->height_ += conf.GetMarginSize();
+            this->height_ += conf.GetMarginSize() + legend_axis_spacing;
         }
-        this->height_ += conf.GetLegendHeight() + legend_axis_spacing;
+        this->height_ += conf.GetLegendHeight();
     }
 
     this->fft_live_transform_.translate(0.0f, this->height_);
@@ -169,7 +169,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         if (this->configuration_.HasAxes()) {
             this->fft_live_transform_.translate(conf.GetMarginSize() + horizontal_extra_spacing,
                                                 conf.GetMarginSize());
-            this->height_ += conf.GetMarginSize();
+            this->height_ += conf.GetLiveMarginSize();
         }
         this->height_ += conf.GetLiveFFTHeight();
     }
