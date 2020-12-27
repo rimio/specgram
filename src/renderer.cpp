@@ -416,7 +416,7 @@ Renderer::RenderFFTArea(const std::list<std::vector<uint8_t>>& history)
 }
 
 void
-Renderer::RenderLiveFFT(const std::vector<double>& window, const std::vector<uint8_t>& colors)
+Renderer::RenderLiveFFT(const RealWindow& window, const std::vector<uint8_t>& colors)
 {
     assert(window.size() == this->configuration_.GetWidth());
 

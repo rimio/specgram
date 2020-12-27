@@ -11,9 +11,7 @@
 #include <complex>
 #include <memory>
 
-/*
- * Input data type
- */
+/* Input data type */
 enum DataType {
     /* signed integer */
     kSignedInt8,
@@ -36,13 +34,22 @@ enum DataType {
     kComplex128
 };
 
+/* Complex type that we normalize everything to */
+typedef std::complex<double> Complex;
+
+/* Window of real numbers */
+typedef std::vector<double> RealWindow;
+
+/* Window of complex numbers */
+typedef std::vector<Complex> ComplexWindow;
+
 /*
  * Input parser base class
  */
 class InputParser {
 protected:
     double prescale_factor_;
-    std::vector<std::complex<double>> values_;
+    std::vector<Complex> values_;
 
     InputParser() = delete;
     explicit InputParser(double prescale);
@@ -57,7 +64,7 @@ public:
 
     std::size_t GetBufferedValueCount() const;
 
-    std::vector<std::complex<double>> PeekValues(std::size_t count) const;
+    std::vector<Complex> PeekValues(std::size_t count) const;
     void RemoveValues(std::size_t count);
 
     virtual std::size_t ParseBlock(const std::vector<char> &block) = 0;

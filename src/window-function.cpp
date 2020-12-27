@@ -40,14 +40,14 @@ WindowFunction::FromType(WindowFunctionType type, std::size_t window_size)
     }
 }
 
-std::vector<std::complex<double>>
-WindowFunction::Apply(const std::vector<std::complex<double>>& window) const
+ComplexWindow
+WindowFunction::Apply(const ComplexWindow& window) const
 {
     /* only matching windows */
     assert(window.size() == this->window_size_);
     assert(this->cached_factors_.size() == this->window_size_);
 
-    std::vector<std::complex<double>> output;
+    ComplexWindow output;
     output.resize(this->window_size_);
     for (std::size_t i = 0; i < this->window_size_; i++) {
         output[i] = window[i] * this->cached_factors_[i];

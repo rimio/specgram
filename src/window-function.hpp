@@ -7,6 +7,8 @@
 #ifndef _WINDOW_FUNCTION_HPP_
 #define _WINDOW_FUNCTION_HPP_
 
+#include "input-parser.hpp"
+
 #include <vector>
 #include <complex>
 #include <memory>
@@ -29,7 +31,7 @@ protected:
 public:
     WindowFunction() = delete;
 
-    std::vector<std::complex<double>> Apply(const std::vector<std::complex<double>>& window) const;
+    ComplexWindow Apply(const ComplexWindow& window) const;
 
     static std::unique_ptr<WindowFunction> FromType(WindowFunctionType type, std::size_t window_size);
 };

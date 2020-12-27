@@ -19,11 +19,11 @@ InputParser::GetBufferedValueCount() const
     return values_.size();
 }
 
-std::vector<std::complex<double>>
+std::vector<Complex>
 InputParser::PeekValues(std::size_t count) const
 {
     count = std::min<std::size_t>(count, this->values_.size());
-    return std::vector<std::complex<double>> (this->values_.begin(), this->values_.begin() + count);
+    return std::vector<Complex> (this->values_.begin(), this->values_.begin() + count);
 }
 
 void
@@ -89,7 +89,7 @@ IntegerInputParser<T>::ParseBlock(const std::vector<char> &block)
         real *= std::numeric_limits<T>::is_signed ? 0.5f : 1.0f;
         real *= this->prescale_factor_;
 
-        this->values_.emplace_back(std::complex<double>(real, 0.0f));
+        this->values_.emplace_back(Complex(real, 0.0f));
     }
 
     return count;
@@ -117,7 +117,7 @@ FloatInputParser<T>::ParseBlock(const std::vector<char> &block)
         /* prescale */
         real *= this->prescale_factor_;
 
-        this->values_.emplace_back(std::complex<double>(real, 0.0f));
+        this->values_.emplace_back(Complex(real, 0.0f));
     }
 
     return count;
@@ -147,7 +147,7 @@ ComplexInputParser<T>::ParseBlock(const std::vector<char> &block)
         real *= this->prescale_factor_;
         imag *= this->prescale_factor_;
 
-        this->values_.emplace_back(std::complex<double>(real, imag));
+        this->values_.emplace_back(Complex(real, imag));
     }
 
     return count;

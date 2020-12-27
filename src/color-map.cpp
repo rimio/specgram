@@ -48,9 +48,10 @@ ColorMap::FromType(ColorMapType type,
 std::vector<uint8_t>
 ColorMap::Gradient(std::size_t width) const
 {
-    std::vector<double> values;
+    RealWindow values;
+    values.resize(width);
     for (std::size_t i = 0; i < width; i++) {
-        values.push_back((double) i / (double) (width-1));
+        values[i] = (double) i / (double) (width-1);
     }
     return this->Map(values);
 }
@@ -88,7 +89,7 @@ InterpolationColorMap::GetColor(double value) const
 }
 
 std::vector<uint8_t>
-InterpolationColorMap::Map(const std::vector<double>& input) const
+InterpolationColorMap::Map(const RealWindow& input) const
 {
     std::vector<uint8_t> output;
     output.resize(input.size() * 4);

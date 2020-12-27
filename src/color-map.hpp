@@ -8,6 +8,8 @@
 #ifndef _COLOR_MAP_HPP_
 #define _COLOR_MAP_HPP_
 
+#include "input-parser.hpp"
+
 #include <vector>
 #include <memory>
 #include <cstdint>
@@ -40,7 +42,7 @@ public:
                                               const sf::Color& bg_color,
                                               const sf::Color& custom_color);
 
-    virtual std::vector<uint8_t> Map(const std::vector<double>& input) const = 0;
+    virtual std::vector<uint8_t> Map(const RealWindow& input) const = 0;
     std::vector<uint8_t> Gradient(std::size_t width) const;
 };
 

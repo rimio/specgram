@@ -14,12 +14,12 @@ dBFSValueMap::dBFSValueMap(double mindb) : ValueMap(mindb, 0)
 {
 }
 
-std::vector<double>
-dBFSValueMap::Map(const std::vector<std::complex<double>>& input)
+RealWindow
+dBFSValueMap::Map(const ComplexWindow& input)
 {
     auto n = input.size();
 
-    std::vector<double> output;
+    RealWindow output;
     output.resize(n);
 
     for (unsigned int i = 0; i < n; i ++) {

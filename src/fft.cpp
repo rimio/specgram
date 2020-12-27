@@ -35,18 +35,18 @@ FFT::~FFT()
     this->out_ = nullptr;
 }
 
-std::vector<std::complex<double>>
-FFT::Compute(const std::vector<std::complex<double>>& input, bool alias)
+ComplexWindow
+FFT::Compute(const ComplexWindow& input, bool alias)
 {
     /* assume the same memory representation */
-    assert(sizeof(fftw_complex) == sizeof(std::complex<double>));
+    assert(sizeof(fftw_complex) == sizeof(Complex));
 
     /* assume we received exactly one window */
     assert(input.size() == this->window_width_);
 
     /* make a copy of the input and apply window function */
     auto input_ref = &input;
-    std::vector<std::complex<double>> processed_input;
+    ComplexWindow processed_input;
     if (this->window_function_ != nullptr) {
         processed_input = this->window_function_->Apply(input);
         input_ref = &processed_input;
@@ -63,7 +63,7 @@ FFT::Compute(const std::vector<std::complex<double>>& input, bool alias)
      * the output (i.e. first half) so we switch the upper and lower halves, i.e.: */
     /*    even width: out_: [0 1 2 3 4 5 6 7] -> output: [5 6 7 0 1 2 3 4] */
     /*     odd width: out_: [0 1 2 3 4 5 6]   -> output: [4 5 6 0 1 2 3] */
-    std::vector<std::complex<double>> output;
+    ComplexWindow output;
     output.resize(this->window_width_);
 
     auto uhl = (this->window_width_ - 1) / 2; /* upper half length */
@@ -139,9 +139,8 @@ FFT::GetFrequencyIndex(double rate, std::size_t width, double f)
     return (f - in_fmin) / (in_fmax - in_fmin) * (width - 1);
 }
 
-std::vector<double>
-FFT::Resample(const std::vector<double>& input, double rate,
-              std::size_t width, double fmin, double fmax)
+RealWindow
+FFT::Resample(const RealWindow& input, double rate, std::size_t width, double fmin, double fmax)
 {
     assert(rate > 0);
     assert(fmin < fmax);
@@ -153,7 +152,7 @@ FFT::Resample(const std::vector<double>& input, double rate,
     double i_fmax = FFT::GetFrequencyIndex(rate, input.size(), fmax);
 
     /* prepare output */
-    std::vector<double> output;
+    RealWindow output;
     output.resize(width);
 
     /* [0..width] -> [i_fmin..i_fmax] */
@@ -179,8 +178,8 @@ FFT::Resample(const std::vector<double>& input, double rate,
     return output;
 }
 
-std::vector<double>
-FFT::Crop(const std::vector<double>& input, double rate, double fmin, double fmax)
+RealWindow
+FFT::Crop(const RealWindow& input, double rate, double fmin, double fmax)
 {
     assert(fmin < fmax);
 
@@ -199,5 +198,5 @@ FFT::Crop(const std::vector<double>& input, double rate, double fmin, double fma
     assert(i_fmax - i_fmin > 0);
 
     /* return corresponding subvector */
-    return std::vector<double>(input.begin() + i_fmin, input.begin() + i_fmax);
+    return RealWindow(input.begin() + i_fmin, input.begin() + i_fmax);
 }

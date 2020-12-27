@@ -126,7 +126,7 @@ Configuration::FromArgs(int argc, char **argv)
     args::ValueFlag<int>
         fft_stride(fft_opts, "integer", "FFT window stride (default: 1024)", {'g', "fft_stride"});
     args::ValueFlag<std::string>
-        win_func(fft_opts, "string", "Window function (default: hann)", {'n', "window_function"});
+        win_func(fft_opts, "string", "ComplexWindow function (default: hann)", {'n', "window_function"});
     args::ValueFlag<bool>
         alias(fft_opts, "boolean", "Alias negative and positive frequencies (default: 0 (no) for complex data types, 1 (yes) otherwise)",
               {'s', "alias"});
@@ -162,7 +162,7 @@ Configuration::FromArgs(int argc, char **argv)
     args::ValueFlag<int>
         count(live_opts, "integer", "Number of FFT windows in displayed history (default: 512)", {'k', "count"});
     args::ValueFlag<std::string>
-        title(live_opts, "string", "Window title", {'t', "title"});
+        title(live_opts, "string", "ComplexWindow title", {'t', "title"});
 
     /* parse arguments */
     try {

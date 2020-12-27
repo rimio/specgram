@@ -41,15 +41,12 @@ public:
     FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func);
     virtual ~FFT();
 
-    std::vector<std::complex<double>> Compute(const std::vector<std::complex<double>>& input, bool alias);
+    ComplexWindow Compute(const ComplexWindow& input, bool alias);
 
     static std::tuple<double, double> GetFrequencyLimits(double rate, std::size_t width);
     static double GetFrequencyIndex(double rate, std::size_t width, double f);
-    static std::vector<double> Resample(const std::vector<double>& input,
-                                        double rate, std::size_t width,
-                                        double fmin, double fmax);
-    static std::vector<double> Crop(const std::vector<double>& input,
-                                    double rate, double fmin, double fmax);
+    static RealWindow Resample(const RealWindow& input, double rate, std::size_t width, double fmin, double fmax);
+    static RealWindow Crop(const RealWindow& input, double rate, double fmin, double fmax);
 };
 
 #endif

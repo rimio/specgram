@@ -8,6 +8,8 @@
 #ifndef _VALUE_MAP_HPP_
 #define _VALUE_MAP_HPP_
 
+#include "input-parser.hpp"
+
 #include <string>
 #include <vector>
 #include <complex>
@@ -28,7 +30,7 @@ public:
     auto GetLowerBound() const { return lower_; }
     auto GetUpperBound() const { return upper_; }
 
-    virtual std::vector<double> Map(const std::vector<std::complex<double>>& input) = 0;
+    virtual RealWindow Map(const ComplexWindow& input) = 0;
     virtual std::string GetUnit() const = 0;
     virtual std::string GetName() const = 0;
 };
@@ -38,7 +40,7 @@ private:
 public:
     explicit dBFSValueMap(double mindb);
 
-    std::vector<double> Map(const std::vector<std::complex<double>>& input) override;
+    RealWindow Map(const ComplexWindow& input) override;
     std::string GetUnit() const override { return "dBFS"; }
     std::string GetName() const override { return "dBFS"; }
 };

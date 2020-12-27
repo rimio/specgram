@@ -26,7 +26,7 @@ LiveOutput::LiveOutput(const Configuration& conf, const ColorMap& cmap, const Va
 }
 
 void
-LiveOutput::AddWindow(const std::vector<uint8_t>& window, const std::vector<double>& win_values)
+LiveOutput::AddWindow(const std::vector<uint8_t>& window, const RealWindow& win_values)
 {
     std::size_t wlen_bytes = this->configuration_.GetWidth() * 4;
     assert(window.size() == wlen_bytes);

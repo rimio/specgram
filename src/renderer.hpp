@@ -48,7 +48,7 @@ public:
     /* render commands */
     void RenderFFTArea(const std::vector<uint8_t>& memory);
     void RenderFFTArea(const std::list<std::vector<uint8_t>>& history);
-    void RenderLiveFFT(const std::vector<double>& window, const std::vector<uint8_t>& colors);
+    void RenderLiveFFT(const RealWindow& window, const std::vector<uint8_t>& colors);
 
     /* canvas builder */
     sf::Texture GetCanvas();
