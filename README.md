@@ -186,9 +186,9 @@ $ parec --channels=1 --device="${PASOURCE}" --raw | specgram -l -t "My spectrogr
 
 ## License
 
-Copyright (c) 2020 Vasile Vilvoiu <vasi.vilvoiu@gmail.com>
+Copyright (c) 2020 Vasile Vilvoiu \<vasi.vilvoiu@gmail.com>
 
-\fBspecgram\fR is free software; you can redistribute it and/or modify it under the terms of the MIT license.
+**specgram** is free software; you can redistribute it and/or modify it under the terms of the MIT license.
 
 ## Acknowledgements
 
