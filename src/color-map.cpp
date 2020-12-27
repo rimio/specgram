@@ -15,10 +15,6 @@ ColorMap::FromType(ColorMapType type,
                    const sf::Color& bg_color,
                    const sf::Color& custom_color)
 {
-    /* black and white */
-    sf::Color black(0, 0, 0);
-    sf::Color white(255, 255, 255);
-
     /* colormaps are not allowed to be translucent */
     sf::Color opaque_bg_color(bg_color.r, bg_color.g, bg_color.b, 255);
     sf::Color opaque_custom_color(custom_color.r, custom_color.g, custom_color.b, 255);
@@ -28,30 +24,28 @@ ColorMap::FromType(ColorMapType type,
             return std::make_unique<JetColorMap>();
 
         case ColorMapType::kGray:
-            return std::make_unique<TwoColorMap>(black, white);
+            return std::make_unique<TwoColorMap>(sf::Color::Black, sf::Color::White);
 
         case ColorMapType::kPurple:
-            return std::make_unique<ThreeColorMap>(black, sf::Color(204, 51, 255, 255), white);
+            return std::make_unique<ThreeColorMap>(sf::Color::Black, sf::Color(204, 51, 255, 255), sf::Color::White);
 
         case ColorMapType::kBlue:
-            return std::make_unique<ThreeColorMap>(black, sf::Color(51, 51, 255, 255), white);
+            return std::make_unique<ThreeColorMap>(sf::Color::Black, sf::Color(51, 51, 255, 255), sf::Color::White);
 
         case ColorMapType::kGreen:
-            return std::make_unique<ThreeColorMap>(black, sf::Color(0, 150, 0, 255), white);
+            return std::make_unique<ThreeColorMap>(sf::Color::Black, sf::Color(0, 150, 0, 255), sf::Color::White);
 
         case ColorMapType::kOrange:
-            return std::make_unique<ThreeColorMap>(black, sf::Color(255, 102, 0, 255), white);
+            return std::make_unique<ThreeColorMap>(sf::Color::Black, sf::Color(255, 102, 0, 255), sf::Color::White);
 
         case ColorMapType::kRed:
-            return std::make_unique<ThreeColorMap>(black, sf::Color(230, 0, 0, 255), white);
+            return std::make_unique<ThreeColorMap>(sf::Color::Black, sf::Color(230, 0, 0, 255), sf::Color::White);
 
         case ColorMapType::kCustom:
             return std::make_unique<TwoColorMap>(opaque_bg_color, opaque_custom_color);
 
         default:
-            assert(false);
-            spdlog::error("Internal error: unknown color map");
-            return nullptr;
+            throw std::runtime_error("unknown color map");
     }
 }
 
@@ -70,25 +64,40 @@ InterpolationColorMap::InterpolationColorMap(const std::vector<sf::Color>& color
                                              const std::vector<double>& vals) : colors_(colors), values_(vals)
 {
     /* respect boundaries */
-    assert(vals.size() == colors.size());
-    assert(vals.size() >= 2);
-    assert(vals[0] == 0.0f);
-    assert(vals[vals.size()-1] == 1.0f);
+    if (vals.size() != colors.size()) {
+        throw std::runtime_error("number of boundaries and number of colors differ");
+    }
+    if (vals.size() < 2) {
+        throw std::runtime_error("at least two colors needed in a colormap");
+    }
+    if (vals[0] != 0.0f) {
+        throw std::runtime_error("first colormap boundary must be 0.0");
+    }
+    if (vals[vals.size()-1] != 1.0f) {
+        throw std::runtime_error("last colormap boundary must be 1.0");
+    }
+    for (std::size_t i = 0; i < vals.size()-1; i++) {
+        if (vals[i] >= vals[i+1]) {
+            throw std::runtime_error("boundaries must be ascending");
+        }
+    }
 }
 
 std::vector<uint8_t>
 InterpolationColorMap::GetColor(double value) const
 {
-    assert(value >= 0.0f);
-    assert(value <= 1.0f);
+    if ((value < 0.0f) || (value > 1.0f)) {
+        throw std::runtime_error("input value outside of colormap domain");
+    }
 
     std::size_t k = 0;
     while (value > this->values_[k+1]) {
         k++;
+        assert(k < (this->values_.size()-1));
     }
 
-    float fu = (value - this->values_[k]) / (this->values_[k+1] - this->values_[k]);
-    float fl = 1.0f - fu;
+    double fu = (value - this->values_[k]) / (this->values_[k+1] - this->values_[k]);
+    double fl = 1.0f - fu;
 
     return {
         static_cast<uint8_t>(std::round(fl * this->colors_[k].r + fu * this->colors_[k+1].r)),

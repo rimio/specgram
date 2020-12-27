@@ -8,13 +8,11 @@
 #ifndef _CONFIGURATION_HPP_
 #define _CONFIGURATION_HPP_
 
-#include "input-parser.hpp"
 #include "color-map.hpp"
 #include "value-map.hpp"
 #include "window-function.hpp"
-#include "fft.hpp"
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <string>
 #include <optional>
 #include <tuple>
@@ -61,7 +59,7 @@ private:
 
     Configuration();
 
-    static std::optional<sf::Color> StringToColor(const std::string& str);
+    static sf::Color StringToColor(const std::string& str);
 
 public:
     /* parse command line arguments and return a configuration object */

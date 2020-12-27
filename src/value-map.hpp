@@ -14,7 +14,7 @@
 #include <vector>
 #include <complex>
 
-enum ValueMapType {
+enum class ValueMapType {
     kdBFS
 };
 

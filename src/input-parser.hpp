@@ -12,7 +12,7 @@
 #include <memory>
 
 /* Input data type */
-enum DataType {
+enum class DataType {
     /* signed integer */
     kSignedInt8,
     kSignedInt16,

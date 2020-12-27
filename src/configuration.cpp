@@ -5,9 +5,11 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include "args.hxx"
 #include "configuration.hpp"
+#include "args.hxx"
+#include "input-parser.hpp"
 #include "specgram.hpp"
+#include "fft.hpp"
 
 #include <spdlog/spdlog.h>
 #include <tuple>
@@ -69,29 +71,25 @@ Configuration::GetForLive() const
     return c;
 }
 
-std::optional<sf::Color>
+sf::Color
 Configuration::StringToColor(const std::string& str)
 {
-    try {
-        if (std::regex_match(str, std::regex("[0-9a-fA-F]{6}"))) {
-            unsigned int color = std::strtoul(str.c_str(), 0, 16);
-            return sf::Color(
-                    ((color >> 16) & 0xff),
-                    ((color >> 8) & 0xff),
-                    (color & 0xff),
-                    255);
-        } else if (std::regex_match(str, std::regex("[0-9a-fA-F]{8}"))) {
-            unsigned int color = std::strtoul(str.c_str(), 0, 16);
-            return sf::Color(
-                    ((color >> 24) & 0xff),
-                    ((color >> 16) & 0xff),
-                    ((color >> 8) & 0xff),
-                    (color & 0xff));
-        } else {
-            return {};
-        }
-    } catch (const std::exception& e) {
-        return {};
+    if (std::regex_match(str, std::regex("[0-9a-fA-F]{6}"))) {
+        unsigned int color = std::strtoul(str.c_str(), 0, 16);
+        return sf::Color(
+                ((color >> 16) & 0xff),
+                ((color >> 8) & 0xff),
+                (color & 0xff),
+                255);
+    } else if (std::regex_match(str, std::regex("[0-9a-fA-F]{8}"))) {
+        unsigned int color = std::strtoul(str.c_str(), 0, 16);
+        return sf::Color(
+                ((color >> 24) & 0xff),
+                ((color >> 16) & 0xff),
+                ((color >> 8) & 0xff),
+                (color & 0xff));
+    } else {
+        throw std::runtime_error("invalid hex color format");
     }
 }
 
@@ -352,34 +350,34 @@ Configuration::FromArgs(int argc, char **argv)
         } else if (cmap_str == "red") {
             conf.color_map_ = ColorMapType::kRed;
         } else {
-            auto color = Configuration::StringToColor(cmap_str);
-            if (!color.has_value()) {
+            try {
+                auto color = Configuration::StringToColor(cmap_str);
+                conf.color_map_custom_color_ = color;
+                conf.color_map_ = ColorMapType::kCustom;
+            } catch (const std::exception& e) {
                 std::cerr << "Unknown colormap '" << cmap_str << "'" << std::endl;
                 return std::make_tuple(conf, 1, true);
-            } else {
-                conf.color_map_custom_color_ = *color;
-                conf.color_map_ = ColorMapType::kCustom;
             }
         }
     }
     if (bgcolor) {
         auto& str = args::get(bgcolor);
-        auto color = Configuration::StringToColor(str);
-        if (!color.has_value()) {
+        try {
+            auto color = Configuration::StringToColor(str);
+            conf.background_color_ = color;
+        } catch (const std::exception& e) {
             std::cerr << "Invalid background color '" << str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);
-        } else {
-            conf.background_color_ = *color;
         }
     }
     if (fgcolor) {
         auto& str = args::get(fgcolor);
-        auto color = Configuration::StringToColor(str);
-        if (!color.has_value()) {
+        try {
+            auto color = Configuration::StringToColor(str);
+            conf.foreground_color_ = color;
+        } catch (const std::exception& e) {
             std::cerr << "Invalid foreground color '" << str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);
-        } else {
-            conf.foreground_color_ = *color;
         }
     }
     if (axes) {

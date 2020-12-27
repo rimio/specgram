@@ -15,7 +15,7 @@
 #include <cstdint>
 #include <SFML/Graphics.hpp>
 
-enum ColorMapType {
+enum class ColorMapType {
     /* MATLAB jet map */
     kJet,
 
@@ -47,12 +47,14 @@ public:
 };
 
 class InterpolationColorMap : public ColorMap {
-protected:
+private:
     const std::vector<sf::Color> colors_;
     const std::vector<double> values_;
 
-    InterpolationColorMap(const std::vector<sf::Color>& colors, const std::vector<double>& vals);
     std::vector<uint8_t> GetColor(double value) const;
+
+protected:
+    InterpolationColorMap(const std::vector<sf::Color>& colors, const std::vector<double>& vals);
 
 public:
     InterpolationColorMap() = delete;

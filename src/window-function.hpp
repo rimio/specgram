@@ -13,7 +13,7 @@
 #include <complex>
 #include <memory>
 
-enum WindowFunctionType {
+enum class WindowFunctionType {
     kNone,
     kHann,
     kHamming,
