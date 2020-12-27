@@ -126,7 +126,7 @@ Configuration::FromArgs(int argc, char **argv)
         win_func(fft_opts, "string", "ComplexWindow function (default: hann)", {'n', "window_function"});
     args::ValueFlag<bool>
         alias(fft_opts, "boolean", "Alias negative and positive frequencies (default: 0 (no) for complex data types, 1 (yes) otherwise)",
-              {'s', "alias"});
+              {'m', "alias"});
 
     args::Group display_opts(parser, "Display options:", args::Group::Validators::DontCare);
     args::Flag
