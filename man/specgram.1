@@ -1,4 +1,4 @@
-.TH SPECGRAM 1 "2020-12-26"
+.TH SPECGRAM 1 "2020-12-27"
 
 .SH NAME
 specgram \- create spectrograms from raw files or standard input
@@ -245,7 +245,7 @@ Default is 'Spectrogram'.
 .SH EXAMPLE
 
 .LP
-One of the most obvious use cases is displaying a live spectrogram from the PC audio output (you can retrieve \fIyourdevice\fP using "\fBpactl --list\fR"):
+One of the most obvious use cases is displaying a live spectrogram from the PC audio output (you can retrieve \fIyourdevice\fP using "\fBpactl list sources short\fR"):
 
 .IP
 parec --channels=1 --device="\fIyourdevice\fR.monitor" --raw | \fBspecgram\fR -l
