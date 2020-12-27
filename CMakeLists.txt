@@ -71,3 +71,4 @@ add_custom_target(manpage
 # Install
 install (TARGETS ${PROJECT_NAME} DESTINATION bin)
 install (FILES "${MAN_DIR}/specgram.1" DESTINATION "share/man/man1/")
+install (FILES "${PROJECT_SOURCE_DIR}/LICENSE" DESTINATION "share/license/specgram/")
