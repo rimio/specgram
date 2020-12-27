@@ -12,6 +12,12 @@
 #include <vector>
 #include <list>
 
+/* Axis tick */
+typedef std::tuple<double, std::string> AxisTick;
+
+/*
+ * Spectrogram rendering class
+ */
 class Renderer {
 private:
     const Configuration configuration_;
@@ -32,14 +38,13 @@ private:
 
     std::string ValueToShortString(double value, int prec, const std::string& unit);
 
-    std::list<std::tuple<double, std::string>> GetLinearTicks(double v_min, double v_max, const std::string& v_unit,
-                                                              unsigned int num_ticks);
-    std::list<std::tuple<double, std::string>> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
-                                                            unsigned int length_px, unsigned int est_tick_length_px);
+    std::list<AxisTick> GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks);
+    std::list<AxisTick> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
+                                     unsigned int length_px, unsigned int est_tick_length_px);
 
     void RenderAxis(sf::RenderTexture& texture,
                     const sf::Transform& t, bool lhs, int orientation, double length,
-                    const std::list<std::tuple<double, std::string>>& ticks);
+                    const std::list<AxisTick>& ticks);
 
 public:
     Renderer() = delete;

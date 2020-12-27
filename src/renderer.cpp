@@ -27,7 +27,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     auto time_ticks = this->GetNiceTicks(0.0f, (double)fft_count * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
                                          "s", fft_count, 50);
 
-    std::list<std::tuple<double, std::string>> legend_ticks, live_ticks;
+    std::list<AxisTick> legend_ticks, live_ticks;
     if (vmap.GetName() == "dBFS") {
         unsigned int lticks = 1 + this->configuration_.GetWidth() / 60;
         lticks = std::clamp<unsigned int>(lticks, 2, 13); /* at maximum 10dBFS spacing */
@@ -246,7 +246,7 @@ Renderer::ValueToShortString(double value, int prec, const std::string& unit)
     return ss.str();
 }
 
-std::list<std::tuple<double, std::string>>
+std::list<AxisTick>
 Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks)
 {
     assert(num_ticks > 1);
@@ -263,7 +263,7 @@ Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, 
         dist *= 10.0f;
     }
 
-    std::list<std::tuple<double, std::string>> ticks;
+    std::list<AxisTick> ticks;
     for (unsigned int i = 0; i < num_ticks; i ++) {
         double k = (double) i / (double)(num_ticks - 1);
         double v = v_min + k * (v_max - v_min);
@@ -273,13 +273,13 @@ Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, 
     return ticks;
 }
 
-std::list<std::tuple<double, std::string>>
+std::list<AxisTick>
 Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, unsigned int length_px,
                        unsigned int est_tick_length_px)
 {
     assert(v_min < v_max);
 
-    std::list<std::tuple<double, std::string>> ticks;
+    std::list<AxisTick> ticks;
 
     /* find a factor that brings some span close to est_tick_length to a nice value */
     double v_diff = v_max - v_min;
@@ -333,7 +333,7 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
 void
 Renderer::RenderAxis(sf::RenderTexture& texture,
                      const sf::Transform& t, bool lhs, int orientation, double length,
-                     const std::list<std::tuple<double, std::string>>& ticks)
+                     const std::list<AxisTick>& ticks)
 {
     for (auto& tick : ticks) {
         /* draw tick line */
