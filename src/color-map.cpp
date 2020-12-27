@@ -15,38 +15,43 @@ ColorMap::FromType(ColorMapType type,
                    const sf::Color& bg_color,
                    const sf::Color& custom_color)
 {
-    if (type == ColorMapType::kJet) {
-        return std::make_unique<JetColorMap>();
-    } else if (type == ColorMapType::kGray) {
-        return std::make_unique<TwoColorMap>(bg_color,
-                                             sf::Color(255, 255, 255, 255));
-    } else if (type == ColorMapType::kPurple) {
-        return std::make_unique<ThreeColorMap>(bg_color,
-                                               sf::Color(204, 51, 255, 255),
-                                               sf::Color(255, 255, 255, 255));
-    } else if (type == ColorMapType::kBlue) {
-        return std::make_unique<ThreeColorMap>(bg_color,
-                                               sf::Color(51, 51, 255, 255),
-                                               sf::Color(255, 255, 255, 255));
-    } else if (type == ColorMapType::kGreen) {
-        return std::make_unique<ThreeColorMap>(bg_color,
-                                               sf::Color(0, 150, 0, 255),
-                                               sf::Color(255, 255, 255, 255));
-    } else if (type == ColorMapType::kOrange) {
-        return std::make_unique<ThreeColorMap>(bg_color,
-                                               sf::Color(255, 102, 0, 255),
-                                               sf::Color(255, 255, 255, 255));
-    } else if (type == ColorMapType::kRed) {
-        return std::make_unique<ThreeColorMap>(bg_color,
-                                               sf::Color(230, 0, 0, 255),
-                                               sf::Color(255, 255, 255, 255));
-    } else if (type == ColorMapType::kCustom) {
-        return std::make_unique<TwoColorMap>(bg_color,
-                                             custom_color);
-    } else {
-        assert(false);
-        spdlog::error("Internal error: unknown color map");
-        return nullptr;
+    /* black and white */
+    sf::Color black(0, 0, 0);
+    sf::Color white(255, 255, 255);
+
+    /* colormaps are not allowed to be translucent */
+    sf::Color opaque_bg_color(bg_color.r, bg_color.g, bg_color.b, 255);
+    sf::Color opaque_custom_color(custom_color.r, custom_color.g, custom_color.b, 255);
+
+    switch (type) {
+        case ColorMapType::kJet:
+            return std::make_unique<JetColorMap>();
+
+        case ColorMapType::kGray:
+            return std::make_unique<TwoColorMap>(black, white);
+
+        case ColorMapType::kPurple:
+            return std::make_unique<ThreeColorMap>(black, sf::Color(204, 51, 255, 255), white);
+
+        case ColorMapType::kBlue:
+            return std::make_unique<ThreeColorMap>(black, sf::Color(51, 51, 255, 255), white);
+
+        case ColorMapType::kGreen:
+            return std::make_unique<ThreeColorMap>(black, sf::Color(0, 150, 0, 255), white);
+
+        case ColorMapType::kOrange:
+            return std::make_unique<ThreeColorMap>(black, sf::Color(255, 102, 0, 255), white);
+
+        case ColorMapType::kRed:
+            return std::make_unique<ThreeColorMap>(black, sf::Color(230, 0, 0, 255), white);
+
+        case ColorMapType::kCustom:
+            return std::make_unique<TwoColorMap>(opaque_bg_color, opaque_custom_color);
+
+        default:
+            assert(false);
+            spdlog::error("Internal error: unknown color map");
+            return nullptr;
     }
 }
 
