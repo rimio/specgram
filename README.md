@@ -1,5 +1,7 @@
 # specgram
 
+![build](https://github.com/rimio/specgram/workflows/build/badge.svg)
+
 Small program that computes and plots spectrograms, either in a live window or to disk, with support for stdin input.
 
 ## Preview
