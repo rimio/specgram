@@ -60,6 +60,13 @@ set (SPECGRAM_SOURCES
 add_executable (${PROJECT_NAME} ${SPECGRAM_SOURCES})
 target_link_libraries (${PROJECT_NAME} spdlog::spdlog sfml-window sfml-graphics ${FFTW3})
 
+# HTML manpage target
+add_custom_target(manpage
+    COMMAND cat ${MAN_DIR}/specgram.1 | groff -mandoc -Thtml > ${MAN_DIR}/specgram.1.html
+    DEPENDS ${MAN_DIR}/specgram.1
+    BYPRODUCTS ${MAN_DIR}/specgram.1.html
+)
+
 # Install
 install (TARGETS ${PROJECT_NAME} DESTINATION bin)
 install (FILES "${MAN_DIR}/specgram.1" DESTINATION "share/man/man1/")
