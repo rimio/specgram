@@ -29,8 +29,12 @@ void
 LiveOutput::AddWindow(const std::vector<uint8_t>& window, const RealWindow& win_values)
 {
     std::size_t wlen_bytes = this->configuration_.GetWidth() * 4;
-    assert(window.size() == wlen_bytes);
+    if (window.size() != wlen_bytes) {
+        throw std::runtime_error("input window size differs from live window size");
+    }
+
     /* scroll down one window */
+    assert(this->fft_area_.size() >= wlen_bytes);
     std::memmove(reinterpret_cast<void *>(this->fft_area_.data() + wlen_bytes),
                  reinterpret_cast<const void *>(this->fft_area_.data()),
                  fft_area_.size() - wlen_bytes);

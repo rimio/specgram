@@ -6,7 +6,6 @@
  */
 #include "fft.hpp"
 
-#include <spdlog/spdlog.h>
 #include <cassert>
 #include <cstring>
 #include <cmath>
@@ -42,7 +41,9 @@ FFT::Compute(const ComplexWindow& input, bool alias)
     assert(sizeof(fftw_complex) == sizeof(Complex));
 
     /* assume we received exactly one window */
-    assert(input.size() == this->window_width_);
+    if (input.size() != this->window_width_) {
+        throw std::runtime_error("input window size must match FFTW plan size");
+    }
 
     /* make a copy of the input and apply window function */
     auto input_ref = &input;
@@ -53,6 +54,7 @@ FFT::Compute(const ComplexWindow& input, bool alias)
     }
 
     /* copy to input buffer */
+    assert(this->in_ != nullptr);
     std::memcpy((void *)this->in_, (void *)input_ref->data(), this->window_width_ * sizeof(fftw_complex));
 
     /* execute plan */
@@ -66,6 +68,7 @@ FFT::Compute(const ComplexWindow& input, bool alias)
     ComplexWindow output;
     output.resize(this->window_width_);
 
+    assert(this->out_ != nullptr);
     auto uhl = (this->window_width_ - 1) / 2; /* upper half length */
     auto lhl = this->window_width_ - uhl; /* lower half length */
     std::memcpy((void *) output.data(),
@@ -120,7 +123,13 @@ FFT::sinc(double x)
 std::tuple<double, double>
 FFT::GetFrequencyLimits(double rate, std::size_t width)
 {
-    assert(rate > 0);
+    if (rate <= 0) {
+        throw std::runtime_error("rate must be positive in order to compute frequency limits");
+    }
+    if (width == 0) {
+        throw std::runtime_error("FFT width must be positive in order to compute frequency limits");
+    }
+
     if (width % 2 == 0) {
         std::size_t half = width / 2;
         return std::make_tuple(-(double)(half-1) / (double)width * (double)rate,
@@ -136,14 +145,22 @@ double
 FFT::GetFrequencyIndex(double rate, std::size_t width, double f)
 {
     auto [in_fmin, in_fmax] = FFT::GetFrequencyLimits(rate, width);
+    assert(in_fmin < in_fmax);
     return (f - in_fmin) / (in_fmax - in_fmin) * (width - 1);
 }
 
 RealWindow
 FFT::Resample(const RealWindow& input, double rate, std::size_t width, double fmin, double fmax)
 {
-    assert(rate > 0);
-    assert(fmin < fmax);
+    if (rate <= 0.0f) {
+        throw std::runtime_error("rate must be positive for resampling");
+    }
+    if (fmin >= fmax) {
+        throw std::runtime_error("resampling frequency bounds either not distinct or not in order");
+    }
+    if (width == 0) {
+        throw std::runtime_error("resampling requires positive width");
+    }
 
     /* find corresponding indices for fmin/fmax */
     /* [0..input.size()-1] -> [in_fmin, in_fmax] */
@@ -181,7 +198,12 @@ FFT::Resample(const RealWindow& input, double rate, std::size_t width, double fm
 RealWindow
 FFT::Crop(const RealWindow& input, double rate, double fmin, double fmax)
 {
-    assert(fmin < fmax);
+    if (rate <= 0.0f) {
+        throw std::runtime_error("rate must be positive for cropping");
+    }
+    if (fmin >= fmax) {
+        throw std::runtime_error("cropping frequency bounds either not distinct or not in order");
+    }
 
     /* find corresponding indices for fmin/fmax */
     /* [0..input.size()-1] -> [in_fmin, in_fmax] */

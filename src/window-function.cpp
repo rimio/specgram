@@ -6,7 +6,6 @@
  */
 #include "window-function.hpp"
 
-#include <spdlog/spdlog.h>
 #include <cassert>
 
 WindowFunction::WindowFunction(std::size_t window_size) : window_size_(window_size)
@@ -34,9 +33,7 @@ WindowFunction::FromType(WindowFunctionType type, std::size_t window_size)
             return std::make_unique<NuttallWindowFunction>(window_size);
 
         default:
-            assert(false);
-            spdlog::error("Internal error: unknown window function");
-            return nullptr;
+            throw std::runtime_error("unknown window function");
     }
 }
 
@@ -44,7 +41,9 @@ ComplexWindow
 WindowFunction::Apply(const ComplexWindow& window) const
 {
     /* only matching windows */
-    assert(window.size() == this->window_size_);
+    if (window.size() != this->window_size_) {
+        throw std::runtime_error("incorrect window size for window function application");
+    }
     assert(this->cached_factors_.size() == this->window_size_);
 
     ComplexWindow output;

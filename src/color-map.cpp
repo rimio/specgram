@@ -8,7 +8,6 @@
 
 #include <cmath>
 #include <cassert>
-#include <spdlog/spdlog.h>
 
 std::unique_ptr<ColorMap>
 ColorMap::FromType(ColorMapType type,

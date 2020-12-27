@@ -7,8 +7,8 @@
 
 #include "input-reader.hpp"
 
-#include <spdlog/spdlog.h>
 #include <csignal>
+#include <cassert>
 
 InputReader::InputReader(std::istream * stream, std::size_t block_size_bytes)
     : stream_(stream), block_size_bytes_(block_size_bytes)
@@ -23,7 +23,8 @@ SyncInputReader::SyncInputReader(std::istream * stream, std::size_t block_size_b
 bool
 SyncInputReader::ReachedEOF() const
 {
-    return stream_->eof();
+    assert(this->stream_ != nullptr);
+    return this->stream_->eof();
 }
 
 std::optional<std::vector<char>>
@@ -45,6 +46,7 @@ SyncInputReader::GetBuffer()
     std::vector<char> local_buffer;
     local_buffer.resize(this->block_size_bytes_);
 
+    assert(this->stream_ != nullptr);
     this->stream_->read(local_buffer.data(), this->block_size_bytes_);
     return std::vector<char>(local_buffer.data(), local_buffer.data() + this->stream_->gcount());
 }
@@ -52,7 +54,9 @@ SyncInputReader::GetBuffer()
 AsyncInputReader::AsyncInputReader(std::istream * stream, std::size_t block_size_bytes)
     : InputReader(stream, block_size_bytes)
 {
-    assert(block_size_bytes > 0);
+    if (block_size_bytes == 0) {
+        throw std::runtime_error("block size in bytes must be positive");
+    }
     this->buffer_ = new char[block_size_bytes];
     assert(this->buffer_ != nullptr);
     this->bytes_in_buffer_ = 0;
@@ -84,6 +88,7 @@ void
 AsyncInputReader::Read()
 {
     char *local_buffer = new char[this->block_size_bytes_];
+    assert(local_buffer != nullptr);
 
     while (true) {
         /* find out how much we need to populate in the buffer */
@@ -103,6 +108,7 @@ AsyncInputReader::Read()
         }
 
         /* blocking read */
+        assert(this->stream_ != nullptr);
         this->stream_->read(local_buffer, to_read);
         if (this->stream_->fail()) {
             break;
@@ -118,6 +124,7 @@ AsyncInputReader::Read()
         }
         assert(to_read + this->bytes_in_buffer_ <= this->block_size_bytes_);
         auto k = to_read;
+        assert(this->buffer_ != nullptr);
         for (volatile char *a = local_buffer, *b = this->buffer_ + this->bytes_in_buffer_; k > 0; *b++ = *a++, k--) /* nop */;
         this->bytes_in_buffer_ = this->bytes_in_buffer_ + to_read;
         this->mutex_.unlock();
@@ -141,6 +148,7 @@ AsyncInputReader::GetBlock()
     } else {
         auto bcount = this->bytes_in_buffer_;
         this->bytes_in_buffer_ = 0;
+        assert(this->buffer_);
         return std::vector<char>(this->buffer_, this->buffer_ + bcount);
     }
 }
@@ -149,6 +157,7 @@ std::vector<char>
 AsyncInputReader::GetBuffer()
 {
     const std::lock_guard<std::mutex> lock(this->mutex_);
+    assert(this->buffer_);
     std::vector<char> wrapper(this->buffer_, this->buffer_ + this->bytes_in_buffer_);
     this->bytes_in_buffer_ = 0;
     return wrapper;

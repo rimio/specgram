@@ -7,7 +7,6 @@
 #include "input-parser.hpp"
 
 #include <cassert>
-#include <spdlog/spdlog.h>
 
 InputParser::InputParser(double prescale) : prescale_factor_(prescale)
 {
@@ -23,6 +22,9 @@ std::vector<Complex>
 InputParser::PeekValues(std::size_t count) const
 {
     count = std::min<std::size_t>(count, this->values_.size());
+    if (count == 0) {
+        return std::vector<Complex>();
+    }
     return std::vector<Complex> (this->values_.begin(), this->values_.begin() + count);
 }
 
@@ -30,7 +32,9 @@ void
 InputParser::RemoveValues(std::size_t count)
 {
     count = std::min<std::size_t>(count, this->values_.size());
-    this->values_.erase(this->values_.begin(), this->values_.begin() + count);
+    if (count > 0) {
+        this->values_.erase(this->values_.begin(), this->values_.begin() + count);
+    }
 }
 
 std::unique_ptr<InputParser>
@@ -61,9 +65,7 @@ InputParser::FromDataType(DataType dtype, double prescale)
     } else if (dtype == DataType::kComplex128) {
         return std::make_unique<ComplexInputParser<double>>(prescale);
     } else {
-        assert(false);
-        spdlog::error("Internal error: unknown datatype!");
-        return nullptr;
+        throw std::runtime_error("unknown datatype");
     }
 }
 
@@ -77,7 +79,9 @@ std::size_t
 IntegerInputParser<T>::ParseBlock(const std::vector<char> &block)
 {
     /* this function assumes well structured blocks */
-    assert(block.size() % sizeof(T) == 0);
+    if (block.size() % sizeof(T) != 0) {
+        throw std::runtime_error("block size must be a multiple of sizeof(datatype)");
+    }
 
     std::size_t count = block.size() / sizeof(T);
     const T *start = reinterpret_cast<const T *>(block.data());
@@ -105,7 +109,9 @@ std::size_t
 FloatInputParser<T>::ParseBlock(const std::vector<char> &block)
 {
     /* this function assumes well structured blocks */
-    assert(block.size() % sizeof(T) == 0);
+    if (block.size() % sizeof(T) != 0) {
+        throw std::runtime_error("block size must be a multiple of sizeof(datatype)");
+    }
 
     std::size_t count = block.size() / sizeof(T);
     const T *start = reinterpret_cast<const T *>(block.data());
@@ -133,7 +139,9 @@ std::size_t
 ComplexInputParser<T>::ParseBlock(const std::vector<char> &block)
 {
     /* this function assumes well structured blocks */
-    assert(block.size() % (sizeof(T) * 2) == 0);
+    if (block.size() % (sizeof(T) * 2) != 0) {
+        throw std::runtime_error("block size must be a multiple of 2*sizeof(datatype)");
+    }
 
     std::size_t count = block.size() / sizeof(T) / 2;
     const T *start = reinterpret_cast<const T *>(block.data());

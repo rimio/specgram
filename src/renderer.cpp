@@ -16,9 +16,13 @@
 Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap, std::size_t fft_count)
     : configuration_(conf), fft_count_(fft_count)
 {
+    if (fft_count == 0) {
+        throw std::runtime_error("positive number of FFT windows required by rendere");
+    }
+
     /* load font */
     if (!this->font_.loadFromMemory(ShareTechMono_Regular_ttf, ShareTechMono_Regular_ttf_len)) {
-        assert(false);
+        throw std::runtime_error("unable to load font");
     }
 
     /* compute tickmarks */
@@ -176,12 +180,12 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
 
         /* frequency axis */
         this->RenderAxis(this->canvas_, this->fft_area_transform_,
-                         true, this->configuration_.IsHorizontal() ? 1 : 0,
+                         true, this->configuration_.IsHorizontal() ? Orientation::k90CW : Orientation::kNormal,
                          this->configuration_.GetWidth(), freq_ticks);
 
         /* time axis */
         this->RenderAxis(this->canvas_, this->fft_area_transform_ * sf::Transform().rotate(90.0f),
-                         false, this->configuration_.IsHorizontal() ? 0 : -1,
+                         false, this->configuration_.IsHorizontal() ? Orientation::kNormal : Orientation::k90CCW,
                          fft_count, time_ticks);
     }
 
@@ -203,7 +207,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
 
         if (this->configuration_.HasAxes()) {
             this->RenderAxis(this->canvas_, this->legend_transform_,
-                             true, this->configuration_.IsHorizontal() ? 1 : 0,
+                             true, this->configuration_.IsHorizontal() ? Orientation::k90CW : Orientation::kNormal,
                              this->configuration_.GetWidth(), legend_ticks);
         }
     }
@@ -212,12 +216,12 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         /* value axis */
         this->RenderAxis(this->canvas_,
                          this->fft_live_transform_ * sf::Transform().translate(0.0f, this->configuration_.GetLiveFFTHeight()).rotate(-90.0f),
-                         true, this->configuration_.IsHorizontal() ? 2 : 1,
+                         true, this->configuration_.IsHorizontal() ? Orientation::k180 : Orientation::k90CW,
                          this->configuration_.GetLiveFFTHeight(), live_ticks);
 
         /* frequency axis */
         this->RenderAxis(this->canvas_, this->fft_live_transform_ * sf::Transform().translate(0.0f, this->configuration_.GetLiveFFTHeight()),
-                         false, this->configuration_.IsHorizontal() ? 1 : 0,
+                         false, this->configuration_.IsHorizontal() ? Orientation::k90CW : Orientation::kNormal,
                          this->configuration_.GetWidth(), freq_no_text_ticks);
     }
 }
@@ -225,7 +229,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
 std::string
 Renderer::ValueToShortString(double value, int prec, const std::string& unit)
 {
-    static constexpr const char *PREFIXES[] = { "p", "n", "u", "m", "", "k", "M", "G", "T" };
+    static const std::vector<std::string> PREFIXES = { "p", "n", "u", "m", "", "k", "M", "G", "T" };
     int pidx = 4;
 
     while ((prec >= 3) && (pidx > 0)) {
@@ -233,7 +237,7 @@ Renderer::ValueToShortString(double value, int prec, const std::string& unit)
         pidx--;
         value *= 1000.0f;
     }
-    while ((prec <= -3) && (pidx < 8)) {
+    while ((prec <= -3) && (pidx < PREFIXES.size() - 1)) {
         prec += 3;
         pidx++;
         value /= 1000.0f;
@@ -249,8 +253,12 @@ Renderer::ValueToShortString(double value, int prec, const std::string& unit)
 std::list<AxisTick>
 Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks)
 {
-    assert(num_ticks > 1);
-    assert(v_min < v_max);
+    if (num_ticks <= 1) {
+        throw std::runtime_error("GetLinearTicks() requires at least two ticks");
+    }
+    if (v_min >= v_max) {
+        throw std::runtime_error("minimum and maximum values are not in order");
+    }
 
     int prec = 0;
     double dist = (v_max - v_min) / ((double) num_ticks - 1);
@@ -277,7 +285,15 @@ std::list<AxisTick>
 Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, unsigned int length_px,
                        unsigned int est_tick_length_px)
 {
-    assert(v_min < v_max);
+    if (v_min >= v_max) {
+        throw std::runtime_error("minimum and maximum values are not in order");
+    }
+    if (length_px == 0) {
+        throw std::runtime_error("length in pixels must be positive");
+    }
+    if (est_tick_length_px == 0) {
+        throw std::runtime_error("estimate tick length in pixels must be positive");
+    }
 
     std::list<AxisTick> ticks;
 
@@ -332,9 +348,13 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
 
 void
 Renderer::RenderAxis(sf::RenderTexture& texture,
-                     const sf::Transform& t, bool lhs, int orientation, double length,
+                     const sf::Transform& t, bool lhs, Orientation orientation, double length,
                      const std::list<AxisTick>& ticks)
 {
+    if (length <= 0.0f) {
+        throw std::runtime_error("positive axis length required for rendering");
+    }
+
     for (auto& tick : ticks) {
         /* draw tick line */
         double x = (length - 1) * std::get<0>(tick);
@@ -351,32 +371,31 @@ Renderer::RenderAxis(sf::RenderTexture& texture,
 
         sf::Vector2f pos;
         switch (orientation) {
-            case -1:
+            case Orientation::k90CCW:
                 pos = sf::Vector2f(sf::Vector2f(length * std::get<0>(tick) - text.getLocalBounds().height,
                                                 (lhs ? -10.0f : text.getLocalBounds().width + 10.0f)));
                 text.setRotation(-90.0f);
                 break;
 
-            case 1:
+            case Orientation::k90CW:
                 pos = sf::Vector2f(sf::Vector2f(length * std::get<0>(tick) + text.getLocalBounds().height,
                                                 (lhs ? -text.getLocalBounds().width - 10.0f : 10.0f)));
                 text.setRotation(90.0f);
                 break;
 
-            case 0:
+            case Orientation::kNormal:
                 pos = sf::Vector2f(sf::Vector2f(length * std::get<0>(tick) - text.getLocalBounds().width / 2,
                                                 (lhs ? -2.0f * text.getLocalBounds().height - 3.0f : 3.0f)));
                 break;
 
-            case 2:
+            case Orientation::k180:
                 pos = sf::Vector2f(sf::Vector2f(length * std::get<0>(tick) + text.getLocalBounds().width / 2,
                                                 (lhs ? -3.0f : 2.0f * text.getLocalBounds().height + 3.0f)));
                 text.setRotation(180.0f);
                 break;
 
             default:
-                assert(false);
-                break;
+                throw std::runtime_error("unknown orientation");
         }
 
         text.setPosition(std::round(pos.x), std::round(pos.y)); /* avoid interpolation on text, looks yuck */
@@ -387,7 +406,9 @@ Renderer::RenderAxis(sf::RenderTexture& texture,
 void
 Renderer::RenderFFTArea(const std::vector<uint8_t>& memory)
 {
-    assert(memory.size() == configuration_.GetWidth() * this->fft_count_ * 4);
+    if (memory.size() != configuration_.GetWidth() * this->fft_count_ * 4) {
+        throw std::runtime_error("bad memory size");
+    }
 
     /* update FFT area texture */
     this->fft_area_texture_.update(reinterpret_cast<const uint8_t *>(memory.data()));
@@ -399,7 +420,9 @@ Renderer::RenderFFTArea(const std::vector<uint8_t>& memory)
 void
 Renderer::RenderFFTArea(const std::list<std::vector<uint8_t>>& history)
 {
-    assert(history.size() == this->fft_count_);
+    if (history.size() != this->fft_count_) {
+        throw std::runtime_error("bad history size");
+    }
 
     std::vector<uint8_t> memory;
     memory.resize(this->fft_count_ * this->configuration_.GetWidth() * 4);
@@ -418,7 +441,9 @@ Renderer::RenderFFTArea(const std::list<std::vector<uint8_t>>& history)
 void
 Renderer::RenderLiveFFT(const RealWindow& window, const std::vector<uint8_t>& colors)
 {
-    assert(window.size() == this->configuration_.GetWidth());
+    if (window.size() != this->configuration_.GetWidth()) {
+        throw std::runtime_error("incorrect window size to be rendered");
+    }
 
     if (!this->configuration_.HasLiveWindow()) {
         /* noop */

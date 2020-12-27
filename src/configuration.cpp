@@ -11,7 +11,6 @@
 #include "specgram.hpp"
 #include "fft.hpp"
 
-#include <spdlog/spdlog.h>
 #include <tuple>
 #include <regex>
 

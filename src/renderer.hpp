@@ -15,6 +15,14 @@
 /* Axis tick */
 typedef std::tuple<double, std::string> AxisTick;
 
+/* Orientation */
+enum class Orientation {
+    k90CCW,
+    kNormal,
+    k90CW,
+    k180
+};
+
 /*
  * Spectrogram rendering class
  */
@@ -43,7 +51,7 @@ private:
                                      unsigned int length_px, unsigned int est_tick_length_px);
 
     void RenderAxis(sf::RenderTexture& texture,
-                    const sf::Transform& t, bool lhs, int orientation, double length,
+                    const sf::Transform& t, bool lhs, Orientation orientation, double length,
                     const std::list<AxisTick>& ticks);
 
 public:
