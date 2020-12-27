@@ -21,7 +21,7 @@ sudo make install
 
 ## Usage
 
-For a complete description of the program functionality please see the [manpage](man/specgram.1.html).
+For a complete description of the program functionality please see the [manpage](man/specgram.1.html?raw=true).
 
 ## Colormaps
 
