@@ -1,5 +1,6 @@
 # specgram
-Flexible live spectrogram tool.
+
+Small program that computes and plots spectrograms, either in a live window or to disk, with support for stdin input.
 
 ## Build and install
 
