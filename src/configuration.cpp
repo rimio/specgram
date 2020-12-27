@@ -5,11 +5,11 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
+#include "args.hxx"
 #include "configuration.hpp"
 #include "specgram.hpp"
 
 #include <spdlog/spdlog.h>
-#include <args.hxx>
 #include <tuple>
 #include <regex>
 

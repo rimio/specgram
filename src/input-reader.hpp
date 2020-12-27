@@ -8,9 +8,10 @@
 #define _INPUT_READER_HPP_
 
 #include <istream>
-#include <vector>
 #include <mutex>
+#include <optional>
 #include <thread>
+#include <vector>
 
 /*
  * Input reader base class
