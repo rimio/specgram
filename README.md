@@ -3,7 +3,7 @@ Flexible live spectrogram tool.
 
 ## Build and install
 
-If you are using ArchLinux you can grab the latest release from the AUR package [specgram](https://aur.archlinux.org/packages/specgram/), or get the master branch with [specgram-git](https://aur.archlinux.org/packages/specgram-git/).
+If you are using ArchLinux you can grab the latest release from the AUR package [specgram](https://aur.archlinux.org/packages/specgram/), or get the main branch with [specgram-git](https://aur.archlinux.org/packages/specgram-git/).
 
 Otherwise, you can build and install the program from the terminal:
 ```bash

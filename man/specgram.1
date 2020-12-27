@@ -291,8 +291,7 @@ Frequency bounds (\fB\-x, \-\-fmin\fR and \fB\-y, \-\-fmax\fR) may exceed FFT wi
 This inconsistency is known behaviour and, while not necessarily nice, does not impact usability in a meaningful manner.
 Ideally exceeding these limits should be allowed in both cases, and zero padding should be performed.
 
-Moreover, when using the \fB\-q, \-\-no_resampling\fR flag, the frequency limits are
-±\fIRATE\fR*(\fIFFT_WIDTH\fR-1)/(2*\fIFFT_WIDTH\fR) when \fIFFT_WIDTH\fR is odd
+Moreover, when using the \fB\-q, \-\-no_resampling\fR flag, the frequency limits are \[+-]\fIRATE\fR*(\fIFFT_WIDTH\fR-1)/(2*\fIFFT_WIDTH\fR) when \fIFFT_WIDTH\fR is odd
 and -\fIRATE\fR*(\fIFFT_WIDTH\fR-2)/(2*\fIFFT_WIDTH\fR) to \fIRATE\fR/2 when \fIFFT_WIDTH\fR is even.
 This is a bit different from the behaviour of NumPy's implementation of fftfreq and aims to make it easier to display the Nyquist frequency component for non-complex inputs.
 
