@@ -21,7 +21,7 @@ sudo make install
 
 ## Dependencies
 
-This program dynamically links against [fftw](http://www.fftw.org/), [SFML](https://www.sfml-dev.org/), and [spdlog](https://github.com/gabime/spdlog).
+This program dynamically links against [FFTW](http://www.fftw.org/), [SFML](https://www.sfml-dev.org/), and [spdlog](https://github.com/gabime/spdlog).
 
 The source code of [Taywee/args](https://github.com/Taywee/args) is embedded in the program (see ```src/args.hxx```).
 
