@@ -11,6 +11,32 @@
 #include <cmath>
 #include <complex>
 
+static double
+sinc(double x)
+{
+    /* this function is straight up lifted from boost, as I have absolutely no inclination of linking to it */
+    static const double taylor_0_bound = std::numeric_limits<double>::epsilon();
+    static const double taylor_2_bound = sqrt(taylor_0_bound);
+    static const double taylor_n_bound = sqrt(taylor_2_bound);
+
+    if (std::abs(x) >= taylor_n_bound) {
+        return std::sin(x) / x;
+    } else {
+        double result = 1.0f;
+
+        if (abs(x) >= taylor_0_bound) {
+            double x2 = x * x;
+            result -= x2 / 6.0f;
+
+            if (abs(x) >= taylor_2_bound) {
+                result += (x2 * x2) / 120.0f;
+            }
+        }
+
+        return result;
+    }
+}
+
 FFT::FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func)
     : window_width_(win_width), window_function_(std::move(win_func))
 {
@@ -80,44 +106,12 @@ FFT::Compute(const ComplexWindow& input, bool alias)
 
     /* alias negative/positive frequencies (e.g. if input is not true complex) */
     if (alias) {
-        /* TODO: nicer way? */
-        if (window_width_ % 2) {
-            for (std::size_t i = 0; i < uhl; i++) {
-                output[i] += output[this->window_width_ - i - 1];
-            }
-        } else {
-            for (std::size_t i = 0; i < uhl; i++) {
-                output[i] += output[this->window_width_ - i - 2];
-            }
+        std::size_t offset = 1 + this->window_width_ % 2;
+        for (std::size_t i = 0; i < uhl; i++) {
+            output[i] += output[this->window_width_ - i - offset];
         }
     }
     return output;
-}
-
-double
-FFT::sinc(double x)
-{
-    /* this function is straight up lifted from boost, as I have absolutely no inclination of linking to it */
-    static const double taylor_0_bound = std::numeric_limits<double>::epsilon();
-    static const double taylor_2_bound = sqrt(taylor_0_bound);
-    static const double taylor_n_bound = sqrt(taylor_2_bound);
-
-    if (std::abs(x) >= taylor_n_bound) {
-        return std::sin(x) / x;
-    } else {
-        double result = 1.0f;
-
-        if (abs(x) >= taylor_0_bound) {
-            double x2 = x * x;
-            result -= x2 / 6.0f;
-
-            if (abs(x) >= taylor_2_bound) {
-                result += (x2 * x2) / 120.0f;
-            }
-        }
-
-        return result;
-    }
 }
 
 std::tuple<double, double>
@@ -181,9 +175,9 @@ FFT::Resample(const RealWindow& input, double rate, std::size_t width, double fm
         double lsum = 0.0f;
 
         /* convolve */
-        for (int i = std::floor(x) - lanc_a + 1; i <= std::floor(x) + lanc_a; i ++) {
-            if (i >= 0 && i < input.size()) {
-                double lanc_xi = FFT::sinc(x - i) * FFT::sinc((x - i) / lanc_a);
+        for (int i = static_cast<int>(std::floor(x)) - static_cast<int>(lanc_a) + 1; i <= std::floor(x) + lanc_a; i ++) {
+            if (i >= 0 && i < static_cast<int>(input.size())) {
+                double lanc_xi = ::sinc(x - i) * ::sinc((x - i) / lanc_a);
                 sum += input[i] * lanc_xi;
                 lsum += lanc_xi;
             }

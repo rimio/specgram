@@ -10,10 +10,7 @@
 
 #include "window-function.hpp"
 
-#include <cstddef>
 #include <fftw3.h>
-#include <vector>
-#include <complex>
 
 class FFT {
 private:
@@ -29,8 +26,6 @@ private:
 
     /* window function */
     std::unique_ptr<WindowFunction> window_function_;
-
-    static double sinc(double x);
 
 public:
     FFT() = delete;

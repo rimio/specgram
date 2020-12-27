@@ -43,9 +43,6 @@ private:
     sf::Transform fft_live_transform_;
     sf::Transform fft_area_transform_;
 
-
-    std::string ValueToShortString(double value, int prec, const std::string& unit);
-
     std::list<AxisTick> GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks);
     std::list<AxisTick> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
                                      unsigned int length_px, unsigned int est_tick_length_px);

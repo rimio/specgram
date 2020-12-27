@@ -13,6 +13,30 @@
 #include <cassert>
 #include <cstring>
 
+static std::string
+ValueToShortString(double value, int prec, const std::string& unit)
+{
+    static const std::vector<std::string> PREFIXES = { "p", "n", "u", "m", "", "k", "M", "G", "T" };
+    std::size_t pidx = 4;
+
+    while ((prec >= 3) && (pidx > 0)) {
+        prec -= 3;
+        pidx--;
+        value *= 1000.0f;
+    }
+    while ((prec <= -3) && (pidx < PREFIXES.size() - 1)) {
+        prec += 3;
+        pidx++;
+        value /= 1000.0f;
+    }
+
+    prec++;
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(prec > 0 ? prec : 0) << value << PREFIXES[pidx] << unit;
+    return ss.str();
+}
+
 Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap, std::size_t fft_count)
     : configuration_(conf), fft_count_(fft_count)
 {
@@ -226,30 +250,6 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     }
 }
 
-std::string
-Renderer::ValueToShortString(double value, int prec, const std::string& unit)
-{
-    static const std::vector<std::string> PREFIXES = { "p", "n", "u", "m", "", "k", "M", "G", "T" };
-    int pidx = 4;
-
-    while ((prec >= 3) && (pidx > 0)) {
-        prec -= 3;
-        pidx--;
-        value *= 1000.0f;
-    }
-    while ((prec <= -3) && (pidx < PREFIXES.size() - 1)) {
-        prec += 3;
-        pidx++;
-        value /= 1000.0f;
-    }
-
-    prec++;
-
-    std::stringstream ss;
-    ss << std::fixed << std::setprecision(prec > 0 ? prec : 0) << value << PREFIXES[pidx] << unit;
-    return ss.str();
-}
-
 std::list<AxisTick>
 Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks)
 {
@@ -275,7 +275,7 @@ Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, 
     for (unsigned int i = 0; i < num_ticks; i ++) {
         double k = (double) i / (double)(num_ticks - 1);
         double v = v_min + k * (v_max - v_min);
-        ticks.emplace_back(std::make_tuple(k, this->ValueToShortString(v, prec, v_unit)));
+        ticks.emplace_back(std::make_tuple(k, ::ValueToShortString(v, prec, v_unit)));
     }
 
     return ticks;
@@ -340,7 +340,7 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
     /* add ticks */
     for (double value = fval; value < v_max; value += mfact) {
         double k = (value - v_min) / (v_max - v_min);
-        ticks.emplace_back(std::make_tuple(k, this->ValueToShortString(value, prec, v_unit)));
+        ticks.emplace_back(std::make_tuple(k, ::ValueToShortString(value, prec, v_unit)));
     }
 
     return ticks;
