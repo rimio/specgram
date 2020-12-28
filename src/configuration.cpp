@@ -34,12 +34,16 @@ Configuration::Configuration()
     this->min_freq_ = 0;
     this->max_freq_ = this->rate_ / 2;
     this->scale_ = ValueMapType::kdBFS;
+    this->scale_lower_bound_ = -120.0f;
     this->color_map_ = ColorMapType::kJet;
     this->background_color_ = sf::Color(0, 0, 0);
     this->foreground_color_ = sf::Color(255, 255, 255);
     this->has_axes_ = false;
     this->has_legend_ = false;
     this->is_horizontal_ = false;
+    this->print_input_ = false;
+    this->print_fft_ = false;
+    this->print_output_ = false;
 
     this->live_ = false;
     this->count_ = 512;
@@ -325,8 +329,22 @@ Configuration::FromArgs(int argc, char **argv)
     }
     if (scale) {
         auto& scale_str = args::get(scale);
-        if (scale_str == "dbfs" || scale_str == "dBFS") {
+        if (scale_str.starts_with("dbfs") || scale_str.starts_with("dBFS")) {
             conf.scale_ = ValueMapType::kdBFS;
+            auto value_str = scale_str.substr(4, scale_str.size() - 4);
+            if (value_str.size() > 0) {
+                try {
+                    conf.scale_lower_bound_ = std::stod(value_str);
+                } catch (const std::exception& e) {
+                    std::cerr << "Invalid lower bound for dBFS scale '" << value_str << "'" << std::endl;
+                    return std::make_tuple(conf, 1, true);
+                }
+                if (conf.scale_lower_bound_ >= 0.0f) {
+                    std::cerr << "Lower bound for dBFS scale must be negative, "
+                              << conf.scale_lower_bound_ << " was received" << std::endl;
+                    return std::make_tuple(conf, 1, true);
+                }
+            }
         } else {
             std::cerr << "Unknown scale '" << scale_str << "'" << std::endl;
             return std::make_tuple(conf, 1, true);

@@ -38,6 +38,7 @@ private:
     double min_freq_;
     double max_freq_;
     ValueMapType scale_;
+    double scale_lower_bound_;
     ColorMapType color_map_;
     sf::Color color_map_custom_color_;
     sf::Color background_color_;
@@ -94,6 +95,7 @@ public:
     auto GetMinFreq() const { return min_freq_; }
     auto GetMaxFreq() const { return max_freq_; }
     auto GetScale() const { return scale_; }
+    auto GetScaleLowerBound() const { return scale_lower_bound_; }
     auto GetColorMap() const { return color_map_; }
     auto GetColorMapCustomColor() const { return color_map_custom_color_; }
     auto GetBackgroundColor() const { return background_color_; }

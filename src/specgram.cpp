@@ -81,7 +81,7 @@ main(int argc, char** argv)
     std::unique_ptr<ValueMap> value_map = nullptr;
     if (conf.GetScale() == ValueMapType::kdBFS) {
         /* TODO: configurable lower bound */
-        value_map = std::make_unique<dBFSValueMap>(-120);
+        value_map = std::make_unique<dBFSValueMap>(conf.GetScaleLowerBound());
     } else {
         assert(false);
         spdlog::error("Internal error: unknown scale");

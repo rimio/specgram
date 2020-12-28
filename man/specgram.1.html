@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Mon Dec 28 22:11:46 2020 -->
+<!-- CreationDate: Mon Dec 28 23:50:28 2020 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -321,10 +321,17 @@ are: dBFS.</p>
 <p style="margin-left:22%; margin-top: 1em">Default is
 dBFS.</p>
 
-<p style="margin-left:22%; margin-top: 1em"><b>NOTE:</b>
-The peak amplitude assumed for dBFS, after normalization and
-prescaling (see <b>&minus;p, &minus;&minus;prescale</b>), is
-1.0. Thus, the correct input domains are: <br>
+<p style="margin-left:22%; margin-top: 1em"><b>[dBFS]
+NOTE:</b> By default, the scale has a -120dB lower bound.
+You can adjust it by appending the custom lower bound after
+the scale string (e.g. <b>&minus;s dBFS-60</b> for a -60dB
+lower bound).</p>
+
+<p style="margin-left:22%; margin-top: 1em"><b>[dBFS]
+NOTE:</b> The peak amplitude assumed for dBFS, after
+normalization and prescaling (see <b>&minus;p,
+&minus;&minus;prescale</b>), is 1.0. Thus, the correct input
+domains are: <br>
 &bull; [0 .. TYPE_MAX] for real unsigned integer values <br>
 &bull; [-TYPE_MAX .. TYPE_MAX] for real signed integer
 values <br>

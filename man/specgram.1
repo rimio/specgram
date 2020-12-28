@@ -186,7 +186,10 @@ Valid values are: dBFS.
 
 Default is dBFS.
 
-\fBNOTE:\fR The peak amplitude assumed for dBFS, after normalization and prescaling (see \fB\-p, \-\-prescale\fR), is 1.0.
+\fB[dBFS] NOTE:\fR By default, the scale has a -120dB lower bound.
+You can adjust it by appending the custom lower bound after the scale string (e.g. \fB\-s dBFS-60\fR for a -60dB lower bound).
+
+\fB[dBFS] NOTE:\fR The peak amplitude assumed for dBFS, after normalization and prescaling (see \fB\-p, \-\-prescale\fR), is 1.0.
 Thus, the correct input domains are:
   \(bu [0 .. TYPE_MAX] for real unsigned integer values
   \(bu [-TYPE_MAX .. TYPE_MAX] for real signed integer values
