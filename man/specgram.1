@@ -1,4 +1,4 @@
-.TH SPECGRAM 1 "2020-12-28"
+.TH SPECGRAM 1 "2020-12-29"
 
 .SH NAME
 specgram \- create spectrograms from raw files or standard input
@@ -18,6 +18,7 @@ specgram \- create spectrograms from raw files or standard input
 [\fB\-g, --fft_stride\fR=\fIFFT_STRIDE\fR]
 [\fB\-n, --window_function\fR=\fIWIN_FUNC\fR]
 [\fB\-m, --alias\fR=\fIALIAS\fR]
+[\fB\-A, --average\fR=\fIAVG_COUNT\fR]
 [\fB\-w, --width\fR=\fIWIDTH\fR]
 [\fB\-x, --fmin\fR=\fIFMIN\fR]
 [\fB\-y, --fmax\fR=\fIFMAX\fR]
@@ -150,6 +151,14 @@ Specifies whether aliasing between negative and positive frequencies exists.
 If set to true (\fI1\fR), then the bins of corresponding negative and positive frequencies are summed on both sides.
 
 Default is \fI0\fR (no) for complex data types and \fI1\fR (yes) otherwise.
+
+.TP
+.BR \-A ", " \-\-average =\fIAVG_COUNT\fR
+Number of windows to average before the mean is displayed.
+
+Use this for high sample rate signals, where either displaying many windows or computing too wide a window is not possible.
+
+Default is 1.
 
 .TP
 \fBDISPLAY OPTIONS\fR

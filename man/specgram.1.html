@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Mon Dec 28 23:50:28 2020 -->
+<!-- CreationDate: Tue Dec 29 01:29:43 2020 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -59,7 +59,8 @@ input</p>
 --fft_width</b>=<i>FFT_WIDTH</i>] [<b>&minus;g,
 --fft_stride</b>=<i>FFT_STRIDE</i>] [<b>&minus;n,
 --window_function</b>=<i>WIN_FUNC</i>] [<b>&minus;m,
---alias</b>=<i>ALIAS</i>] [<b>&minus;w,
+--alias</b>=<i>ALIAS</i>] [<b>&minus;A,
+--average</b>=<i>AVG_COUNT</i>] [<b>&minus;w,
 --width</b>=<i>WIDTH</i>] [<b>&minus;x,
 --fmin</b>=<i>FMIN</i>] [<b>&minus;y,
 --fmax</b>=<i>FMAX</i>] [<b>&minus;s,
@@ -273,6 +274,19 @@ positive frequencies are summed on both sides.</p>
 <p style="margin-left:22%; margin-top: 1em">Default is
 <i>0</i> (no) for complex data types and <i>1</i> (yes)
 otherwise.</p>
+
+<p style="margin-left:11%;"><b>&minus;A</b>,
+<b>&minus;&minus;average</b>=<i>AVG_COUNT</i></p>
+
+<p style="margin-left:22%;">Number of windows to average
+before the mean is displayed.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Use this for
+high sample rate signals, where either displaying many
+windows or computing too wide a window is not possible.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+1.</p>
 
 <p style="margin-left:11%;"><b>DISPLAY OPTIONS <br>
 &minus;q</b>, <b>&minus;&minus;no_resampling</b></p>

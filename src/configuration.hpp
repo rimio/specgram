@@ -31,6 +31,7 @@ private:
     std::size_t fft_width_;
     std::size_t fft_stride_;
     WindowFunctionType window_function_;
+    std::size_t average_count_;
     bool alias_negative_;
 
     bool no_resampling_;
@@ -88,6 +89,7 @@ public:
     auto GetFFTStride() const { return fft_stride_; }
     auto GetWindowFunction() const { return window_function_; }
     auto IsAliasingNegativeFrequencies() const { return alias_negative_; }
+    auto GetAverageCount() const { return average_count_; }
 
     /* display getters */
     auto CanResample() const { return !no_resampling_; }

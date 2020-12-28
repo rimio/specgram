@@ -141,6 +141,11 @@ main(int argc, char** argv)
     /* FFT window history */
     std::list<std::vector<uint8_t>> history;
 
+    /* window average */
+    RealWindow window_sum;
+    window_sum.resize(conf.GetWidth());
+    std::size_t window_sum_count = 0;
+
     /* main loop */
     while (main_loop_running && !reader->ReachedEOF()) {
         /* check for window events (if necessary) */
@@ -203,17 +208,36 @@ main(int argc, char** argv)
             print_real_window("output", normalized_magnitude);
         }
 
+        /* add to running total */
+        assert(window_sum.size() == normalized_magnitude.size());
+        assert(conf.GetAverageCount() > 0);
+        for (std::size_t i = 0; i < window_sum.size(); i++) {
+            window_sum[i] += normalized_magnitude[i] / conf.GetAverageCount();
+        }
+        window_sum_count++;
+
+        if (window_sum_count < conf.GetAverageCount()) {
+            /* we still have to compute some more windows before we show */
+            continue;
+        }
+
         /* colorize FFT */
-        auto colorized_power = color_map->Map(normalized_magnitude);
+        auto colorized = color_map->Map(window_sum);
 
         /* add to live */
         if (live != nullptr) {
-            live->AddWindow(colorized_power, normalized_magnitude);
+            live->AddWindow(colorized, window_sum);
         }
 
         /* add to history */
         if (conf.GetOutputFilename().has_value()) {
-            history.push_back(colorized_power);
+            history.push_back(colorized);
+        }
+
+        /* reset */
+        window_sum_count = 0;
+        for (auto& v : window_sum) {
+            v = 0.0f;
         }
     }
     spdlog::info("Terminating ...");

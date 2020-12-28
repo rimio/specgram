@@ -43,9 +43,10 @@ private:
     sf::Transform fft_live_transform_;
     sf::Transform fft_area_transform_;
 
-    std::list<AxisTick> GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks);
-    std::list<AxisTick> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
-                                     unsigned int length_px, unsigned int est_tick_length_px);
+    static std::list<AxisTick> GetLinearTicks(double v_min, double v_max, const std::string& v_unit,
+                                              unsigned int num_ticks);
+    static std::list<AxisTick> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
+                                            unsigned int length_px, unsigned int est_tick_length_px);
 
     void RenderAxis(sf::RenderTexture& texture,
                     const sf::Transform& t, bool lhs, Orientation orientation, double length,

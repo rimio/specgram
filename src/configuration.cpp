@@ -28,6 +28,7 @@ Configuration::Configuration()
     this->fft_stride_ = 1024;
     this->alias_negative_ = true;
     this->window_function_ = WindowFunctionType::kHann;
+    this->average_count_ = 1;
 
     this->no_resampling_ = false;
     this->width_ = 512;
@@ -132,6 +133,8 @@ Configuration::FromArgs(int argc, char **argv)
     args::ValueFlag<bool>
         alias(fft_opts, "boolean", "Alias negative and positive frequencies (default: 0 (no) for complex data types, 1 (yes) otherwise)",
               {'m', "alias"});
+    args::ValueFlag<int>
+        average(fft_opts, "integer", "Number of windows to average (default: 1)", {'A', "average"});
 
     args::Group display_opts(parser, "Display options:", args::Group::Validators::DontCare);
     args::Flag
@@ -305,6 +308,12 @@ Configuration::FromArgs(int argc, char **argv)
     }
     if (alias) {
         conf.alias_negative_ = args::get(alias);
+    }
+    if (average) {
+        conf.average_count_ = args::get(average);
+        if (conf.average_count_ == 0) {
+            conf.average_count_ = 1;
+        }
     }
 
     if (no_resampling) {

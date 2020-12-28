@@ -50,21 +50,23 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     }
 
     /* compute tickmarks */
-    auto freq_ticks = this->GetNiceTicks(this->configuration_.GetMinFreq(), this->configuration_.GetMaxFreq(),
-                                         "Hz", this->configuration_.GetWidth(), 75);
-    auto time_ticks = this->GetNiceTicks(0.0f, (double)fft_count * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
-                                         "s", fft_count, 50);
+    auto freq_ticks =
+        Renderer::GetNiceTicks(this->configuration_.GetMinFreq(), this->configuration_.GetMaxFreq(),
+                               "Hz", this->configuration_.GetWidth(), 75);
+    auto time_ticks =
+        Renderer::GetNiceTicks(0.0f, (double)fft_count * this->configuration_.GetAverageCount() * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
+                               "s", fft_count, 50);
 
     std::list<AxisTick> legend_ticks, live_ticks;
     if (vmap.GetName() == "dBFS") {
         unsigned int lticks = 1 + this->configuration_.GetWidth() / 60;
         lticks = std::clamp<unsigned int>(lticks, 2, 13); /* at maximum 10dBFS spacing */
-        legend_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), vmap.GetUnit(), lticks);
-        live_ticks = this->GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), "", 5); /* no unit, keep it short */
+        legend_ticks = Renderer::GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), vmap.GetUnit(), lticks);
+        live_ticks = Renderer::GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), "", 5); /* no unit, keep it short */
     } else {
-        legend_ticks = this->GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+        legend_ticks = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
                                             vmap.GetUnit(), this->configuration_.GetWidth(), 60);
-        live_ticks = this->GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+        live_ticks = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
                                           "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
     }
 
@@ -305,8 +307,8 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
 
     constexpr double NICE_FACTORS[] = { 0.15f, 0.2f, 0.25f, 0.3f, 0.5f };
     for (double f = 1e-15; f < 1e+15; f *= 10.0f) {
-        for (unsigned int k = 0; k < 5; k++) {
-            double factor = f * NICE_FACTORS[k];
+        for (double nf : NICE_FACTORS) {
+            double factor = f * nf;
             double dist = std::abs(est_tick_length_px - px_per_v * factor);
             if (dist < mdist) {
                 mdist = dist;
