@@ -153,6 +153,12 @@ Configuration::FromArgs(int argc, char **argv)
         legend(display_opts, "legend", "Display legend", {'e', "legend"});
     args::Flag
         horizontal(display_opts, "horizontal", "Display horizontally", {'z', "horizontal"});
+    args::Flag
+        print_input(display_opts, "print_input", "Print input window", {"print_input"});
+    args::Flag
+        print_fft(display_opts, "print_fft", "Print FFT output", {"print_fft"});
+    args::Flag
+        print_output(display_opts, "print_output", "Print resampled/cropped and normalized output", {"print_output"});
 
     args::Group live_opts(parser, "Live options:", args::Group::Validators::DontCare);
     args::Flag
@@ -381,6 +387,15 @@ Configuration::FromArgs(int argc, char **argv)
     }
     if (horizontal) {
         conf.is_horizontal_ = true;
+    }
+    if (print_input) {
+        conf.print_input_ = true;
+    }
+    if (print_fft) {
+        conf.print_fft_ = true;
+    }
+    if (print_output) {
+        conf.print_output_ = true;
     }
 
     if (live) {

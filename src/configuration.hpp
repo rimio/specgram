@@ -45,6 +45,9 @@ private:
     bool has_axes_;
     bool has_legend_;
     bool is_horizontal_;
+    bool print_input_;
+    bool print_fft_;
+    bool print_output_;
 
     bool live_;
     std::size_t count_;
@@ -98,6 +101,9 @@ public:
     auto HasAxes() const { return has_axes_ || has_legend_; }
     auto HasLegend() const { return has_legend_; }
     auto IsHorizontal() const { return is_horizontal_; }
+    auto MustPrintInput() const { return print_input_; }
+    auto MustPrintFFT() const { return print_fft_; }
+    auto MustPrintOutput() const { return print_output_; }
 
     /* live options */
     auto IsLive() const { return live_; }

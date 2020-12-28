@@ -15,6 +15,7 @@
 
 #include <spdlog/spdlog.h>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <csignal>
 #include <list>
@@ -33,6 +34,28 @@ sigint_handler(int)
 
     /* uninstall handler in case user REALLY does not want to wait for wrap-up */
     std::signal(SIGINT, nullptr);
+}
+
+/*
+ * printing functions
+ */
+void print_complex_window(const std::string& name, const ComplexWindow& window)
+{
+    std::cout << name << ": [";
+    for (const auto& v : window) {
+        std::cout << " " << std::setprecision(3) << std::fixed << v.real()
+                  << std::showpos << v.imag() << "j";
+    }
+    std::cout << "]" << std::endl;
+}
+
+void print_real_window(const std::string& name, const RealWindow& window)
+{
+    std::cout << name << ": [";
+    for (const auto& v : window) {
+        std::cout << " " << std::setprecision(3) << std::fixed << v;
+    }
+    std::cout << "]" << std::endl;
 }
 
 /*
@@ -151,36 +174,21 @@ main(int argc, char** argv)
         /* retrieve window and remove values that won't be used further */
         auto window_values = input->PeekValues(conf.GetFFTWidth());
         input->RemoveValues(conf.GetFFTStride());
+        if (conf.MustPrintInput()) {
+            print_complex_window("input", window_values);
+        }
 
         /* compute FFT on fetched window */
         auto fft_values = fft.Compute(window_values);
-#if 0
-        spdlog::info("fft_values, nontrivial values:");
-        for (std::size_t i = 0; i < fft_values.size(); i++) {
-            if (std::abs(fft_values[i]) > 1e-2)
-                spdlog::info("  -> idx {} is {}+{}j", i, fft_values[i].real(), fft_values[i].imag());
+        if (conf.MustPrintFFT()) {
+            print_complex_window("fft", fft_values);
         }
-#endif
 
-        /* compute power */
+        /* compute magnitude */
         auto fft_magnitude = FFT::GetMagnitude(fft_values, conf.IsAliasingNegativeFrequencies());
-#if 0
-        spdlog::info("fft_magnitude, nontrivial values:");
-        for (std::size_t i = 0; i < fft_magnitude.size(); i++) {
-            if (fft_magnitude[i] > 1e-2)
-                spdlog::info("  -> idx {} is {}", i, fft_magnitude[i]);
-        }
-#endif
 
-        /* map power to [0..1] domain */
+        /* map magnitude to [0..1] domain */
         auto normalized_magnitude = value_map->Map(fft_magnitude);
-#if 0
-        spdlog::info("normalized_magnitude, nontrivial values:");
-        for (std::size_t i = 0; i < normalized_magnitude.size(); i++) {
-            if (normalized_magnitude[i] > 1e-2)
-                spdlog::info("  -> idx {} is {}", i, normalized_magnitude[i]);
-        }
-#endif
 
         if (conf.CanResample()) {
             /* resample to display width */
@@ -190,6 +198,9 @@ main(int argc, char** argv)
             /* crop to display width */
             normalized_magnitude = FFT::Crop(normalized_magnitude, conf.GetRate(),
                                              conf.GetMinFreq(), conf.GetMaxFreq());
+        }
+        if (conf.MustPrintOutput()) {
+            print_real_window("output", normalized_magnitude);
         }
 
         /* colorize FFT */

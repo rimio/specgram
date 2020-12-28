@@ -1,4 +1,4 @@
-.TH SPECGRAM 1 "2020-12-27"
+.TH SPECGRAM 1 "2020-12-28"
 
 .SH NAME
 specgram \- create spectrograms from raw files or standard input
@@ -6,6 +6,9 @@ specgram \- create spectrograms from raw files or standard input
 .SH SYNOPSIS
 .B specgram
 [\fB\-aehlqvz\fR]
+[\fB\-\-print_input\fR]
+[\fB\-\-print_fft\fR]
+[\fB\-\-print_output\fR]
 [\fB\-i, --input\fR=\fIRATE\fR]
 [\fB\-r, --rate\fR=\fIRATE\fR]
 [\fB\-d, --datatype\fR=\fIDATA_TYPE\fR]
@@ -183,7 +186,7 @@ Valid values are: dBFS.
 
 Default is dBFS.
 
-\fBNOTE:\fR The peak to peak amplitude assumed for dBFS, after normalization and prescaling (see \fB\-p, \-\-prescale\fR), is 1.0.
+\fBNOTE:\fR The peak amplitude assumed for dBFS, after normalization and prescaling (see \fB\-p, \-\-prescale\fR), is 1.0.
 Thus, the correct input domains are:
   \(bu [0 .. TYPE_MAX] for real unsigned integer values
   \(bu [-TYPE_MAX .. TYPE_MAX] for real signed integer values
@@ -230,6 +233,21 @@ This is enabled in live view, but only for the live window (i.e. if both live vi
 .TP
 .BR \-z ", " \-\-horizontal
 Rotates histogram 90 degrees counter clockwise, making it readable left to right.
+
+.TP
+.BR \-\-print_input
+Prints input windows to standard output, after normalization and prescaling (see \fB\-p, \-\-prescale\fR).
+
+.TP
+.BR \-\-print_fft
+Prints FFT result to standard output, in FFTW order (i.e. freq[k] = \fIRATE\fR*k/N).
+
+.TP
+.BR \-\-print_output
+Prints output, before colorization, to standard output. Values are in the domain [0.0 .. 1.0].
+
+The length of the output may be different than the FFT result or the input, depending on specified frequency bounds (see \fB\-x, \-\-fmin\fR and \fB\-y, \-\-fmax\fR).
+Negative frequencies precede positive frequencies.
 
 .TP
 \fBLIVE OPTIONS\fR
