@@ -28,9 +28,11 @@ sudo make install
 
 ## Dependencies
 
-This program dynamically links against [FFTW](http://www.fftw.org/), [SFML](https://www.sfml-dev.org/), and [spdlog](https://github.com/gabime/spdlog).
+This program dynamically links against [FFTW](http://www.fftw.org/), [SFML 2.5](https://www.sfml-dev.org/), and [spdlog](https://github.com/gabime/spdlog).
 
 The source code of [Taywee/args](https://github.com/Taywee/args) is embedded in the program (see ```src/args.hxx```).
+
+*NOTE: SFML 2.5 is part of the official Ubuntu 20.04 package repository. Users using older versions of Ubuntu will have to compile SFML 2.5 from source.*
 
 ## Usage
 
