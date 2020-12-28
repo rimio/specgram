@@ -84,12 +84,12 @@ Default is 44100.
 .TP
 .BR \-d ", " \-\-datatype =\fIDATA_TYPE\fR
 Data type of the input data.
-Is formed from a type prefix (\fIu\fR for unsigned integer, \fIs\fR for signed integer, \fIf\fR for floating point, \fIc\fR for complex) and a size suffix (in bits: 8, 16, 32, 64, 128).
+Is formed from an optional complex prefix (\fIc\fR), a type specifier (\fIu\fR for unsigned integer, \fIs\fR for signed integer, \fIf\fR for floating point) and a size suffix (in bits: 8, 16, 32, 64).
 
-Valid values are: u8, u16, u32, u64, s8, s16, s32, s64, f32, f64, c64, c128.
+Valid values are: u8, u16, u32, u64, s8, s16, s32, s64, f32, f64, cu8, cu16, cu32, cu64, cs8, cs16, cs32, cs64, cf32, cf64.
 
-Complex types are pairs of two floating point values containing the real and imaginary part of the number, in this order.
-The size of the complex data type includes both parts (e.g. c64 indicates that both the real and imaginary parts are stored as 32-bit floating point numbers).
+Complex types are pairs of two values containing the real and imaginary part of the number, in this order.
+The size of the complex data type is twice that of the basic type. For example cf64 is 128-bit wide, corresponding to two 64-bit values.
 
 Default is s16.
 
@@ -97,9 +97,12 @@ Default is s16.
 .BR \-p ", " \-\-prescale =\fIPRESCALE_FACTOR\fR
 Input prescale factor.
 
-Integer inputs are first normalized to [-0.5 .. 0.5] for signed and [0.0 .. 1.0] for unsigned, then the prescaling is applied.
-Floating point and complex inputs are prescaled directly.
+The following normalizations are applied to input values, regardless if they are part of a complex number or not:
+  \(bu unsigned values are normalized to [0.0 .. 1.0] based on the domain limits.
+  \(bu signed values are normalized to [-1.0 .. 1.0] based on the domain limits.
+  \(bu floating point values are left untouched, with the exception of NaN which is converted to a zero.
 
+After this normalization, the new value is multiplied by \fIPRESCALE_FACTOR\fR.
 This is mostly useful for adjusting your inputs to the scale, and is usually needed for floating point inputs (see \fB\-s, \-\-scale\fR).
 
 Default is 1.0.
@@ -178,12 +181,19 @@ Default is \fIRATE\fR/2.
 Spectrogram scale.
 Valid values are: dBFS.
 
-NOTE: The peak to peak amplitude assumed for dBFS is 1.0, so the correct floating point and complex norm input domain is [-0.5 .. 0.5].
-Values outside this domain may lead to positive dBFS values, which will be clamped to zero.
+Default is dBFS.
+
+\fBNOTE:\fR The peak to peak amplitude assumed for dBFS, after normalization and prescaling (see \fB\-p, \-\-prescale\fR), is 1.0.
+Thus, the correct input domains are:
+  \(bu [0 .. TYPE_MAX] for real unsigned integer values
+  \(bu [-TYPE_MAX .. TYPE_MAX] for real signed integer values
+  \(bu [-1.0 .. 1.0] for real floating point values
+  \(bu { x | abs(x) <= TYPE_MAX } for complex signed and unsigned integer values
+  \(bu { x | abs(x) <= 1.0 } for complex floating point values
+
+Input values outside these domains may lead to positive dBFS values, which will be clamped to zero.
 Use prescaling (\fB\-p, \-\-prescale\fR) to adjust your input to this domain.
 Integer inputs don't usually need prescaling, as they are normalized based on their domain's limits.
-
-Default is dBFS.
 
 .TP
 .BR \-c ", " \-\-colormap =\fICOLORMAP\fR

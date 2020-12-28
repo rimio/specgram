@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Sun Dec 27 21:37:37 2020 -->
+<!-- CreationDate: Mon Dec 28 20:50:03 2020 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -166,21 +166,20 @@ available on stdin.</p>
 <b>&minus;&minus;datatype</b>=<i>DATA_TYPE</i></p>
 
 <p style="margin-left:22%;">Data type of the input data. Is
-formed from a type prefix (<i>u</i> for unsigned integer,
-<i>s</i> for signed integer, <i>f</i> for floating point,
-<i>c</i> for complex) and a size suffix (in bits: 8, 16, 32,
-64, 128).</p>
+formed from an optional complex prefix (<i>c</i>), a type
+specifier (<i>u</i> for unsigned integer, <i>s</i> for
+signed integer, <i>f</i> for floating point) and a size
+suffix (in bits: 8, 16, 32, 64).</p>
 
 <p style="margin-left:22%; margin-top: 1em">Valid values
-are: u8, u16, u32, u64, s8, s16, s32, s64, f32, f64, c64,
-c128.</p>
+are: u8, u16, u32, u64, s8, s16, s32, s64, f32, f64, cu8,
+cu16, cu32, cu64, cs8, cs16, cs32, cs64, cf32, cf64.</p>
 
 <p style="margin-left:22%; margin-top: 1em">Complex types
-are pairs of two floating point values containing the real
-and imaginary part of the number, in this order. The size of
-the complex data type includes both parts (e.g. c64
-indicates that both the real and imaginary parts are stored
-as 32-bit floating point numbers).</p>
+are pairs of two values containing the real and imaginary
+part of the number, in this order. The size of the complex
+data type is twice that of the basic type. For example cf64
+is 128-bit wide, corresponding to two 64-bit values.</p>
 
 <p style="margin-left:22%; margin-top: 1em">Default is
 s16.</p>
@@ -190,15 +189,21 @@ s16.</p>
 
 <p style="margin-left:22%;">Input prescale factor.</p>
 
-<p style="margin-left:22%; margin-top: 1em">Integer inputs
-are first normalized to [-0.5 .. 0.5] for signed and [0.0 ..
-1.0] for unsigned, then the prescaling is applied. Floating
-point and complex inputs are prescaled directly.</p>
+<p style="margin-left:22%; margin-top: 1em">The following
+normalizations are applied to input values, regardless if
+they are part of a complex number or not: <br>
+&bull; unsigned values are normalized to [0.0 .. 1.0] based
+on the domain limits. <br>
+&bull; signed values are normalized to [-1.0 .. 1.0] based
+on the domain limits. <br>
+&bull; floating point values are left untouched, with the
+exception of NaN which is converted to a zero.</p>
 
-<p style="margin-left:22%; margin-top: 1em">This is mostly
-useful for adjusting your inputs to the scale, and is
-usually needed for floating point inputs (see <b>&minus;s,
-&minus;&minus;scale</b>).</p>
+<p style="margin-left:22%; margin-top: 1em">After this
+normalization, the new value is multiplied by
+<i>PRESCALE_FACTOR</i>. This is mostly useful for adjusting
+your inputs to the scale, and is usually needed for floating
+point inputs (see <b>&minus;s, &minus;&minus;scale</b>).</p>
 
 <p style="margin-left:22%; margin-top: 1em">Default is
 1.0.</p>
@@ -311,18 +316,30 @@ frequency spectrum, in Hz.</p>
 <p style="margin-left:22%;">Spectrogram scale. Valid values
 are: dBFS.</p>
 
-<p style="margin-left:22%; margin-top: 1em">NOTE: The peak
-to peak amplitude assumed for dBFS is 1.0, so the correct
-floating point and complex norm input domain is [-0.5 ..
-0.5]. Values outside this domain may lead to positive dBFS
-values, which will be clamped to zero. Use prescaling
-(<b>&minus;p, &minus;&minus;prescale</b>) to adjust your
-input to this domain. Integer inputs don&rsquo;t usually
-need prescaling, as they are normalized based on their
-domain&rsquo;s limits.</p>
-
 <p style="margin-left:22%; margin-top: 1em">Default is
 dBFS.</p>
+
+<p style="margin-left:22%; margin-top: 1em"><b>NOTE:</b>
+The peak to peak amplitude assumed for dBFS, after
+normalization and prescaling (see <b>&minus;p,
+&minus;&minus;prescale</b>), is 1.0. Thus, the correct input
+domains are: <br>
+&bull; [0 .. TYPE_MAX] for real unsigned integer values <br>
+&bull; [-TYPE_MAX .. TYPE_MAX] for real signed integer
+values <br>
+&bull; [-1.0 .. 1.0] for real floating point values <br>
+&bull; { x | abs(x) &lt;= TYPE_MAX } for complex signed and
+unsigned integer values <br>
+&bull; { x | abs(x) &lt;= 1.0 } for complex floating point
+values</p>
+
+<p style="margin-left:22%; margin-top: 1em">Input values
+outside these domains may lead to positive dBFS values,
+which will be clamped to zero. Use prescaling (<b>&minus;p,
+&minus;&minus;prescale</b>) to adjust your input to this
+domain. Integer inputs don&rsquo;t usually need prescaling,
+as they are normalized based on their domain&rsquo;s
+limits.</p>
 
 <p style="margin-left:11%;"><b>&minus;c</b>,
 <b>&minus;&minus;colormap</b>=<i>COLORMAP</i></p>

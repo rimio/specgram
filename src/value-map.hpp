@@ -30,7 +30,7 @@ public:
     auto GetLowerBound() const { return lower_; }
     auto GetUpperBound() const { return upper_; }
 
-    virtual RealWindow Map(const ComplexWindow& input) = 0;
+    virtual RealWindow Map(const RealWindow& input) = 0;
     virtual std::string GetUnit() const = 0;
     virtual std::string GetName() const = 0;
 };
@@ -40,7 +40,7 @@ private:
 public:
     explicit dBFSValueMap(double mindb);
 
-    RealWindow Map(const ComplexWindow& input) override;
+    RealWindow Map(const RealWindow& input) override;
     std::string GetUnit() const override { return "dBFS"; }
     std::string GetName() const override { return "dBFS"; }
 };

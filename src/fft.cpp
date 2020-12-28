@@ -61,7 +61,7 @@ FFT::~FFT()
 }
 
 ComplexWindow
-FFT::Compute(const ComplexWindow& input, bool alias)
+FFT::Compute(const ComplexWindow& input)
 {
     /* assume the same memory representation */
     assert(sizeof(fftw_complex) == sizeof(Complex));
@@ -104,13 +104,29 @@ FFT::Compute(const ComplexWindow& input, bool alias)
                 (void *) this->out_,
                 lhl * sizeof(fftw_complex));
 
+    return output;
+}
+
+RealWindow
+FFT::GetMagnitude(const ComplexWindow& input, bool alias)
+{
+    auto n = input.size();
+
+    RealWindow output;
+    output.resize(n);
+    for (std::size_t i = 0; i < n; i++) {
+        output[i] = std::abs<double>(input[i]);
+    }
+
     /* alias negative/positive frequencies (e.g. if input is not true complex) */
     if (alias) {
-        std::size_t offset = 1 + this->window_width_ % 2;
-        for (std::size_t i = 0; i < uhl; i++) {
-            output[i] += output[this->window_width_ - i - offset];
+        std::size_t offset = 2 - n % 2;
+        for (std::size_t i = 0; i < (n - 1) / 2; i++) {
+            output[i] += output[n - i - offset];
+            output[n - i - offset] = output[i];
         }
     }
+
     return output;
 }
 

@@ -212,43 +212,36 @@ Configuration::FromArgs(int argc, char **argv)
         }
     }
     if (datatype) {
-        auto& dtype = args::get(datatype);
+        auto dtype = args::get(datatype);
+        if ((dtype.size() > 0) && (dtype[0] == 'c')) {
+            conf.alias_negative_ = false;
+            conf.has_complex_input_ = true;
+            dtype = dtype.substr(1, dtype.size() - 1);
+        } else {
+            conf.alias_negative_ = true;
+            conf.has_complex_input_ = false;
+        }
+
         if (dtype == "s8") {
             conf.datatype_ = DataType::kSignedInt8;
-            conf.alias_negative_ = true;
         } else if (dtype == "s16") {
             conf.datatype_ = DataType::kSignedInt16;
-            conf.alias_negative_ = true;
         } else if (dtype == "s32") {
             conf.datatype_ = DataType::kSignedInt32;
-            conf.alias_negative_ = true;
         } else if (dtype == "s64") {
             conf.datatype_ = DataType::kSignedInt64;
-            conf.alias_negative_ = true;
         } else if (dtype == "u8") {
             conf.datatype_ = DataType::kUnsignedInt8;
-            conf.alias_negative_ = true;
         } else if (dtype == "u16") {
             conf.datatype_ = DataType::kUnsignedInt16;
-            conf.alias_negative_ = true;
         } else if (dtype == "u32") {
             conf.datatype_ = DataType::kUnsignedInt32;
-            conf.alias_negative_ = true;
         } else if (dtype == "u64") {
             conf.datatype_ = DataType::kUnsignedInt64;
-            conf.alias_negative_ = true;
         } else if (dtype == "f32") {
             conf.datatype_ = DataType::kFloat32;
-            conf.alias_negative_ = true;
         } else if (dtype == "f64") {
             conf.datatype_ = DataType::kFloat64;
-            conf.alias_negative_ = true;
-        } else if (dtype == "c64") {
-            conf.datatype_ = DataType::kComplex64;
-            conf.alias_negative_ = false;
-        } else if (dtype == "c128") {
-            conf.datatype_ = DataType::kComplex128;
-            conf.alias_negative_ = false;
         } else {
             std::cerr << "Unknown data type '" << dtype << "'" << std::endl;
             return std::make_tuple(conf, 1, true);

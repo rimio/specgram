@@ -8,7 +8,7 @@
 
 #include <cassert>
 
-InputParser::InputParser(double prescale) : prescale_factor_(prescale)
+InputParser::InputParser(double prescale, bool is_complex) : prescale_factor_(prescale), is_complex_(is_complex)
 {
 }
 
@@ -38,40 +38,43 @@ InputParser::RemoveValues(std::size_t count)
 }
 
 std::unique_ptr<InputParser>
-InputParser::FromDataType(DataType dtype, double prescale)
+InputParser::FromDataType(DataType dtype, double prescale, bool is_complex)
 {
     if (dtype == DataType::kSignedInt8) {
-        return std::make_unique<IntegerInputParser<char>>(prescale);
+        return std::make_unique<IntegerInputParser<char>>(prescale, is_complex);
     } else if (dtype == DataType::kSignedInt16) {
-        return std::make_unique<IntegerInputParser<short>>(prescale);
+        return std::make_unique<IntegerInputParser<short>>(prescale, is_complex);
     } else if (dtype == DataType::kSignedInt32) {
-        return std::make_unique<IntegerInputParser<int>>(prescale);
+        return std::make_unique<IntegerInputParser<int>>(prescale, is_complex);
     } else if (dtype == DataType::kSignedInt64) {
-        return std::make_unique<IntegerInputParser<long long>>(prescale);
+        return std::make_unique<IntegerInputParser<long long>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt8) {
-        return std::make_unique<IntegerInputParser<unsigned char>>(prescale);
+        return std::make_unique<IntegerInputParser<unsigned char>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt16) {
-        return std::make_unique<IntegerInputParser<unsigned short>>(prescale);
+        return std::make_unique<IntegerInputParser<unsigned short>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt32) {
-        return std::make_unique<IntegerInputParser<unsigned int>>(prescale);
+        return std::make_unique<IntegerInputParser<unsigned int>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt64) {
-        return std::make_unique<IntegerInputParser<unsigned long long>>(prescale);
+        return std::make_unique<IntegerInputParser<unsigned long long>>(prescale, is_complex);
     } else if (dtype == DataType::kFloat32) {
-        return std::make_unique<FloatInputParser<float>>(prescale);
+        return std::make_unique<FloatInputParser<float>>(prescale, is_complex);
     } else if (dtype == DataType::kFloat64) {
-        return std::make_unique<FloatInputParser<double>>(prescale);
-    } else if (dtype == DataType::kComplex64) {
-        return std::make_unique<ComplexInputParser<float>>(prescale);
-    } else if (dtype == DataType::kComplex128) {
-        return std::make_unique<ComplexInputParser<double>>(prescale);
+        return std::make_unique<FloatInputParser<double>>(prescale, is_complex);
     } else {
         throw std::runtime_error("unknown datatype");
     }
 }
 
 template <class T>
-IntegerInputParser<T>::IntegerInputParser(double prescale) : InputParser(prescale)
+IntegerInputParser<T>::IntegerInputParser(double prescale, bool is_complex) : InputParser(prescale, is_complex)
 {
+}
+
+template <class T>
+std::size_t
+IntegerInputParser<T>::GetDataTypeSize() const
+{
+    return sizeof(T) * (this->is_complex_ ? 2 : 1);
 }
 
 template <class T>
@@ -79,29 +82,42 @@ std::size_t
 IntegerInputParser<T>::ParseBlock(const std::vector<char> &block)
 {
     /* this function assumes well structured blocks */
-    if (block.size() % sizeof(T) != 0) {
+    std::size_t item_size = (this->is_complex_ ? 2 : 1) * sizeof(T);
+    if (block.size() % item_size != 0) {
         throw std::runtime_error("block size must be a multiple of sizeof(datatype)");
     }
 
-    std::size_t count = block.size() / sizeof(T);
+    std::size_t count = block.size() / item_size;
     const T *start = reinterpret_cast<const T *>(block.data());
 
     /* parse one value at a time into complex target */
     for (std::size_t i = 0; i < count; i ++) {
-        double real = (double) start[i] / std::numeric_limits<T>::max();
-        /* make signed domain [-0.5..0.5] so that we can use a maximum amplitude of 1.0 */
-        real *= std::numeric_limits<T>::is_signed ? 0.5f : 1.0f;
-        real *= this->prescale_factor_;
+        Complex value;
+        if (this->is_complex_) {
+            value = Complex(start[i * 2], start[i * 2 + 1]);
+        } else {
+            value = Complex(start[i], 0.0f);
+        }
 
-        this->values_.emplace_back(Complex(real, 0.0f));
+        /* normalize to domain limit */
+        value /= (double)std::numeric_limits<T>::max();
+        value *= this->prescale_factor_;
+        this->values_.emplace_back(value);
     }
 
     return count;
 }
 
 template <class T>
-FloatInputParser<T>::FloatInputParser(double prescale) : InputParser(prescale)
+FloatInputParser<T>::FloatInputParser(double prescale, bool is_complex) : InputParser(prescale, is_complex)
 {
+}
+
+template <class T>
+std::size_t
+FloatInputParser<T>::GetDataTypeSize() const
+{
+    return sizeof(T) * (this->is_complex_ ? 2 : 1);
 }
 
 template <class T>
@@ -109,53 +125,28 @@ std::size_t
 FloatInputParser<T>::ParseBlock(const std::vector<char> &block)
 {
     /* this function assumes well structured blocks */
-    if (block.size() % sizeof(T) != 0) {
+    std::size_t item_size = (this->is_complex_ ? 2 : 1) * sizeof(T);
+    if (block.size() % item_size != 0) {
         throw std::runtime_error("block size must be a multiple of sizeof(datatype)");
     }
 
-    std::size_t count = block.size() / sizeof(T);
+    std::size_t count = block.size() / item_size;
     const T *start = reinterpret_cast<const T *>(block.data());
 
     /* parse one value at a time into complex target */
     for (std::size_t i = 0; i < count; i ++) {
+        Complex value;
         /* remove NaNs */
-        double real = std::isnan(start[i]) ? 0.0f : start[i];
+        if (this->is_complex_) {
+            value = Complex(std::isnan(start[i * 2]) ? 0.0f : start[i * 2],
+                            std::isnan(start[i * 2 + 1]) ? 0.0f : start[i * 2 + 1]);
+        } else {
+            value = Complex(std::isnan(start[i]) ? 0.0f : start[i], 0.0f);
+        }
+
         /* prescale */
-        real *= this->prescale_factor_;
-
-        this->values_.emplace_back(Complex(real, 0.0f));
-    }
-
-    return count;
-}
-
-template <class T>
-ComplexInputParser<T>::ComplexInputParser(double prescale) : InputParser(prescale)
-{
-}
-
-template <class T>
-std::size_t
-ComplexInputParser<T>::ParseBlock(const std::vector<char> &block)
-{
-    /* this function assumes well structured blocks */
-    if (block.size() % (sizeof(T) * 2) != 0) {
-        throw std::runtime_error("block size must be a multiple of 2*sizeof(datatype)");
-    }
-
-    std::size_t count = block.size() / sizeof(T) / 2;
-    const T *start = reinterpret_cast<const T *>(block.data());
-
-    /* parse one value at a time into complex target */
-    for (std::size_t i = 0; i < count; i ++) {
-        /* remove NaNs */
-        double real = std::isnan(start[i * 2 + 0]) ? 0.0f : start[i * 2 + 0];
-        double imag = std::isnan(start[i * 2 + 1]) ? 0.0f : start[i * 2 + 1];
-        /* prescale */
-        real *= this->prescale_factor_;
-        imag *= this->prescale_factor_;
-
-        this->values_.emplace_back(Complex(real, imag));
+        value *= this->prescale_factor_;
+        this->values_.emplace_back(value);
     }
 
     return count;

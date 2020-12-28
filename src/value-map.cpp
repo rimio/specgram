@@ -15,15 +15,14 @@ dBFSValueMap::dBFSValueMap(double mindb) : ValueMap(mindb, 0)
 }
 
 RealWindow
-dBFSValueMap::Map(const ComplexWindow& input)
+dBFSValueMap::Map(const RealWindow& input)
 {
     auto n = input.size();
-
     RealWindow output;
     output.resize(n);
 
     for (unsigned int i = 0; i < n; i ++) {
-        output[i] = 20.0 * std::log10(2.0f * std::abs<double>(input[i]) / n);
+        output[i] = 20.0 * std::log10(input[i] / n);
         output[i] = std::clamp<double>(output[i], this->lower_, 0.0f);
         output[i] = 1.0f - output[i] / this->lower_;
     }

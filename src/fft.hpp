@@ -36,8 +36,9 @@ public:
     FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func);
     virtual ~FFT();
 
-    ComplexWindow Compute(const ComplexWindow& input, bool alias);
+    ComplexWindow Compute(const ComplexWindow& input);
 
+    static RealWindow GetMagnitude(const ComplexWindow& input, bool alias);
     static std::tuple<double, double> GetFrequencyLimits(double rate, std::size_t width);
     static double GetFrequencyIndex(double rate, std::size_t width, double f);
     static RealWindow Resample(const RealWindow& input, double rate, std::size_t width, double fmin, double fmax);

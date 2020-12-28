@@ -27,11 +27,7 @@ enum class DataType {
 
     /* floating point */
     kFloat32,
-    kFloat64,
-
-    /* complex */
-    kComplex64,
-    kComplex128
+    kFloat64
 };
 
 /* Complex type that we normalize everything to */
@@ -49,10 +45,11 @@ typedef std::vector<Complex> ComplexWindow;
 class InputParser {
 protected:
     double prescale_factor_;
+    bool is_complex_;
     std::vector<Complex> values_;
 
     InputParser() = delete;
-    explicit InputParser(double prescale);
+    explicit InputParser(double prescale, bool is_complex);
 
 public:
     InputParser(const InputParser &c) = delete;
@@ -60,7 +57,7 @@ public:
     InputParser & operator=(const InputParser&) = delete;
     virtual ~InputParser() = default;
 
-    static std::unique_ptr<InputParser> FromDataType(DataType dtype, double prescale);
+    static std::unique_ptr<InputParser> FromDataType(DataType dtype, double prescale, bool is_complex);
 
     std::size_t GetBufferedValueCount() const;
 
@@ -71,7 +68,7 @@ public:
     virtual std::size_t GetDataTypeSize() const = 0;
     virtual bool IsSigned() const = 0;
     virtual bool IsFloatingPoint() const = 0;
-    virtual bool IsComplex() const = 0;
+    virtual bool IsComplex() const { return is_complex_; };
 };
 
 /*
@@ -81,14 +78,13 @@ template <class T>
 class IntegerInputParser : public InputParser {
 public:
     IntegerInputParser() = delete;
-    explicit IntegerInputParser(double prescale);
+    explicit IntegerInputParser(double prescale, bool is_complex);
 
     std::size_t ParseBlock(const std::vector<char> &block) override;
 
-    std::size_t GetDataTypeSize() const override { return sizeof(T); };
+    std::size_t GetDataTypeSize() const override;
     bool IsSigned() const override { return std::numeric_limits<T>::is_signed; };
     bool IsFloatingPoint() const override { return false; };
-    bool IsComplex() const override { return false; };
 };
 
 /*
@@ -98,31 +94,13 @@ template <class T>
 class FloatInputParser : public InputParser {
 public:
     FloatInputParser() = delete;
-    explicit FloatInputParser(double prescale);
+    explicit FloatInputParser(double prescale, bool is_complex);
 
     std::size_t ParseBlock(const std::vector<char> &block) override;
 
-    std::size_t GetDataTypeSize() const override { return sizeof(T); };
+    std::size_t GetDataTypeSize() const override;
     bool IsSigned() const override { return true; };
     bool IsFloatingPoint() const override { return true; };
-    bool IsComplex() const override { return false; };
-};
-
-/*
- * Complex input parser
- */
-template <class T>
-class ComplexInputParser : public InputParser {
-public:
-    ComplexInputParser() = delete;
-    explicit ComplexInputParser(double prescale);
-
-    std::size_t ParseBlock(const std::vector<char> &block) override;
-
-    std::size_t GetDataTypeSize() const override { return 2 * sizeof(T); };
-    bool IsSigned() const override { return true; };
-    bool IsFloatingPoint() const override { return true; };
-    bool IsComplex() const override { return true; };
 };
 
 #endif

@@ -77,7 +77,7 @@ main(int argc, char** argv)
     }
 
     /* create input parser */
-    auto input = InputParser::FromDataType(conf.GetDataType(), conf.GetPrescaleFactor());
+    auto input = InputParser::FromDataType(conf.GetDataType(), conf.GetPrescaleFactor(), conf.HasComplexInput());
     if (input == nullptr) {
         return 1;
     }
@@ -101,12 +101,13 @@ main(int argc, char** argv)
     }
 
     /* display initialization info */
-    if (input->IsComplex()) {
-        spdlog::info("Input stream: {}bit complex at {}Hz", input->GetDataTypeSize() * 8, conf.GetRate());
-    } else if (input->IsFloatingPoint()) {
-        spdlog::info("Input stream: {}bit floating point at {}Hz", input->GetDataTypeSize() * 8, conf.GetRate());
+    if (input->IsFloatingPoint()) {
+        spdlog::info("Input stream: {}{}bit floating point at {}Hz",
+                     input->IsComplex() ? "complex " : "",
+                     input->GetDataTypeSize() * 8, conf.GetRate());
     } else {
-        spdlog::info("Input stream: {} {}bit integer at {}Hz",
+        spdlog::info("Input stream: {}{} {}bit integer at {}Hz",
+                     input->IsComplex() ? "complex " : "",
                      input->IsSigned() ? "signed" : "unsigned",
                      input->GetDataTypeSize() * 8, conf.GetRate());
     }
@@ -152,32 +153,56 @@ main(int argc, char** argv)
         input->RemoveValues(conf.GetFFTStride());
 
         /* compute FFT on fetched window */
-        auto fft_values = fft.Compute(window_values, conf.IsAliasingNegativeFrequencies());
+        auto fft_values = fft.Compute(window_values);
+#if 0
+        spdlog::info("fft_values, nontrivial values:");
+        for (std::size_t i = 0; i < fft_values.size(); i++) {
+            if (std::abs(fft_values[i]) > 1e-2)
+                spdlog::info("  -> idx {} is {}+{}j", i, fft_values[i].real(), fft_values[i].imag());
+        }
+#endif
 
-        /* map FFT to [0..1] domain */
-        auto fft_normalized_values = value_map->Map(fft_values);
+        /* compute power */
+        auto fft_magnitude = FFT::GetMagnitude(fft_values, conf.IsAliasingNegativeFrequencies());
+#if 0
+        spdlog::info("fft_magnitude, nontrivial values:");
+        for (std::size_t i = 0; i < fft_magnitude.size(); i++) {
+            if (fft_magnitude[i] > 1e-2)
+                spdlog::info("  -> idx {} is {}", i, fft_magnitude[i]);
+        }
+#endif
+
+        /* map power to [0..1] domain */
+        auto normalized_magnitude = value_map->Map(fft_magnitude);
+#if 0
+        spdlog::info("normalized_magnitude, nontrivial values:");
+        for (std::size_t i = 0; i < normalized_magnitude.size(); i++) {
+            if (normalized_magnitude[i] > 1e-2)
+                spdlog::info("  -> idx {} is {}", i, normalized_magnitude[i]);
+        }
+#endif
 
         if (conf.CanResample()) {
-            /* resample FFT to display width */
-            fft_normalized_values = FFT::Resample(fft_normalized_values, conf.GetRate(), conf.GetWidth(),
-                                                  conf.GetMinFreq(), conf.GetMaxFreq());
+            /* resample to display width */
+            normalized_magnitude = FFT::Resample(normalized_magnitude, conf.GetRate(), conf.GetWidth(),
+                                                 conf.GetMinFreq(), conf.GetMaxFreq());
         } else {
-            /* crop FFT to display width */
-            fft_normalized_values = FFT::Crop(fft_normalized_values, conf.GetRate(),
-                                              conf.GetMinFreq(), conf.GetMaxFreq());
+            /* crop to display width */
+            normalized_magnitude = FFT::Crop(normalized_magnitude, conf.GetRate(),
+                                             conf.GetMinFreq(), conf.GetMaxFreq());
         }
 
         /* colorize FFT */
-        auto fft_colorized = color_map->Map(fft_normalized_values);
+        auto colorized_power = color_map->Map(normalized_magnitude);
 
         /* add to live */
         if (live != nullptr) {
-            live->AddWindow(fft_colorized, fft_normalized_values);
+            live->AddWindow(colorized_power, normalized_magnitude);
         }
 
         /* add to history */
         if (conf.GetOutputFilename().has_value()) {
-            history.push_back(fft_colorized);
+            history.push_back(colorized_power);
         }
     }
     spdlog::info("Terminating ...");
