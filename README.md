@@ -140,7 +140,7 @@ Lastly, if you encounter high sample rate signals, for which you can't display a
 $ rx_sdr -d 0 -g 50 -f 97300000 -s 960000 -F CF32 - | ./specgram -lq -r 960000 -d cf32 -A 20 
 ```
 
-The above example consumes input at 960kHz from a RTL-SDR dongle, which at a 1024 wide FFT window would mean displaying over 900 windows per second; a bit much for the average PC, and for the average human to follow.
+The above example consumes input at 960k samples per second from a RTL-SDR dongle, which at a 1024 wide FFT window would mean displaying over 900 windows per second; a bit much for the average PC, and for the average human to follow.
 
 Averaging 20 windows gives us a much more reasonable 47 windows per second.
 
