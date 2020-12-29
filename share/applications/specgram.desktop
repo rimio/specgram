@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=specgram
+Comment=Create spectrograms from raw files or standard input
+Exec=specgram
+Icon=specgram
+Type=Application
+Categories=ConsoleOnly;Science;Utility
+Terminal=true
