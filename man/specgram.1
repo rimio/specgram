@@ -1,0 +1,355 @@
+.TH SPECGRAM 1 "2020-12-29"
+
+.SH NAME
+specgram \- create spectrograms from raw files or standard input
+
+.SH SYNOPSIS
+.B specgram
+[\fB\-aehlqvz\fR]
+[\fB\-\-print_input\fR]
+[\fB\-\-print_fft\fR]
+[\fB\-\-print_output\fR]
+[\fB\-i, --input\fR=\fIRATE\fR]
+[\fB\-r, --rate\fR=\fIRATE\fR]
+[\fB\-d, --datatype\fR=\fIDATA_TYPE\fR]
+[\fB\-p, --prescale\fR=\fIPRESCALE_FACTOR\fR]
+[\fB\-b, --block_size\fR=\fIBLOCK_SIZE\fR]
+[\fB\-f, --fft_width\fR=\fIFFT_WIDTH\fR]
+[\fB\-g, --fft_stride\fR=\fIFFT_STRIDE\fR]
+[\fB\-n, --window_function\fR=\fIWIN_FUNC\fR]
+[\fB\-m, --alias\fR=\fIALIAS\fR]
+[\fB\-A, --average\fR=\fIAVG_COUNT\fR]
+[\fB\-w, --width\fR=\fIWIDTH\fR]
+[\fB\-x, --fmin\fR=\fIFMIN\fR]
+[\fB\-y, --fmax\fR=\fIFMAX\fR]
+[\fB\-s, --scale\fR=\fISCALE\fR]
+[\fB\-c, --colormap\fR=\fICOLORMAP\fR]
+[\fB--bg-color\fR=\fIBGCOLOR\fR]
+[\fB--fg-color\fR=\fIFGCOLOR\fR]
+[\fB\-k, --count\fR=\fICOUNT\fR]
+[\fB\-t, --title\fR=\fITITLE\fR]
+.IR [outfile]
+
+.SH DESCRIPTION
+\fBspecgram\fR generates nice looking spectrograms from raw data, based on the options provided in the command line.
+
+The program has two output modes: file output when \fIoutfile\fR is provided and live output when \fB\-l, \-\-live\fR is provided.
+The two modes are not necessarily mutually exclusive, but behaviour may differ based on other options.
+
+The program has two input modes: file input when the \fB\-i, \-\-input\fR option is provided, or stdin input otherwise (default behaviour).
+
+In file input mode, the file is read in a synchronous manner until EOF is reached, and the spectrogram is generated into \fIoutfile\fR.
+Only file output is allowed in this mode, so \fIoutfile\fR is mandatory and \fB\-l, \-\-live\fR is disallowed.
+
+In stdin input mode, data is read in an asynchronous manner and for an indefinite amount of time.
+The spectrogram is updated as new data arrives and output is buffered in memory.
+
+In either input modes, when receiving SIGINT (i.e. by user pressing CTRL+C in the terminal), the program stops listening to data and exits gracefully, writing \fIoutfile\fR if provided.
+This also happens in live output mode, when the live window is closed.
+If the program receives SIGINT again it will forcefully quit.
+
+See \fBEXAMPLES\fR for common use cases.
+
+.SH OPTIONS
+
+.TP
+.BR \fIoutfile\fR
+Optional output image file. Check \fISFML\fR documentation for supported file types, but PNG files are recommended.
+
+Either \fIoutfile\fR must be specified, \fB\-l, \-\-live\fR must be set, or both.
+
+.TP
+.BR \-h ", " \-\-help
+Display help message.
+
+.TP
+.BR \-v ", " \-\-version
+Display program version.
+
+.TP
+\fBINPUT OPTIONS\fR
+
+.TP
+.BR \-i ", " \-\-input =\fIINFILE\fR
+Input file name.
+If option is provided, \fIINFILE\fR is handled as a raw dump of values (i.e. input file format is not considered).
+The program will stop when EOF is encountered.
+
+If option is not provided, data will be read indefinitely from stdin.
+
+.TP
+.BR \-r ", " \-\-rate =\fIRATE\fR
+Rate, in Hz, of the input data.
+Used for display purposes and computation of other parameters.
+Program will not perform rate limiting based on this parameter and will consume data as fast as it is available on stdin.
+
+Default is 44100.
+
+.TP
+.BR \-d ", " \-\-datatype =\fIDATA_TYPE\fR
+Data type of the input data.
+Is formed from an optional complex prefix (\fIc\fR), a type specifier (\fIu\fR for unsigned integer, \fIs\fR for signed integer, \fIf\fR for floating point) and a size suffix (in bits: 8, 16, 32, 64).
+
+Valid values are: u8, u16, u32, u64, s8, s16, s32, s64, f32, f64, cu8, cu16, cu32, cu64, cs8, cs16, cs32, cs64, cf32, cf64.
+
+Complex types are pairs of two values containing the real and imaginary part of the number, in this order.
+The size of the complex data type is twice that of the basic type. For example cf64 is 128-bit wide, corresponding to two 64-bit values.
+
+Default is s16.
+
+.TP
+.BR \-p ", " \-\-prescale =\fIPRESCALE_FACTOR\fR
+Input prescale factor.
+
+The following normalizations are applied to input values, regardless if they are part of a complex number or not:
+  \(bu unsigned values are normalized to [0.0 .. 1.0] based on the domain limits.
+  \(bu signed values are normalized to [-1.0 .. 1.0] based on the domain limits.
+  \(bu floating point values are left untouched, with the exception of NaN which is converted to a zero.
+
+After this normalization, the new value is multiplied by \fIPRESCALE_FACTOR\fR.
+This is mostly useful for adjusting your inputs to the scale, and is usually needed for floating point inputs (see \fB\-s, \-\-scale\fR).
+
+Default is 1.0.
+
+.TP
+.BR \-b ", " \-\-block_size =\fIBLOCK_SIZE\fR
+Block size, in data type sized values, that are to be read at a time from stdin.
+The larger this value, the larger the latency of the live spectrogram.
+
+Default is 256.
+
+.TP
+\fBFFT OPTIONS\fR
+
+.TP
+.BR \-f ", " \-\-fft_width =\fIFFT_WIDTH\fR
+FFT window width.
+Lower values provide worse frequency resolution but better temporal resolution. Higher values provide better frequency resolution but worse temporal resolution.
+
+Default is 1024.
+
+.TP
+.BR \-g ", " \-\-fft_stride =\fIFFT_STRIDE\fR
+Stride (distance) between two subsequent FFT windows in the input.
+Value can be less than \fIFFT_WIDTH\fR in which case there is overlap between windows, larger than \fIFFT_WIDTH\fR in which case information is lost, or equal to \fIFFT_WIDTH\fR.
+
+Default is 1024.
+
+.TP
+.BR \-n ", " \-\-window_function =\fIWIN_FUNC\fR
+Window function to be applied to the input window before FFT is computed.
+Because of the discrete nature of the FFT, a periodic assumption is made of the input window.
+In reality the input window is mostly never periodic, so window functions are used to taper off the ends of the window and avoid jumps between the beginning and end samples.
+
+Valid values are: none, hann, hamming, blackman, nuttall.
+
+Default is hann.
+
+.TP
+.BR \-m ", " \-\-alias =\fIALIAS\fR
+Specifies whether aliasing between negative and positive frequencies exists.
+If set to true (\fI1\fR), then the bins of corresponding negative and positive frequencies are summed on both sides.
+
+Default is \fI0\fR (no) for complex data types and \fI1\fR (yes) otherwise.
+
+.TP
+.BR \-A ", " \-\-average =\fIAVG_COUNT\fR
+Number of windows to average before the mean is displayed.
+
+Use this for high sample rate signals, where either displaying many windows or computing too wide a window is not possible.
+
+Default is 1.
+
+.TP
+\fBDISPLAY OPTIONS\fR
+
+.TP
+.BR \-q ", " \-\-no_resampling
+Disables resampling of output FFT windows, generating clean and crisp output.
+This invalidates the use of \fB\-w, \-\-width\fR, as the actual display width is computed from other parameters.
+
+.TP
+.BR \-w ", " \-\-width =\fIWIDTH\fR
+Display width of spectrogram.
+Output FFT windows are resampled to this width, colorized and displayed.
+Cannot be used with \fB\-q, \-\-no_resampling\fR.
+
+Default is 512.
+
+.TP
+.BR \-x ", " \-\-fmin =\fIFMIN\fR
+Lower bound of the displayed frequency spectrum, in Hz.
+
+Default is -\fIRATE\fR/2 for complex data types, 0 otherwise.
+
+.TP
+.BR \-y ", " \-\-fmax =\fIFMAX\fR
+Upper bound of the displayed frequency spectrum, in Hz.
+
+Default is \fIRATE\fR/2.
+
+.TP
+.BR \-s ", " \-\-scale =\fISCALE\fR
+Spectrogram scale.
+Valid values are: dBFS.
+
+Default is dBFS.
+
+\fB[dBFS] NOTE:\fR By default, the scale has a -120dB lower bound.
+You can adjust it by appending the custom lower bound after the scale string (e.g. \fB\-s dBFS-60\fR for a -60dB lower bound).
+
+\fB[dBFS] NOTE:\fR The peak amplitude assumed for dBFS, after normalization and prescaling (see \fB\-p, \-\-prescale\fR), is 1.0.
+Thus, the correct input domains are:
+  \(bu [0 .. TYPE_MAX] for real unsigned integer values
+  \(bu [-TYPE_MAX .. TYPE_MAX] for real signed integer values
+  \(bu [-1.0 .. 1.0] for real floating point values
+  \(bu { x | abs(x) <= TYPE_MAX } for complex signed and unsigned integer values
+  \(bu { x | abs(x) <= 1.0 } for complex floating point values
+
+Input values outside these domains may lead to positive dBFS values, which will be clamped to zero.
+Use prescaling (\fB\-p, \-\-prescale\fR) to adjust your input to this domain.
+Integer inputs don't usually need prescaling, as they are normalized based on their domain's limits.
+
+.TP
+.BR \-c ", " \-\-colormap =\fICOLORMAP\fR
+Color scheme.
+Valid values are: jet, gray, purple, blue, green, orange, red.
+
+If \fICOLORMAP\fR is neither of these values, then it is interpreted either as a 6 character hex string (RGB color) or an 8 character hex string (RGBA color).
+In this case, a gradient between the background color and the color specified by the hex string will be used as a color map.
+
+Default is jet.
+
+.TP
+.BR \-\-bg-color =\fIBGCOLOR\fR
+Background color. Either a 6 character hex string (RGB color) or an 8 character hex string (RGBA color).
+
+Default is 000000 (black).
+
+.TP
+.BR \-\-fg-color =\fIFGCOLOR\fR
+Foreground color. Either a 6 character hex string (RGB color) or an 8 character hex string (RGBA color).
+
+Default is ffffff (white).
+
+.TP
+.BR \-a ", " \-\-axes
+Displays axes.
+
+.TP
+.BR \-e ", " \-\-legend
+Displays legend. Entails \fB\-a, \-\-axes\fR.
+
+This is enabled in live view, but only for the live window (i.e. if both live view and file output are used, then file output will only display a legend if this flag is set by the user).
+
+.TP
+.BR \-z ", " \-\-horizontal
+Rotates histogram 90 degrees counter clockwise, making it readable left to right.
+
+.TP
+.BR \-\-print_input
+Prints input windows to standard output, after normalization and prescaling (see \fB\-p, \-\-prescale\fR).
+
+.TP
+.BR \-\-print_fft
+Prints FFT result to standard output, in FFTW order (i.e. freq[k] = \fIRATE\fR*k/N).
+
+.TP
+.BR \-\-print_output
+Prints output, before colorization, to standard output. Values are in the domain [0.0 .. 1.0].
+
+The length of the output may be different than the FFT result or the input, depending on specified frequency bounds (see \fB\-x, \-\-fmin\fR and \fB\-y, \-\-fmax\fR).
+Negative frequencies precede positive frequencies.
+
+.TP
+\fBLIVE OPTIONS\fR
+
+.TP
+.BR \-l ", " \-\-live
+Displays a live rendering of the spectrogram being computed.
+
+Either this flag must be set, \fIoutfile\fR must be specified, or both.
+
+.TP
+.BR \-k ", " \-\-count =\fICOUNT\fR
+Number of FFT windows displayed in live spectrogram.
+
+Default is 512.
+
+.TP
+.BR \-t ", " \-\-title =\fITITLE\fR
+Title of live window.
+
+Default is 'Spectrogram'.
+
+.SH EXAMPLE
+
+.LP
+One of the most obvious use cases is displaying a live spectrogram from the PC audio output (you can retrieve \fIyourdevice\fP using "\fBpactl list sources short\fR"):
+
+.IP
+parec --channels=1 --device="\fIyourdevice\fR.monitor" --raw | \fBspecgram\fR -l
+
+.LP
+This will assume your device produces 16-bit signed output at 44.1kHz, which is usually the case.
+
+If you want the same, but wider and with a crisp look:
+
+.IP
+parec --channels=1 --device="\fIyourdevice\fR.monitor" --raw | \fBspecgram\fR -lq -f 2048
+
+.LP
+If you also want to render it to an output file:
+
+.IP
+parec --channels=1 --device="\fIyourdevice\fR.monitor" --raw | \fBspecgram\fR -lq -f 2048 \fIoutfile.png\fR
+
+.LP
+Keep in mind that when reading from stdin (like the above cases), the program expects SIGINT to stop generating FFT windows (e.g. by pressing CTRL+C in terminal).
+The file \fIoutfile.png\fR will be generated after SIGINT is received.
+
+Generating from a file to a file, with axes displayed and a crisp look:
+
+.IP
+\fBspecgram\fR -aq -f 2048 -i \fIinfile\fR \fIoutfile.png\fR
+
+.LP
+Generating from a file to a file, with axes and legend displayed, but zooming in on the 2-4kHz band:
+
+.IP
+\fBspecgram\fR -e -f 2048 -x 2000 -y 4000 -i \fIinfile\fR \fIoutfile.png\fR
+
+.LP
+Render a crisp output with a transparent background, so it can be embedded in a document:
+
+.IP
+\fBspecgram\fR -qe --bg-color=00000000 -i \fIinfile\fR \fIoutfile.png\fR
+
+.SH BUGS
+
+Frequency bounds (\fB\-x, \-\-fmin\fR and \fB\-y, \-\-fmax\fR) may exceed FFT window frequency limits when resampling is enabled (i.e. default behaviour), but may not do so when resampling is disabled (\fB\-q, \-\-no_resampling\fR).
+This inconsistency is known behaviour and, while not necessarily nice, does not impact usability in a meaningful manner.
+Ideally exceeding these limits should be allowed in both cases, and zero padding should be performed.
+
+Moreover, when using the \fB\-q, \-\-no_resampling\fR flag, the frequency limits are \[+-]\fIRATE\fR*(\fIFFT_WIDTH\fR-1)/(2*\fIFFT_WIDTH\fR) when \fIFFT_WIDTH\fR is odd
+and -\fIRATE\fR*(\fIFFT_WIDTH\fR-2)/(2*\fIFFT_WIDTH\fR) to \fIRATE\fR/2 when \fIFFT_WIDTH\fR is even.
+This is a bit different from the behaviour of NumPy's implementation of fftfreq and aims to make it easier to display the Nyquist frequency component for non-complex inputs.
+
+The above upper limits are enforced silently in the default values of \fB\-x, \-\-fmin\fR and \fB\-y, \-\-fmax\fR, but for brevity are not mentioned in this manpage's \fBOPTIONS\fR section or in the program help screen.
+
+.SH AUTHORS
+
+Copyright (c) 2020 Vasile Vilvoiu <vasi.vilvoiu@gmail.com>
+
+\fBspecgram\fR is free software; you can redistribute it and/or modify it under the terms of the MIT license.
+See LICENSE for details.
+
+.SH ACKNOWLEDGEMENTS
+
+Taywee/args library by Taylor C. Richberger and Pavel Belikov, released under the MIT license.
+
+Program icon by Flavia Fabian, released under the CC-BY-SA 4.0 license.
+
+Share Tech Mono font by Carrois Type Design, released under Open Font License.
+
+Special thanks to Eugen Stoianovici for code review and various fixes.

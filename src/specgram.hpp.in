@@ -1,0 +1,28 @@
+/*
+ * Copyright (c) 2020-2021 Vasile Vilvoiu <vasi.vilvoiu@gmail.com>
+ *
+ * specgram is free software; you can redistribute it and/or modify
+ * it under the terms of the MIT license. See LICENSE for details.
+ */
+
+#ifndef _SPECGRAM_HPP_
+#define _SPECGRAM_HPP_
+
+#include <stdint.h>
+#include <stddef.h>
+
+/*
+ * version
+ */
+#define SPECGRAM_VERSION_MAJOR @specgram_VERSION_MAJOR@
+#define SPECGRAM_VERSION_MINOR @specgram_VERSION_MINOR@
+#define SPECGRAM_VERSION_PATCH @specgram_VERSION_PATCH@
+#define SPECGRAM_VERSION_BUILD "@GIT_HASH@"
+
+#ifdef GIT_BUILD
+#define SPECGRAM_VERSION "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@.@GIT_HASH@"
+#else
+#define SPECGRAM_VERSION "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@"
+#endif
+
+#endif

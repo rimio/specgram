@@ -1,0 +1,607 @@
+<!-- Creator     : groff version 1.22.4 -->
+<!-- CreationDate: Tue Dec 29 15:59:32 2020 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>SPECGRAM</title>
+
+</head>
+<body>
+
+<h1 align="center">SPECGRAM</h1>
+
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#OPTIONS">OPTIONS</a><br>
+<a href="#EXAMPLE">EXAMPLE</a><br>
+<a href="#BUGS">BUGS</a><br>
+<a href="#AUTHORS">AUTHORS</a><br>
+<a href="#ACKNOWLEDGEMENTS">ACKNOWLEDGEMENTS</a><br>
+
+<hr>
+
+
+<h2>NAME
+<a name="NAME"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">specgram
+&minus; create spectrograms from raw files or standard
+input</p>
+
+<h2>SYNOPSIS
+<a name="SYNOPSIS"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>specgram</b>
+[<b>&minus;aehlqvz</b>] [<b>&minus;&minus;print_input</b>]
+[<b>&minus;&minus;print_fft</b>]
+[<b>&minus;&minus;print_output</b>] [<b>&minus;i,
+--input</b>=<i>RATE</i>] [<b>&minus;r,
+--rate</b>=<i>RATE</i>] [<b>&minus;d,
+--datatype</b>=<i>DATA_TYPE</i>] [<b>&minus;p,
+--prescale</b>=<i>PRESCALE_FACTOR</i>] [<b>&minus;b,
+--block_size</b>=<i>BLOCK_SIZE</i>] [<b>&minus;f,
+--fft_width</b>=<i>FFT_WIDTH</i>] [<b>&minus;g,
+--fft_stride</b>=<i>FFT_STRIDE</i>] [<b>&minus;n,
+--window_function</b>=<i>WIN_FUNC</i>] [<b>&minus;m,
+--alias</b>=<i>ALIAS</i>] [<b>&minus;A,
+--average</b>=<i>AVG_COUNT</i>] [<b>&minus;w,
+--width</b>=<i>WIDTH</i>] [<b>&minus;x,
+--fmin</b>=<i>FMIN</i>] [<b>&minus;y,
+--fmax</b>=<i>FMAX</i>] [<b>&minus;s,
+--scale</b>=<i>SCALE</i>] [<b>&minus;c,
+--colormap</b>=<i>COLORMAP</i>]
+[<b>--bg-color</b>=<i>BGCOLOR</i>]
+[<b>--fg-color</b>=<i>FGCOLOR</i>] [<b>&minus;k,
+--count</b>=<i>COUNT</i>] [<b>&minus;t,
+--title</b>=<i>TITLE</i>] <i>[outfile]</i></p>
+
+<h2>DESCRIPTION
+<a name="DESCRIPTION"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><i><b>specgram</b></i>
+generates nice looking spectrograms from raw data, based on
+the options provided in the command line.</p>
+
+<p style="margin-left:11%; margin-top: 1em">The program has
+two output modes: file output when <i>outfile</i> is
+provided and live output when <b>&minus;l,
+&minus;&minus;live</b> is provided. The two modes are not
+necessarily mutually exclusive, but behaviour may differ
+based on other options.</p>
+
+<p style="margin-left:11%; margin-top: 1em">The program has
+two input modes: file input when the <b>&minus;i,
+&minus;&minus;input</b> option is provided, or stdin input
+otherwise (default behaviour).</p>
+
+<p style="margin-left:11%; margin-top: 1em">In file input
+mode, the file is read in a synchronous manner until EOF is
+reached, and the spectrogram is generated into
+<i>outfile</i>. Only file output is allowed in this mode, so
+<i>outfile</i> is mandatory and <b>&minus;l,
+&minus;&minus;live</b> is disallowed.</p>
+
+<p style="margin-left:11%; margin-top: 1em">In stdin input
+mode, data is read in an asynchronous manner and for an
+indefinite amount of time. The spectrogram is updated as new
+data arrives and output is buffered in memory.</p>
+
+<p style="margin-left:11%; margin-top: 1em">In either input
+modes, when receiving SIGINT (i.e. by user pressing CTRL+C
+in the terminal), the program stops listening to data and
+exits gracefully, writing <i>outfile</i> if provided. This
+also happens in live output mode, when the live window is
+closed. If the program receives SIGINT again it will
+forcefully quit.</p>
+
+<p style="margin-left:11%; margin-top: 1em">See
+<b>EXAMPLES</b> for common use cases.</p>
+
+<h2>OPTIONS
+<a name="OPTIONS"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><i>outfile</i></p>
+
+<p style="margin-left:22%;">Optional output image file.
+Check <i>SFML</i> documentation for supported file types,
+but PNG files are recommended.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Either
+<i>outfile</i> must be specified, <b>&minus;l,
+&minus;&minus;live</b> must be set, or both.</p>
+
+<p style="margin-left:11%;"><b>&minus;h</b>,
+<b>&minus;&minus;help</b></p>
+
+<p style="margin-left:22%;">Display help message.</p>
+
+<p style="margin-left:11%;"><b>&minus;v</b>,
+<b>&minus;&minus;version</b></p>
+
+<p style="margin-left:22%;">Display program version.</p>
+
+<p style="margin-left:11%;"><b>INPUT OPTIONS <br>
+&minus;i</b>, <b>&minus;&minus;input</b>=<i>INFILE</i></p>
+
+<p style="margin-left:22%;">Input file name. If option is
+provided, <i>INFILE</i> is handled as a raw dump of values
+(i.e. input file format is not considered). The program will
+stop when EOF is encountered.</p>
+
+<p style="margin-left:22%; margin-top: 1em">If option is
+not provided, data will be read indefinitely from stdin.</p>
+
+<p style="margin-left:11%;"><b>&minus;r</b>,
+<b>&minus;&minus;rate</b>=<i>RATE</i></p>
+
+<p style="margin-left:22%;">Rate, in Hz, of the input data.
+Used for display purposes and computation of other
+parameters. Program will not perform rate limiting based on
+this parameter and will consume data as fast as it is
+available on stdin.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+44100.</p>
+
+<p style="margin-left:11%;"><b>&minus;d</b>,
+<b>&minus;&minus;datatype</b>=<i>DATA_TYPE</i></p>
+
+<p style="margin-left:22%;">Data type of the input data. Is
+formed from an optional complex prefix (<i>c</i>), a type
+specifier (<i>u</i> for unsigned integer, <i>s</i> for
+signed integer, <i>f</i> for floating point) and a size
+suffix (in bits: 8, 16, 32, 64).</p>
+
+<p style="margin-left:22%; margin-top: 1em">Valid values
+are: u8, u16, u32, u64, s8, s16, s32, s64, f32, f64, cu8,
+cu16, cu32, cu64, cs8, cs16, cs32, cs64, cf32, cf64.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Complex types
+are pairs of two values containing the real and imaginary
+part of the number, in this order. The size of the complex
+data type is twice that of the basic type. For example cf64
+is 128-bit wide, corresponding to two 64-bit values.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+s16.</p>
+
+<p style="margin-left:11%;"><b>&minus;p</b>,
+<b>&minus;&minus;prescale</b>=<i>PRESCALE_FACTOR</i></p>
+
+<p style="margin-left:22%;">Input prescale factor.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The following
+normalizations are applied to input values, regardless if
+they are part of a complex number or not: <br>
+&bull; unsigned values are normalized to [0.0 .. 1.0] based
+on the domain limits. <br>
+&bull; signed values are normalized to [-1.0 .. 1.0] based
+on the domain limits. <br>
+&bull; floating point values are left untouched, with the
+exception of NaN which is converted to a zero.</p>
+
+<p style="margin-left:22%; margin-top: 1em">After this
+normalization, the new value is multiplied by
+<i>PRESCALE_FACTOR</i>. This is mostly useful for adjusting
+your inputs to the scale, and is usually needed for floating
+point inputs (see <b>&minus;s, &minus;&minus;scale</b>).</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+1.0.</p>
+
+<p style="margin-left:11%;"><b>&minus;b</b>,
+<b>&minus;&minus;block_size</b>=<i>BLOCK_SIZE</i></p>
+
+<p style="margin-left:22%;">Block size, in data type sized
+values, that are to be read at a time from stdin. The larger
+this value, the larger the latency of the live
+spectrogram.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+256.</p>
+
+<p style="margin-left:11%;"><b>FFT OPTIONS <br>
+&minus;f</b>,
+<b>&minus;&minus;fft_width</b>=<i>FFT_WIDTH</i></p>
+
+<p style="margin-left:22%;">FFT window width. Lower values
+provide worse frequency resolution but better temporal
+resolution. Higher values provide better frequency
+resolution but worse temporal resolution.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+1024.</p>
+
+<p style="margin-left:11%;"><b>&minus;g</b>,
+<b>&minus;&minus;fft_stride</b>=<i>FFT_STRIDE</i></p>
+
+<p style="margin-left:22%;">Stride (distance) between two
+subsequent FFT windows in the input. Value can be less than
+<i>FFT_WIDTH</i> in which case there is overlap between
+windows, larger than <i>FFT_WIDTH</i> in which case
+information is lost, or equal to <i>FFT_WIDTH</i>.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+1024.</p>
+
+<p style="margin-left:11%;"><b>&minus;n</b>,
+<b>&minus;&minus;window_function</b>=<i>WIN_FUNC</i></p>
+
+<p style="margin-left:22%;">Window function to be applied
+to the input window before FFT is computed. Because of the
+discrete nature of the FFT, a periodic assumption is made of
+the input window. In reality the input window is mostly
+never periodic, so window functions are used to taper off
+the ends of the window and avoid jumps between the beginning
+and end samples.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Valid values
+are: none, hann, hamming, blackman, nuttall.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+hann.</p>
+
+<p style="margin-left:11%;"><b>&minus;m</b>,
+<b>&minus;&minus;alias</b>=<i>ALIAS</i></p>
+
+<p style="margin-left:22%;">Specifies whether aliasing
+between negative and positive frequencies exists. If set to
+true (<i>1</i>), then the bins of corresponding negative and
+positive frequencies are summed on both sides.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+<i>0</i> (no) for complex data types and <i>1</i> (yes)
+otherwise.</p>
+
+<p style="margin-left:11%;"><b>&minus;A</b>,
+<b>&minus;&minus;average</b>=<i>AVG_COUNT</i></p>
+
+<p style="margin-left:22%;">Number of windows to average
+before the mean is displayed.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Use this for
+high sample rate signals, where either displaying many
+windows or computing too wide a window is not possible.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+1.</p>
+
+<p style="margin-left:11%;"><b>DISPLAY OPTIONS <br>
+&minus;q</b>, <b>&minus;&minus;no_resampling</b></p>
+
+<p style="margin-left:22%;">Disables resampling of output
+FFT windows, generating clean and crisp output. This
+invalidates the use of <b>&minus;w, &minus;&minus;width</b>,
+as the actual display width is computed from other
+parameters.</p>
+
+<p style="margin-left:11%;"><b>&minus;w</b>,
+<b>&minus;&minus;width</b>=<i>WIDTH</i></p>
+
+<p style="margin-left:22%;">Display width of spectrogram.
+Output FFT windows are resampled to this width, colorized
+and displayed. Cannot be used with <b>&minus;q,
+&minus;&minus;no_resampling</b>.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+512.</p>
+
+<p style="margin-left:11%;"><b>&minus;x</b>,
+<b>&minus;&minus;fmin</b>=<i>FMIN</i></p>
+
+<p style="margin-left:22%;">Lower bound of the displayed
+frequency spectrum, in Hz.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+-<i>RATE</i>/2 for complex data types, 0 otherwise.</p>
+
+<p style="margin-left:11%;"><b>&minus;y</b>,
+<b>&minus;&minus;fmax</b>=<i>FMAX</i></p>
+
+<p style="margin-left:22%;">Upper bound of the displayed
+frequency spectrum, in Hz.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+<i>RATE</i>/2.</p>
+
+<p style="margin-left:11%;"><b>&minus;s</b>,
+<b>&minus;&minus;scale</b>=<i>SCALE</i></p>
+
+<p style="margin-left:22%;">Spectrogram scale. Valid values
+are: dBFS.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+dBFS.</p>
+
+<p style="margin-left:22%; margin-top: 1em"><b>[dBFS]
+NOTE:</b> By default, the scale has a -120dB lower bound.
+You can adjust it by appending the custom lower bound after
+the scale string (e.g. <b>&minus;s dBFS-60</b> for a -60dB
+lower bound).</p>
+
+<p style="margin-left:22%; margin-top: 1em"><b>[dBFS]
+NOTE:</b> The peak amplitude assumed for dBFS, after
+normalization and prescaling (see <b>&minus;p,
+&minus;&minus;prescale</b>), is 1.0. Thus, the correct input
+domains are: <br>
+&bull; [0 .. TYPE_MAX] for real unsigned integer values <br>
+&bull; [-TYPE_MAX .. TYPE_MAX] for real signed integer
+values <br>
+&bull; [-1.0 .. 1.0] for real floating point values <br>
+&bull; { x | abs(x) &lt;= TYPE_MAX } for complex signed and
+unsigned integer values <br>
+&bull; { x | abs(x) &lt;= 1.0 } for complex floating point
+values</p>
+
+<p style="margin-left:22%; margin-top: 1em">Input values
+outside these domains may lead to positive dBFS values,
+which will be clamped to zero. Use prescaling (<b>&minus;p,
+&minus;&minus;prescale</b>) to adjust your input to this
+domain. Integer inputs don&rsquo;t usually need prescaling,
+as they are normalized based on their domain&rsquo;s
+limits.</p>
+
+<p style="margin-left:11%;"><b>&minus;c</b>,
+<b>&minus;&minus;colormap</b>=<i>COLORMAP</i></p>
+
+<p style="margin-left:22%;">Color scheme. Valid values are:
+jet, gray, purple, blue, green, orange, red.</p>
+
+<p style="margin-left:22%; margin-top: 1em">If
+<i>COLORMAP</i> is neither of these values, then it is
+interpreted either as a 6 character hex string (RGB color)
+or an 8 character hex string (RGBA color). In this case, a
+gradient between the background color and the color
+specified by the hex string will be used as a color map.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+jet.</p>
+
+
+<p style="margin-left:11%;"><b>&minus;&minus;bg-color</b>=<i>BGCOLOR</i></p>
+
+<p style="margin-left:22%;">Background color. Either a 6
+character hex string (RGB color) or an 8 character hex
+string (RGBA color).</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+000000 (black).</p>
+
+
+<p style="margin-left:11%;"><b>&minus;&minus;fg-color</b>=<i>FGCOLOR</i></p>
+
+<p style="margin-left:22%;">Foreground color. Either a 6
+character hex string (RGB color) or an 8 character hex
+string (RGBA color).</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+ffffff (white).</p>
+
+<p style="margin-left:11%;"><b>&minus;a</b>,
+<b>&minus;&minus;axes</b></p>
+
+<p style="margin-left:22%;">Displays axes.</p>
+
+<p style="margin-left:11%;"><b>&minus;e</b>,
+<b>&minus;&minus;legend</b></p>
+
+<p style="margin-left:22%;">Displays legend. Entails
+<b>&minus;a, &minus;&minus;axes</b>.</p>
+
+<p style="margin-left:22%; margin-top: 1em">This is enabled
+in live view, but only for the live window (i.e. if both
+live view and file output are used, then file output will
+only display a legend if this flag is set by the user).</p>
+
+<p style="margin-left:11%;"><b>&minus;z</b>,
+<b>&minus;&minus;horizontal</b></p>
+
+<p style="margin-left:22%;">Rotates histogram 90 degrees
+counter clockwise, making it readable left to right.</p>
+
+
+<p style="margin-left:11%;"><b>&minus;&minus;print_input</b></p>
+
+<p style="margin-left:22%;">Prints input windows to
+standard output, after normalization and prescaling (see
+<b>&minus;p, &minus;&minus;prescale</b>).</p>
+
+
+<p style="margin-left:11%;"><b>&minus;&minus;print_fft</b></p>
+
+<p style="margin-left:22%;">Prints FFT result to standard
+output, in FFTW order (i.e. freq[k] = <i>RATE</i>*k/N).</p>
+
+
+<p style="margin-left:11%;"><b>&minus;&minus;print_output</b></p>
+
+<p style="margin-left:22%;">Prints output, before
+colorization, to standard output. Values are in the domain
+[0.0 .. 1.0].</p>
+
+<p style="margin-left:22%; margin-top: 1em">The length of
+the output may be different than the FFT result or the
+input, depending on specified frequency bounds (see
+<b>&minus;x, &minus;&minus;fmin</b> and <b>&minus;y,
+&minus;&minus;fmax</b>). Negative frequencies precede
+positive frequencies.</p>
+
+<p style="margin-left:11%;"><b>LIVE OPTIONS <br>
+&minus;l</b>, <b>&minus;&minus;live</b></p>
+
+<p style="margin-left:22%;">Displays a live rendering of
+the spectrogram being computed.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Either this
+flag must be set, <i>outfile</i> must be specified, or
+both.</p>
+
+<p style="margin-left:11%;"><b>&minus;k</b>,
+<b>&minus;&minus;count</b>=<i>COUNT</i></p>
+
+<p style="margin-left:22%;">Number of FFT windows displayed
+in live spectrogram.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+512.</p>
+
+<p style="margin-left:11%;"><b>&minus;t</b>,
+<b>&minus;&minus;title</b>=<i>TITLE</i></p>
+
+<p style="margin-left:22%;">Title of live window.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Default is
+&rsquo;Spectrogram&rsquo;.</p>
+
+<h2>EXAMPLE
+<a name="EXAMPLE"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">One of the most
+obvious use cases is displaying a live spectrogram from the
+PC audio output (you can retrieve <i>yourdevice</i> using
+&quot;<b>pactl list sources short</b>&quot;):</p>
+
+<p style="margin-left:22%; margin-top: 1em">parec
+--channels=1 --device=&quot;<i>yourdevice</i>.monitor&quot;
+--raw | <b>specgram</b> -l</p>
+
+<p style="margin-left:11%; margin-top: 1em">This will
+assume your device produces 16-bit signed output at 44.1kHz,
+which is usually the case.</p>
+
+<p style="margin-left:11%; margin-top: 1em">If you want the
+same, but wider and with a crisp look:</p>
+
+<p style="margin-left:22%; margin-top: 1em">parec
+--channels=1 --device=&quot;<i>yourdevice</i>.monitor&quot;
+--raw | <b>specgram</b> -lq -f 2048</p>
+
+<p style="margin-left:11%; margin-top: 1em">If you also
+want to render it to an output file:</p>
+
+<p style="margin-left:22%; margin-top: 1em">parec
+--channels=1 --device=&quot;<i>yourdevice</i>.monitor&quot;
+--raw | <b>specgram</b> -lq -f 2048 <i>outfile.png</i></p>
+
+<p style="margin-left:11%; margin-top: 1em">Keep in mind
+that when reading from stdin (like the above cases), the
+program expects SIGINT to stop generating FFT windows (e.g.
+by pressing CTRL+C in terminal). The file <i>outfile.png</i>
+will be generated after SIGINT is received.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Generating from
+a file to a file, with axes displayed and a crisp look:</p>
+
+
+<p style="margin-left:22%; margin-top: 1em"><b>specgram</b>
+-aq -f 2048 -i <i>infile outfile.png</i></p>
+
+<p style="margin-left:11%; margin-top: 1em">Generating from
+a file to a file, with axes and legend displayed, but
+zooming in on the 2-4kHz band:</p>
+
+
+<p style="margin-left:22%; margin-top: 1em"><b>specgram</b>
+-e -f 2048 -x 2000 -y 4000 -i <i>infile outfile.png</i></p>
+
+<p style="margin-left:11%; margin-top: 1em">Render a crisp
+output with a transparent background, so it can be embedded
+in a document:</p>
+
+
+<p style="margin-left:22%; margin-top: 1em"><b>specgram</b>
+-qe --bg-color=00000000 -i <i>infile outfile.png</i></p>
+
+<h2>BUGS
+<a name="BUGS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Frequency
+bounds (<b>&minus;x, &minus;&minus;fmin</b> and <b>&minus;y,
+&minus;&minus;fmax</b>) may exceed FFT window frequency
+limits when resampling is enabled (i.e. default behaviour),
+but may not do so when resampling is disabled (<b>&minus;q,
+&minus;&minus;no_resampling</b>). This inconsistency is
+known behaviour and, while not necessarily nice, does not
+impact usability in a meaningful manner. Ideally exceeding
+these limits should be allowed in both cases, and zero
+padding should be performed.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Moreover, when
+using the <b>&minus;q, &minus;&minus;no_resampling</b> flag,
+the frequency limits are
+&plusmn;<i>RATE</i>*(<i>FFT_WIDTH</i>-1)/(2*<i>FFT_WIDTH</i>)
+when <i>FFT_WIDTH</i> is odd and
+-<i>RATE</i>*(<i>FFT_WIDTH</i>-2)/(2*<i>FFT_WIDTH</i>) to
+<i>RATE</i>/2 when <i>FFT_WIDTH</i> is even. This is a bit
+different from the behaviour of NumPy&rsquo;s implementation
+of fftfreq and aims to make it easier to display the Nyquist
+frequency component for non-complex inputs.</p>
+
+<p style="margin-left:11%; margin-top: 1em">The above upper
+limits are enforced silently in the default values of
+<b>&minus;x, &minus;&minus;fmin</b> and <b>&minus;y,
+&minus;&minus;fmax</b>, but for brevity are not mentioned in
+this manpage&rsquo;s <b>OPTIONS</b> section or in the
+program help screen.</p>
+
+<h2>AUTHORS
+<a name="AUTHORS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Copyright (c)
+2020 Vasile Vilvoiu &lt;vasi.vilvoiu@gmail.com&gt;</p>
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>specgram</b>
+is free software; you can redistribute it and/or modify it
+under the terms of the MIT license. See LICENSE for
+details.</p>
+
+<h2>ACKNOWLEDGEMENTS
+<a name="ACKNOWLEDGEMENTS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Taywee/args
+library by Taylor C. Richberger and Pavel Belikov, released
+under the MIT license.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Program icon by
+Flavia Fabian, released under the CC-BY-SA 4.0 license.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Share Tech Mono
+font by Carrois Type Design, released under Open Font
+License.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Special thanks
+to Eugen Stoianovici for code review and various fixes.</p>
+<hr>
+</body>
+</html>
