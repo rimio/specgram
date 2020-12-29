@@ -32,7 +32,12 @@ execute_process(
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     OUTPUT_VARIABLE GIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
 )
+
+if (NOT ${GIT_HASH} STREQUAL "")
+    add_definitions(-DGIT_BUILD)
+endif()
 
 # Configurations
 configure_file (
