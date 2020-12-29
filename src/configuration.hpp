@@ -124,6 +124,8 @@ public:
     auto GetLiveFFTHeight() const { return live_fft_height_; }
 
     auto GetAxisFontSize() const { return axis_font_size_; }
+
+    sf::Color GetLiveGuidelinesColor() const;
 };
 
 #endif

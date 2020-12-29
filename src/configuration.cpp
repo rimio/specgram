@@ -60,6 +60,14 @@ Configuration::Configuration()
     this->axis_font_size_ = 12;
 }
 
+sf::Color
+Configuration::GetLiveGuidelinesColor() const
+{
+    sf::Color c = this->GetForegroundColor();
+    c.a = 50;
+    return c;
+}
+
 Configuration
 Configuration::GetForLive() const
 {

@@ -80,7 +80,6 @@ main(int argc, char** argv)
     /* create value map */
     std::unique_ptr<ValueMap> value_map = nullptr;
     if (conf.GetScale() == ValueMapType::kdBFS) {
-        /* TODO: configurable lower bound */
         value_map = std::make_unique<dBFSValueMap>(conf.GetScaleLowerBound());
     } else {
         assert(false);

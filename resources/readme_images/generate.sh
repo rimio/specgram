@@ -19,6 +19,11 @@ montage \
 
 rm -rf colormap_*.png
 
+specgram -eq -f 8192 -y 4000 --bg-color=00000000 --fg-color=000000ff -i ../clips/rammstein_dalai_lama example_file.png
+
+# Following command should be used for screenshot acquisition
+# cat ../clips/rammstein_dalai_lama | specgram -eql -f 8192 -y 4000 -k 440
+
 montage \
 -label "Live view" example_live.png \
 -label "File output" example_file.png \

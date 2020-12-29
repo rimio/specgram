@@ -50,28 +50,28 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     }
 
     /* compute tickmarks */
-    auto freq_ticks =
+    this->frequency_ticks_ =
         Renderer::GetNiceTicks(this->configuration_.GetMinFreq(), this->configuration_.GetMaxFreq(),
                                "Hz", this->configuration_.GetWidth(), 75);
     auto time_ticks =
         Renderer::GetNiceTicks(0.0f, (double)fft_count * this->configuration_.GetAverageCount() * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
                                "s", fft_count, 50);
 
-    std::list<AxisTick> legend_ticks, live_ticks;
+    std::list<AxisTick> legend_ticks;
     if (vmap.GetName() == "dBFS") {
         unsigned int lticks = 1 + this->configuration_.GetWidth() / 60;
         lticks = std::clamp<unsigned int>(lticks, 2, 13); /* at maximum 10dBFS spacing */
         legend_ticks = Renderer::GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), vmap.GetUnit(), lticks);
-        live_ticks = Renderer::GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), "", 5); /* no unit, keep it short */
+        this->live_ticks_ = Renderer::GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), "", 5); /* no unit, keep it short */
     } else {
         legend_ticks = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
                                             vmap.GetUnit(), this->configuration_.GetWidth(), 60);
-        live_ticks = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                          "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
+        this->live_ticks_ = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+                                                   "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
     }
 
-    typeof(freq_ticks) freq_no_text_ticks;
-    for (auto& t : freq_ticks) {
+    typeof(this->frequency_ticks_) freq_no_text_ticks;
+    for (auto& t : this->frequency_ticks_) {
         freq_no_text_ticks.emplace_back(std::make_tuple(std::get<0>(t), ""));
     }
 
@@ -89,7 +89,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     double max_live_ticks_height = 0.0f;
 
     if (this->configuration_.HasAxes()) {
-        for (auto &t : freq_ticks) {
+        for (auto &t : this->frequency_ticks_) {
             sf::Text text;
             text.setCharacterSize(this->configuration_.GetAxisFontSize());
             text.setFont(this->font_);
@@ -128,7 +128,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
             }
         }
 
-        for (auto &t : live_ticks) {
+        for (auto &t : this->live_ticks_) {
             sf::Text text;
             text.setCharacterSize(this->configuration_.GetAxisFontSize());
             text.setFont(this->font_);
@@ -207,7 +207,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         /* frequency axis */
         this->RenderAxis(this->canvas_, this->fft_area_transform_,
                          true, this->configuration_.IsHorizontal() ? Orientation::k90CW : Orientation::kNormal,
-                         this->configuration_.GetWidth(), freq_ticks);
+                         this->configuration_.GetWidth(), this->frequency_ticks_);
 
         /* time axis */
         this->RenderAxis(this->canvas_, this->fft_area_transform_ * sf::Transform().rotate(90.0f),
@@ -243,7 +243,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         this->RenderAxis(this->canvas_,
                          this->fft_live_transform_ * sf::Transform().translate(0.0f, this->configuration_.GetLiveFFTHeight()).rotate(-90.0f),
                          true, this->configuration_.IsHorizontal() ? Orientation::k180 : Orientation::k90CW,
-                         this->configuration_.GetLiveFFTHeight(), live_ticks);
+                         this->configuration_.GetLiveFFTHeight(), this->live_ticks_);
 
         /* frequency axis */
         this->RenderAxis(this->canvas_, this->fft_live_transform_ * sf::Transform().translate(0.0f, this->configuration_.GetLiveFFTHeight()),
@@ -459,6 +459,26 @@ Renderer::RenderLiveFFT(const RealWindow& window, const std::vector<uint8_t>& co
     fft_live_box.setOutlineColor(this->configuration_.GetForegroundColor());
     fft_live_box.setOutlineThickness(1);
     this->canvas_.draw(fft_live_box, this->fft_live_transform_);
+
+    /* horizontal live guidelines */
+    for (std::size_t i = 1; i < this->live_ticks_.size() - 1; i ++) {
+        sf::RectangleShape hline(sf::Vector2f(this->configuration_.GetWidth(), 1.0f));
+        hline.setFillColor(this->configuration_.GetLiveGuidelinesColor());
+
+        sf::Transform tran;
+        tran.translate(0.0f, std::get<0>(*std::next(this->live_ticks_.begin(), i)) * (this->configuration_.GetLiveFFTHeight() - 1.0f));
+        this->canvas_.draw(hline, this->fft_live_transform_ * tran);
+    }
+
+    /* vertical live guidelines */
+    for (std::size_t i = 1; i < this->frequency_ticks_.size(); i ++) {
+        sf::RectangleShape vline(sf::Vector2f(1.0f, this->configuration_.GetLiveFFTHeight()));
+        vline.setFillColor(this->configuration_.GetLiveGuidelinesColor());
+
+        sf::Transform tran;
+        tran.translate(std::get<0>(*std::next(this->frequency_ticks_.begin(), i)) * (this->configuration_.GetWidth() - 1.0f), 0.0f);
+        this->canvas_.draw(vline, this->fft_live_transform_ * tran);
+    }
 
     /* plot */
     std::vector<sf::Vertex> vertices;
