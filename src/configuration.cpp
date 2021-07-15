@@ -18,6 +18,7 @@ Configuration::Configuration()
 {
     this->input_filename_ = {};
     this->output_filename_ = {};
+    this->dump_to_stdout_ = false;
 
     this->block_size_ = 256;
     this->rate_ = 44100;
@@ -207,14 +208,20 @@ Configuration::FromArgs(int argc, char **argv)
 
     /* check and store command line arguments */
     if (outfile) {
-        conf.output_filename_ = args::get(outfile);
+        if (args::get(outfile) != "-") { /* "-" denotes stdout */
+            conf.output_filename_ = args::get(outfile);
+        } else {
+            conf.dump_to_stdout_ = true;
+        }
     } else if (!live) {
-        std::cerr << "Either specify file or '--live', otherwise nothing to do." << std::endl;
+        std::cerr << "Either specify output file name or '--live', otherwise nothing to do." << std::endl;
         return std::make_tuple(conf, 1, true);
     }
 
     if (infile) {
-        conf.input_filename_ = args::get(infile);
+        if (args::get(infile) != "-") { /* "-" denotes stdin */
+            conf.input_filename_ = args::get(infile);
+        }
     }
     if (block_size) {
         if (args::get(block_size) <= 0) {

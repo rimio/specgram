@@ -56,6 +56,8 @@ See \fBEXAMPLES\fR for common use cases.
 .BR \fIoutfile\fR
 Optional output image file. Check \fISFML\fR documentation for supported file types, but PNG files are recommended.
 
+If "\fB-\fR" is provided then the resulting image is written to stdout in PNG format.
+
 Either \fIoutfile\fR must be specified, \fB\-l, \-\-live\fR must be set, or both.
 
 .TP
@@ -75,7 +77,7 @@ Input file name.
 If option is provided, \fIINFILE\fR is handled as a raw dump of values (i.e. input file format is not considered).
 The program will stop when EOF is encountered.
 
-If option is not provided, data will be read indefinitely from stdin.
+If option is not provided or "\fB-\fR" is provided, data will be read indefinitely from stdin.
 
 .TP
 .BR \-r ", " \-\-rate =\fIRATE\fR
@@ -324,6 +326,12 @@ Render a crisp output with a transparent background, so it can be embedded in a 
 
 .IP
 \fBspecgram\fR -qe --bg-color=00000000 -i \fIinfile\fR \fIoutfile.png\fR
+
+.LP
+Generating from a file to stdout and displaying the output with \fBimagemagick\fR:
+
+.IP
+\fBspecgram\fR -i \fIinfile\fR - | \fBdisplay\fR
 
 .SH BUGS
 

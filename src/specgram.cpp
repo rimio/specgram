@@ -14,14 +14,20 @@
 #include "live.hpp"
 
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <csignal>
 #include <list>
+#include <random>
+#include <cstdio>
 
 /* main loop exit condition */
 volatile bool main_loop_running = true;
+
+/* temporary output file name */
+std::string temp_file_name = "";
 
 /*
  * SIGINT handler
@@ -39,7 +45,8 @@ sigint_handler(int)
 /*
  * printing functions
  */
-void print_complex_window(const std::string& name, const ComplexWindow& window)
+void
+print_complex_window(const std::string& name, const ComplexWindow& window)
 {
     std::cout << name << ": [";
     for (const auto& v : window) {
@@ -49,7 +56,8 @@ void print_complex_window(const std::string& name, const ComplexWindow& window)
     std::cout << "]" << std::endl;
 }
 
-void print_real_window(const std::string& name, const RealWindow& window)
+void
+print_real_window(const std::string& name, const RealWindow& window)
 {
     std::cout << name << ": [";
     for (const auto& v : window) {
@@ -59,16 +67,76 @@ void print_real_window(const std::string& name, const RealWindow& window)
 }
 
 /*
+ * generate a random string (see https://stackoverflow.com/a/50556436)
+ */
+std::string
+generate_random_string(std::size_t length)
+{
+    std::mt19937 generator { std::random_device{}() };
+    std::uniform_int_distribution<int> distribution { 'a', 'z' };
+
+    std::string output(length, '\0');
+    for(auto& ch : output) {
+        ch = static_cast<char>(distribution(generator) & 0xff);
+    }
+
+    return output;
+}
+
+/*
+ * dump image to stdout (in PNG format). This writes a temp file in /dev/shm since SFML cannot save to memory.
+ */
+void
+dump_to_stdout(const sf::Image& image)
+{
+    static constexpr size_t TEMP_BUFFER_SIZE = 1024;
+    static constexpr size_t TEMP_FILENAME_LENGTH = 32;
+
+    /* save */
+    temp_file_name = "/dev/shm/" + generate_random_string(TEMP_FILENAME_LENGTH) + ".png";
+    spdlog::info("Temporary file: {}", temp_file_name);
+    image.saveToFile(temp_file_name);
+
+    /* from now on we have a leakable resource (the file); if using STDIN for input, we're here from a SIGINT,
+     * and we expect a SIGPIPE soon; install a handler that will clean up */
+    std::signal(SIGPIPE, [](int) { std::remove(temp_file_name.c_str()); /* no logger, no checks */ std::exit(0); });
+
+    /* dump */
+    std::ifstream file(temp_file_name, std::ios::in | std::ios::binary);
+    if (file.fail()) {
+        throw std::runtime_error("cannot read temp file " + temp_file_name);
+    }
+    while (!file.eof()) {
+        char buffer[TEMP_BUFFER_SIZE];
+        file.read(buffer, TEMP_BUFFER_SIZE);
+        std::size_t read_count = file.gcount();
+        std::cout.write(buffer, read_count);
+    }
+    file.close();
+
+    /* clean up */
+    if (std::remove(temp_file_name.c_str()) != 0) {
+        spdlog::warn("Failed to delete temp file {}", temp_file_name);
+    }
+}
+
+/*
  * entry point
  */
 int
 main(int argc, char** argv)
 {
+    /* set spdlog to STDERR and make it multithreaded */
+    spdlog::set_default_logger(spdlog::stderr_color_mt("stderr"));
+
     /* parse command line arguments into global settings */
     auto [conf, conf_rc, conf_must_exit] = Configuration::FromArgs(argc, argv);
     if (conf_must_exit) {
         return conf_rc;
     }
+
+    /* decide whether we have output or not */
+    bool have_output = conf.GetOutputFilename().has_value() || conf.MustDumpToStdout();
 
     /* create window function */
     auto win_function = WindowFunction::FromType(conf.GetWindowFunction(), conf.GetFFTWidth());
@@ -108,6 +176,7 @@ main(int argc, char** argv)
     std::istream *input_stream = nullptr;
     std::unique_ptr<InputReader> reader = nullptr;
     if (conf.GetInputFilename().has_value()) {
+        spdlog::info("Input: {}", *conf.GetInputFilename());
         input_stream = new std::ifstream(*conf.GetInputFilename(), std::ios::in | std::ios::binary);
         assert(input_stream != nullptr);
         if (!input_stream->good()) {
@@ -117,6 +186,7 @@ main(int argc, char** argv)
         reader = std::make_unique<SyncInputReader>(input_stream,
                                                    input->GetDataTypeSize() * conf.GetBlockSize());
     } else {
+        spdlog::info("Input: STDIN");
         input_stream = &std::cin;
         reader = std::make_unique<AsyncInputReader>(input_stream,
                                                     input->GetDataTypeSize() * conf.GetBlockSize());
@@ -229,7 +299,7 @@ main(int argc, char** argv)
         }
 
         /* add to history */
-        if (conf.GetOutputFilename().has_value()) {
+        if (have_output) {
             history.push_back(colorized);
         }
 
@@ -250,11 +320,12 @@ main(int argc, char** argv)
     }
 
     /* save file */
-    if (conf.GetOutputFilename().has_value()) {
+    if (have_output) {
         Renderer file_renderer(conf, *color_map, *value_map, history.size());
         file_renderer.RenderFFTArea(history);
         auto image = file_renderer.GetCanvas().copyToImage();
 
+        /* rotate, if needed */
         if (conf.IsHorizontal()) {
             std::size_t w = image.getSize().x;
             std::size_t h = image.getSize().y;
@@ -276,9 +347,19 @@ main(int argc, char** argv)
             sf::Image rimage;
             rimage.create(h, w, reinterpret_cast<const uint8_t *>(optr));
             delete[] optr;
-            rimage.saveToFile(*conf.GetOutputFilename());
-        } else {
+
+            image = rimage;
+        }
+
+        /* dump to file or stdout */
+        if (conf.GetOutputFilename().has_value()) {
+            spdlog::info("Output: {}", *conf.GetOutputFilename());
             image.saveToFile(*conf.GetOutputFilename());
+        } else if (conf.MustDumpToStdout()) {
+            spdlog::info("Output: STDOUT");
+            dump_to_stdout(image);
+        } else {
+            throw std::runtime_error("don't know what to do with output");
         }
     }
 
