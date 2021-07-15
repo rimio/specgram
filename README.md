@@ -134,6 +134,10 @@ Usually, a larger FFT window will give better frequency resolution but worse tim
 
 A smaller stride will give a *smoother* and richer output, but will strain the CPU more.
 
+**NOTE:** You will notice that there isn't much difference between the output of the above command and the others.
+That is because the display width is different from the FFT window width.
+To change the display width, see **Display Options** below.
+
 Lastly, if you encounter high sample rate signals, for which you can't display a wide enough (or often enough) window, you can use window averaging (```-A, --average```).
 
 ```bash
@@ -146,8 +150,6 @@ Averaging 20 windows gives us a much more reasonable 47 windows per second.
 
 ### Display options
 
-You will notice that there isn't much difference between the output of the above command and the others.
-That is because the display width is different from the FFT window width.
 To change the display width we can use ```-w, --width```:
 
 ```bash
@@ -155,7 +157,7 @@ $ parec --channels=1 --device="${PASOURCE}" --raw | specgram -l -f 1024 -w 1024
 ```
 
 As you will notice, the spectrogram is somewhat blurry, because the program is resampling the 513 element wide positive part of the FFT output to the display width of 1024.
-If you need sharp, crisp spectrograms, then you can use the ```-q, --no_resampling``` to disable resampling:
+If you need sharp, crisp spectrograms, then you can use ```-q, --no_resampling``` to disable resampling:
 
 ```bash
 $ parec --channels=1 --device="${PASOURCE}" --raw | specgram -lq -f 1024
