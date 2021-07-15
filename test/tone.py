@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020-2021 Vasile Vilvoiu <vasi.vilvoiu@gmail.com>
+# Copyright (c) 2020-2021 Vasile Vilvoiu <vasi@vilvoiu.ro>
 #
 # specgram is free software; you can redistribute it and/or modify
 # it under the terms of the MIT license. See LICENSE for details.
