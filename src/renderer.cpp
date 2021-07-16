@@ -65,7 +65,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     this->live_ticks_ = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
                                                "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
 
-    typeof(this->frequency_ticks_) freq_no_text_ticks;
+    std::list<AxisTick> freq_no_text_ticks;
     for (auto& t : this->frequency_ticks_) {
         freq_no_text_ticks.emplace_back(std::make_tuple(std::get<0>(t), ""));
     }
