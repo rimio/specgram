@@ -30,6 +30,7 @@ class Renderer {
 private:
     const Configuration configuration_;
     const std::size_t fft_count_;
+    const std::unique_ptr<const ColorMap> color_map_;
 
     sf::Font font_;
 
@@ -63,7 +64,7 @@ public:
     /* render commands */
     void RenderFFTArea(const std::vector<uint8_t>& memory);
     void RenderFFTArea(const std::list<std::vector<uint8_t>>& history);
-    void RenderLiveFFT(const RealWindow& window, const std::vector<uint8_t>& colors);
+    std::vector<uint8_t> RenderLiveFFT(const RealWindow& window);
 
     /* canvas builder */
     sf::Texture GetCanvas();

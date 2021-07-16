@@ -165,6 +165,7 @@ main(int argc, char** argv)
     std::unique_ptr<LiveOutput> live = nullptr;
     if (conf.IsLive()) {
         live = std::make_unique<LiveOutput>(conf, *color_map, *value_map);
+        live->Render(); /* render empty window */
     }
 
     /* create input parser */
@@ -218,7 +219,7 @@ main(int argc, char** argv)
 
     /* main loop */
     while (main_loop_running && !reader->ReachedEOF()) {
-        /* check for window events (if necessary) */
+        /* check for window events (if necessary) and redraw */
         if (live != nullptr) {
             if (!live->HandleEvents()) {
                 /* exited by closing window */
@@ -226,6 +227,7 @@ main(int argc, char** argv)
                 /* uninstall signal so that reader thread can exit successfully */
                 std::signal(SIGINT, nullptr);
             }
+            live->Render();
         }
 
         /* check for a complete block */
@@ -282,7 +284,7 @@ main(int argc, char** argv)
         assert(window_sum.size() == normalized_magnitude.size());
         assert(conf.GetAverageCount() > 0);
         for (std::size_t i = 0; i < window_sum.size(); i++) {
-            window_sum[i] += normalized_magnitude[i] / conf.GetAverageCount();
+            window_sum[i] += normalized_magnitude[i] / (double)conf.GetAverageCount();
         }
         window_sum_count++;
 
@@ -291,17 +293,14 @@ main(int argc, char** argv)
             continue;
         }
 
-        /* colorize FFT */
-        auto colorized = color_map->Map(window_sum);
-
         /* add to live */
         if (live != nullptr) {
-            live->AddWindow(colorized, window_sum);
-        }
-
-        /* add to history */
-        if (have_output) {
-            history.push_back(colorized);
+            auto colorized = live->AddWindow(window_sum);
+            if (have_output) {
+                history.push_back(colorized);
+            }
+        } else if (have_output) {
+            history.push_back(color_map->Map(window_sum));
         }
 
         /* reset */

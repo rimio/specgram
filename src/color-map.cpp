@@ -124,6 +124,11 @@ InterpolationColorMap::Map(const RealWindow& input) const
     return output;
 }
 
+std::unique_ptr<ColorMap> InterpolationColorMap::Copy() const
+{
+    return std::make_unique<InterpolationColorMap>(colors_, values_);
+}
+
 TwoColorMap::TwoColorMap(const sf::Color& c1, const sf::Color& c2)
     : InterpolationColorMap({ c1, c2 }, { 0.0f, 1.0f })
 {

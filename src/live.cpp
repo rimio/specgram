@@ -23,11 +23,17 @@ LiveOutput::LiveOutput(const Configuration& conf, const ColorMap& cmap, const Va
 
     /* FFT area raw memory used to update the area texture */
     this->fft_area_.resize(conf.GetWidth() * conf.GetCount() * 4); /* RGBA pixel array */
+
+    /* render the live FFT area with a DC signal of zero */
+    Render(); /* I don't have a good idea why this is needed, but I guess it has something to do with double buffering */
+    this->renderer_.RenderFFTArea(this->fft_area_);
+    this->renderer_.RenderLiveFFT(RealWindow(conf.GetWidth()));
 }
 
-void
-LiveOutput::AddWindow(const std::vector<uint8_t>& window, const RealWindow& win_values)
+std::vector<uint8_t>
+LiveOutput::AddWindow(const RealWindow& win_values)
 {
+    auto window = this->renderer_.RenderLiveFFT(win_values);
     std::size_t wlen_bytes = this->configuration_.GetWidth() * 4;
     if (window.size() != wlen_bytes) {
         throw std::runtime_error("input window size differs from live window size");
@@ -43,12 +49,9 @@ LiveOutput::AddWindow(const std::vector<uint8_t>& window, const RealWindow& win_
                 reinterpret_cast<const void *>(window.data()),
                 wlen_bytes);
 
-    /* update renderer */
+    /* update renderer texture */
     this->renderer_.RenderFFTArea(this->fft_area_);
-    this->renderer_.RenderLiveFFT(win_values, window);
-
-    /* draw window */
-    this->Render();
+    return window;
 }
 
 bool
@@ -65,6 +68,7 @@ LiveOutput::HandleEvents()
 void
 LiveOutput::Render()
 {
+    /* draw renderer output to window */
     sf::Texture canvas_texture = this->renderer_.GetCanvas();
     sf::Sprite canvas_sprite(canvas_texture);
     if (this->configuration_.IsHorizontal()) {

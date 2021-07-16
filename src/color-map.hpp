@@ -44,6 +44,8 @@ public:
 
     virtual std::vector<uint8_t> Map(const RealWindow& input) const = 0;
     std::vector<uint8_t> Gradient(std::size_t width) const;
+
+    virtual std::unique_ptr<ColorMap> Copy() const = 0;
 };
 
 class InterpolationColorMap : public ColorMap {
@@ -53,13 +55,12 @@ private:
 
     std::vector<uint8_t> GetColor(double value) const;
 
-protected:
-    InterpolationColorMap(const std::vector<sf::Color>& colors, const std::vector<double>& vals);
-
 public:
+    InterpolationColorMap(const std::vector<sf::Color>& colors, const std::vector<double>& vals);
     InterpolationColorMap() = delete;
 
     std::vector<uint8_t> Map(const std::vector<double>& input) const override;
+    std::unique_ptr<ColorMap> Copy() const override;
 };
 
 class TwoColorMap : public InterpolationColorMap {

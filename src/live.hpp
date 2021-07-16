@@ -32,7 +32,7 @@ public:
 
     LiveOutput(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap);
 
-    void AddWindow(const std::vector<uint8_t>& window, const RealWindow& win_values);
+    std::vector<uint8_t> AddWindow(const RealWindow& win_values);
     bool HandleEvents();
     void Render();
 };

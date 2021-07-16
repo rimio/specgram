@@ -38,8 +38,11 @@ ValueToShortString(double value, int prec, const std::string& unit)
 }
 
 Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap, std::size_t fft_count)
-    : configuration_(conf), fft_count_(fft_count)
+    : configuration_(conf), fft_count_(fft_count), color_map_(cmap.Copy())
 {
+    if (color_map_ == nullptr) {
+        throw std::runtime_error("failed to copy color map");
+    }
     if (fft_count == 0) {
         throw std::runtime_error("positive number of FFT windows required by rendere");
     }
@@ -436,17 +439,17 @@ Renderer::RenderFFTArea(const std::list<std::vector<uint8_t>>& history)
     return this->RenderFFTArea(memory);
 }
 
-void
-Renderer::RenderLiveFFT(const RealWindow& window, const std::vector<uint8_t>& colors)
+std::vector<uint8_t>
+Renderer::RenderLiveFFT(const RealWindow& window)
 {
     if (window.size() != this->configuration_.GetWidth()) {
         throw std::runtime_error("incorrect window size to be rendered");
     }
-
     if (!this->configuration_.HasLiveWindow()) {
-        /* noop */
-        return;
+        throw std::runtime_error("asked to render live window for non-live configuration");
     }
+
+    std::vector<uint8_t> colors = this->color_map_->Map(window);
 
     /* FFT live box (so we overwrite old one */
     sf::RectangleShape fft_live_box(sf::Vector2f(this->configuration_.GetWidth(),
@@ -488,6 +491,7 @@ Renderer::RenderLiveFFT(const RealWindow& window, const std::vector<uint8_t>& co
     this->canvas_.draw(reinterpret_cast<sf::Vertex *>(vertices.data()), vertices.size(),
                        sf::LineStrip, this->fft_live_transform_);
 
+    return colors;
 }
 
 sf::Texture
