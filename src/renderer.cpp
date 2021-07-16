@@ -32,6 +32,12 @@ ValueToShortString(double value, int prec, const std::string& unit)
 
     prec++;
 
+    /* round very low values to zero */
+    /* theoretically this function should not be asked to print values as small as 1e-9 */
+    if (std::abs(value) < 1e-9) {
+        value = 0.0;
+    }
+
     std::stringstream ss;
     ss << std::fixed << std::setprecision(prec > 0 ? prec : 0) << value << PREFIXES[pidx] << unit;
     return ss.str();
