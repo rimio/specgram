@@ -50,8 +50,8 @@ private:
     [[maybe_unused]] /* need for this method disappeared when fixing #9, might be useful in the future */
     static std::list<AxisTick> GetLinearTicks(double v_min, double v_max, const std::string& v_unit,
                                               unsigned int num_ticks);
-    static std::list<AxisTick> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
-                                            unsigned int length_px, unsigned int est_tick_length_px);
+    std::list<AxisTick> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
+                                     unsigned int length_px, unsigned int min_tick_length_px, bool rotated);
 
     void RenderAxis(sf::RenderTexture& texture,
                     const sf::Transform& t, bool lhs, Orientation orientation, double length,

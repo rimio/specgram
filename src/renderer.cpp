@@ -55,15 +55,17 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     /* compute tickmarks */
     this->frequency_ticks_ =
         Renderer::GetNiceTicks(this->configuration_.GetMinFreq(), this->configuration_.GetMaxFreq(),
-                               "Hz", this->configuration_.GetWidth(), 75);
+                               "Hz", this->configuration_.GetWidth(), 50, this->configuration_.IsHorizontal());
     auto time_ticks =
         Renderer::GetNiceTicks(0.0f, (double)fft_count * this->configuration_.GetAverageCount() * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
-                               "s", fft_count, 50);
+                               "s", fft_count, 30, !this->configuration_.IsHorizontal());
 
     auto legend_ticks = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                               vmap.GetUnit(), this->configuration_.GetWidth(), 60);
+                                               vmap.GetUnit(), this->configuration_.GetWidth(), 50,
+                                               this->configuration_.IsHorizontal());
     this->live_ticks_ = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                               "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
+                                               "", this->configuration_.GetLiveFFTHeight(), 20,
+                                               !this->configuration_.IsHorizontal()); /* no unit, keep it short */
 
     std::list<AxisTick> freq_no_text_ticks;
     for (auto& t : this->frequency_ticks_) {
@@ -280,7 +282,7 @@ Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, 
 
 std::list<AxisTick>
 Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, unsigned int length_px,
-                       unsigned int est_tick_length_px)
+                       unsigned int min_tick_length_px, bool rotated)
 {
     if (v_min >= v_max) {
         throw std::runtime_error("minimum and maximum values are not in order");
@@ -288,49 +290,102 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
     if (length_px == 0) {
         throw std::runtime_error("length in pixels must be positive");
     }
-    if (est_tick_length_px == 0) {
+    if (min_tick_length_px == 0) {
         throw std::runtime_error("estimate tick length in pixels must be positive");
     }
 
     std::list<AxisTick> ticks;
 
-    /* find a factor that brings some span close to est_tick_length to a nice value */
+    /* domain span */
     double v_diff = v_max - v_min;
+
+    /* pixels per unit of domain */
     double px_per_v = length_px / v_diff;
 
-    double mdist = 1e12, mfact;
+    /* finds a factor that brings some span close to est_tick_length to a nice value */
+    auto find_factor = [px_per_v](unsigned int min_len) -> double
+    {
+        double mdist = 1e12, mfact = 1.0;
 
-    constexpr double NICE_FACTORS[] = { 0.15f, 0.2f, 0.25f, 0.3f, 0.5f };
-    for (double f = 1e-15; f < 1e+15; f *= 10.0f) {
-        for (double nf : NICE_FACTORS) {
-            double factor = f * nf;
-            double dist = std::abs(est_tick_length_px - px_per_v * factor);
-            if (dist < mdist) {
-                mdist = dist;
-                mfact = factor;
+        constexpr double NICE_FACTORS[] = { 0.15, 0.2, 0.25, 0.3, 0.5, 1.0 };
+        for (double f = 1e-15; f < 1e+15; f *= 10.0f) {
+            for (double nf : NICE_FACTORS) {
+                double factor = f * nf;
+                double dist = px_per_v * factor - min_len;
+                if (dist < 0) {
+                    continue; /* nothing below minimum length allowed */
+                }
+                if (dist < mdist) {
+                    mdist = dist;
+                    mfact = factor;
+                }
             }
         }
-    }
+        return mfact;
+    };
 
-    /* compute precision */
-    int prec = 0;
-    double dist = mfact;
-    while (dist > 10.0f) {
-        prec--;
-        dist /= 10.0f;
-    }
-    while (dist < 1.0f) {
-        prec++;
-        dist *= 10.0f;
-    }
+    /* computes precision */
+    auto compute_precision = [](double factor) -> int
+    {
+        int prec = 0;
+        double dist = factor;
+        while (dist > 10.0f) {
+            prec--;
+            dist /= 10.0f;
+        }
+        while (dist < 1.0f) {
+            prec++;
+            dist *= 10.0f;
+        }
+        return prec;
+    };
+
+    /* computes text width */
+    auto compute_text_size = [this, rotated](const std::string& str) -> double
+    {
+        sf::Text text;
+        text.setCharacterSize(this->configuration_.GetAxisFontSize());
+        text.setFont(this->font_);
+        text.setString(str);
+        return (rotated ? text.getLocalBounds().height : text.getLocalBounds().width);
+    };
+
+    /* find a factor and a precision for the ticks */
+    double factor = 1.0;
+    int precision = 0;
+    unsigned int target_tick_length = min_tick_length_px;
+
+    constexpr std::size_t MAXIMUM_ITERATIONS = 10;
+    std::size_t iteration = 0; /* theoretically the below loop will stop; practically, we don't take chances */
+
+    do {
+        /* compute a nice factor and get the actual tick length */
+        factor = find_factor(target_tick_length);
+        auto actual_tick_length = px_per_v * factor;
+        precision = compute_precision(factor);
+
+        /* make sure the tick length is higher than the label sizes for this precision */
+        constexpr double min_tick_spacing = 5.0;
+        auto lb_size = compute_text_size(::ValueToShortString(v_min, precision, v_unit)) + min_tick_spacing;
+        auto ub_size = compute_text_size(::ValueToShortString(v_max, precision, v_unit)) + min_tick_spacing;
+        if ((lb_size > actual_tick_length) || (ub_size > actual_tick_length)) {
+            target_tick_length = std::max( { static_cast<unsigned int>(lb_size),
+                                             static_cast<unsigned int>(ub_size),
+                                             target_tick_length } );
+        } else {
+            break; /* a fitting factor was found */
+        }
+
+        iteration++;
+    } while (iteration < MAXIMUM_ITERATIONS); /* maybe we should spdlog::warn() if we reach max iterations? */
 
     /* find the first nice value */
-    double fval = v_min / mfact;
+    double fval = v_min / factor;
     constexpr double ROUND_EPSILON = 1e-6;
     if (std::abs(fval - std::floor(fval)) > ROUND_EPSILON) {
         fval = std::floor(fval) + 1.0f;
     }
-    fval *= mfact;
+    fval *= factor;
     assert(v_min <= fval);
     assert(fval <= v_max);
 
@@ -339,9 +394,9 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
     double upper_limit = v_max + (v_max - v_min) * 1e-6;
 
     /* add ticks */
-    for (double value = fval; value <= upper_limit; value += mfact) {
+    for (double value = fval; value <= upper_limit; value += factor) {
         double k = (value - v_min) / (v_max - v_min);
-        ticks.emplace_back(std::make_tuple(k, ::ValueToShortString(value, prec, v_unit)));
+        ticks.emplace_back(std::make_tuple(k, ::ValueToShortString(value, precision, v_unit)));
     }
 
     return ticks;
@@ -460,17 +515,17 @@ Renderer::RenderLiveFFT(const RealWindow& window)
     this->canvas_.draw(fft_live_box, this->fft_live_transform_);
 
     /* horizontal live guidelines */
-    for (std::size_t i = 1; i < this->live_ticks_.size() - 1; i ++) {
+    for (std::size_t i = 0; i < this->live_ticks_.size(); i ++) {
         sf::RectangleShape hline(sf::Vector2f(this->configuration_.GetWidth(), 1.0f));
         hline.setFillColor(this->configuration_.GetLiveGuidelinesColor());
 
         sf::Transform tran;
-        tran.translate(0.0f, std::get<0>(*std::next(this->live_ticks_.begin(), i)) * (this->configuration_.GetLiveFFTHeight() - 1.0f));
+        tran.translate(0.0f, (1.0 - std::get<0>(*std::next(this->live_ticks_.begin(), i))) * (this->configuration_.GetLiveFFTHeight() - 1.0f));
         this->canvas_.draw(hline, this->fft_live_transform_ * tran);
     }
 
     /* vertical live guidelines */
-    for (std::size_t i = 1; i < this->frequency_ticks_.size(); i ++) {
+    for (std::size_t i = 0; i < this->frequency_ticks_.size(); i ++) {
         sf::RectangleShape vline(sf::Vector2f(1.0f, this->configuration_.GetLiveFFTHeight()));
         vline.setFillColor(this->configuration_.GetLiveGuidelinesColor());
 
