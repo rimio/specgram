@@ -24,6 +24,7 @@ Configuration::Configuration()
     this->block_size_ = 256;
     this->rate_ = 44100;
     this->datatype_ = DataType::kSignedInt16;
+    this->has_complex_input_ = false;
     this->prescale_factor_ = 1.0f;
 
     this->fft_width_ = 1024;
