@@ -13,6 +13,7 @@
 
 #include <tuple>
 #include <regex>
+#include <vector>
 
 Configuration::Configuration()
 {
@@ -35,8 +36,10 @@ Configuration::Configuration()
     this->width_ = 512;
     this->min_freq_ = 0;
     this->max_freq_ = this->rate_ / 2;
-    this->scale_ = ValueMapType::kdBFS;
+    this->scale_type_ = ValueMapType::kDecibel;
+    this->scale_unit_ = "FS";
     this->scale_lower_bound_ = -120.0f;
+    this->scale_upper_bound_ = 0.0f;
     this->color_map_ = ColorMapType::kJet;
     this->background_color_ = sf::Color(0, 0, 0);
     this->foreground_color_ = sf::Color(255, 255, 255);
@@ -107,6 +110,40 @@ Configuration::StringToColor(const std::string& str)
     }
 }
 
+Configuration::ScaleProperties
+Configuration::StringToScale(const std::string &str)
+{
+    ScaleProperties props;
+
+    auto first_comma_pos = str.find(',');
+    auto second_comma_pos = str.find(',', first_comma_pos + 1);
+
+    std::get<2>(props) = str.substr(0, first_comma_pos);
+    if (first_comma_pos == std::string::npos) {
+        /* simple case, only unit */
+        return props;
+    }
+
+    std::string lower_bound_str = str.substr(first_comma_pos+1, second_comma_pos);
+    try {
+        std::get<0>(props) = std::stod(lower_bound_str);
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Invalid lower bound for scale '" + lower_bound_str + "'");
+    }
+    if (second_comma_pos == std::string::npos) {
+        /* unit + lower bound */
+        return props;
+    }
+
+    std::string upper_bound_str = str.substr(second_comma_pos+1, str.size());
+    try {
+        std::get<1>(props) = std::stod(upper_bound_str);
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Invalid upper bound for scale '" + upper_bound_str + "'");
+    }
+    return props;
+}
+
 std::tuple<Configuration, int, bool>
 Configuration::FromArgs(int argc, char **argv)
 {
@@ -156,7 +193,7 @@ Configuration::FromArgs(int argc, char **argv)
     args::ValueFlag<float>
         fmax(display_opts, "float", "Maximum frequency in Hz (default: 0.5 * rate)", {'y', "fmax"});
     args::ValueFlag<std::string>
-        scale(display_opts, "string", "Display scale (default: dBFS)", {'s', "scale"});
+        scale(display_opts, "string", "Display scale (default: dBFS,-120,0)", {'s', "scale"});
     args::ValueFlag<std::string>
         colormap(display_opts, "string", "Colormap (default: jet)", {'c', "colormap"});
     args::ValueFlag<std::string>
@@ -353,24 +390,35 @@ Configuration::FromArgs(int argc, char **argv)
     }
     if (scale) {
         auto& scale_str = args::get(scale);
-        if (scale_str.starts_with("dbfs") || scale_str.starts_with("dBFS")) {
-            conf.scale_ = ValueMapType::kdBFS;
-            auto value_str = scale_str.substr(4, scale_str.size() - 4);
-            if (value_str.size() > 0) {
-                try {
-                    conf.scale_lower_bound_ = std::stod(value_str);
-                } catch (const std::exception& e) {
-                    std::cerr << "Invalid lower bound for dBFS scale '" << value_str << "'" << std::endl;
-                    return std::make_tuple(conf, 1, true);
-                }
-                if (conf.scale_lower_bound_ >= 0.0f) {
-                    std::cerr << "Lower bound for dBFS scale must be negative, "
-                              << conf.scale_lower_bound_ << " was received" << std::endl;
-                    return std::make_tuple(conf, 1, true);
-                }
-            }
+        ScaleProperties props;
+        try {
+            props = StringToScale(scale_str);
+        } catch (std::runtime_error& e) {
+            std::cerr << e.what() << std::endl;
+            return std::make_tuple(conf, 1, true);
+        }
+
+        const auto& unit_str = std::get<2>(props);
+        if (unit_str.starts_with("db") || unit_str.starts_with("DB")
+            || unit_str.starts_with("dB") || unit_str.starts_with("Db")) {
+            /* decibel scale - defaults stay the same */
+            conf.scale_unit_ = unit_str.substr(2, scale_str.size()-2);
         } else {
-            std::cerr << "Unknown scale '" << scale_str << "'" << std::endl;
+            /* linear scale - defaults change */
+            conf.scale_type_ = ValueMapType::kLinear;
+            conf.scale_unit_ = unit_str;
+            conf.scale_lower_bound_ = 0.0f;
+            conf.scale_upper_bound_ = 1.0f;
+        }
+
+        if (std::get<0>(props).has_value()) {
+            conf.scale_lower_bound_ = *std::get<0>(props);
+        }
+        if (std::get<1>(props).has_value()) {
+            conf.scale_upper_bound_ = *std::get<1>(props);
+        }
+        if (conf.scale_lower_bound_ >= conf.scale_upper_bound_) {
+            std::cerr << "Scale upper bound must be larger than lower bound" << std::endl;
             return std::make_tuple(conf, 1, true);
         }
     }

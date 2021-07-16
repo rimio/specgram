@@ -39,8 +39,10 @@ private:
     std::size_t width_;
     double min_freq_;
     double max_freq_;
-    ValueMapType scale_;
+    ValueMapType scale_type_;
+    std::string scale_unit_;
     double scale_lower_bound_;
+    double scale_upper_bound_;
     ColorMapType color_map_;
     sf::Color color_map_custom_color_;
     sf::Color background_color_;
@@ -68,6 +70,10 @@ private:
     Configuration();
 
     static sf::Color StringToColor(const std::string& str);
+
+    using OptionalBound = std::optional<double>;
+    using ScaleProperties = std::tuple<OptionalBound, OptionalBound, std::string>;
+    static ScaleProperties StringToScale(const std::string& str);
 
 public:
     /* parse command line arguments and return a configuration object */
@@ -98,8 +104,10 @@ public:
     auto GetWidth() const { return width_; }
     auto GetMinFreq() const { return min_freq_; }
     auto GetMaxFreq() const { return max_freq_; }
-    auto GetScale() const { return scale_; }
+    auto GetScaleType() const { return scale_type_; }
+    auto GetScaleUnit() const { return scale_unit_; }
     auto GetScaleLowerBound() const { return scale_lower_bound_; }
+    auto GetScaleUpperBound() const { return scale_upper_bound_; }
     auto GetColorMap() const { return color_map_; }
     auto GetColorMapCustomColor() const { return color_map_custom_color_; }
     auto GetBackgroundColor() const { return background_color_; }

@@ -57,18 +57,10 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         Renderer::GetNiceTicks(0.0f, (double)fft_count * this->configuration_.GetAverageCount() * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
                                "s", fft_count, 50);
 
-    std::list<AxisTick> legend_ticks;
-    if (vmap.GetName() == "dBFS") {
-        unsigned int lticks = 1 + this->configuration_.GetWidth() / 60;
-        lticks = std::clamp<unsigned int>(lticks, 2, 13); /* at maximum 10dBFS spacing */
-        legend_ticks = Renderer::GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), vmap.GetUnit(), lticks);
-        this->live_ticks_ = Renderer::GetLinearTicks(vmap.GetLowerBound(), vmap.GetUpperBound(), "", 5); /* no unit, keep it short */
-    } else {
-        legend_ticks = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                            vmap.GetUnit(), this->configuration_.GetWidth(), 60);
-        this->live_ticks_ = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                                   "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
-    }
+    auto legend_ticks = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+                                               vmap.GetUnit(), this->configuration_.GetWidth(), 60);
+    this->live_ticks_ = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+                                               "", this->configuration_.GetLiveFFTHeight(), 30); /* no unit, keep it short */
 
     typeof(this->frequency_ticks_) freq_no_text_ticks;
     for (auto& t : this->frequency_ticks_) {
@@ -252,7 +244,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     }
 }
 
-std::list<AxisTick>
+[[maybe_unused]] std::list<AxisTick>
 Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks)
 {
     if (num_ticks <= 1) {
@@ -339,8 +331,12 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
     assert(v_min <= fval);
     assert(fval <= v_max);
 
+    /* adjust upper limit with a slight epsilon so that we have tickmark for v_max in most "nice" cases */
+    /* otherwise we might miss it because of representation errors */
+    double upper_limit = v_max + (v_max - v_min) * 1e-6;
+
     /* add ticks */
-    for (double value = fval; value < v_max; value += mfact) {
+    for (double value = fval; value <= upper_limit; value += mfact) {
         double k = (value - v_min) / (v_max - v_min);
         ticks.emplace_back(std::make_tuple(k, ::ValueToShortString(value, prec, v_unit)));
     }

@@ -6,26 +6,69 @@
  */
 #include "value-map.hpp"
 
-ValueMap::ValueMap(double lower, double upper) : lower_(lower), upper_(upper)
+ValueMap::ValueMap(double lower, double upper, const std::string& unit) : lower_(lower), upper_(upper), unit_(unit)
 {
 }
 
-dBFSValueMap::dBFSValueMap(double mindb) : ValueMap(mindb, 0)
+std::string
+ValueMap::GetUnit() const
+{
+    return unit_;
+}
+
+std::unique_ptr<ValueMap>
+ValueMap::Build(ValueMapType type, double lower, double upper, std::string unit)
+{
+    switch (type) {
+        case ValueMapType::kLinear:
+            return std::make_unique<LinearValueMap>(lower, upper, unit);
+
+        case ValueMapType::kDecibel:
+            return std::make_unique<DecibelValueMap>(lower, upper, unit);
+
+        default:
+            throw std::runtime_error("unknown value map type");
+    }
+}
+
+LinearValueMap::LinearValueMap(double lower, double upper, const std::string &unit)
+    : ValueMap(lower, upper, unit)
 {
 }
 
-RealWindow
-dBFSValueMap::Map(const RealWindow& input)
+RealWindow LinearValueMap::Map(const RealWindow &input)
 {
     auto n = input.size();
-    RealWindow output;
-    output.resize(n);
+    RealWindow output(n);
 
     for (unsigned int i = 0; i < n; i ++) {
-        output[i] = 20.0 * std::log10(input[i] / n);
-        output[i] = std::clamp<double>(output[i], this->lower_, 0.0f);
-        output[i] = 1.0f - output[i] / this->lower_;
+        output[i] = std::clamp<double>(input[i] / n, this->lower_, this->upper_);
+        output[i] = (output[i] - this->lower_) / (this->upper_ - this->lower_);
     }
 
     return output;
+}
+
+DecibelValueMap::DecibelValueMap(double lower, double upper, const std::string &unit)
+    : ValueMap(lower, upper, unit)
+{
+}
+
+RealWindow DecibelValueMap::Map(const RealWindow &input)
+{
+    auto n = input.size();
+    RealWindow output(n);
+
+    for (unsigned int i = 0; i < n; i ++) {
+        output[i] = 20.0 * std::log10(input[i] / n);
+        output[i] = std::clamp<double>(output[i], this->lower_, this->upper_);
+        output[i] = (output[i] - this->lower_) / (this->upper_ - this->lower_);
+    }
+
+    return output;
+}
+
+std::string DecibelValueMap::GetUnit() const
+{
+    return "dB" + unit_;
 }

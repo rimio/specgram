@@ -1,4 +1,4 @@
-.TH SPECGRAM 1 "2021-07-15"
+.TH SPECGRAM 1 "2021-07-16"
 
 .SH NAME
 specgram \- create spectrograms from raw files or standard input
@@ -192,13 +192,19 @@ Default is \fIRATE\fR/2.
 
 .TP
 .BR \-s ", " \-\-scale =\fISCALE\fR
-Spectrogram scale.
-Valid values are: dBFS.
+Spectrogram scale, specified with the following format: \fIunit\fR[,\fIlower\fR[,\fIupper\fR]]
 
-Default is dBFS.
+\fIunit\fR is an arbitrary string representing the unit of measurement (e.g. \fBV\fR).
+\fIlower\fR is an optional numeric value representing the lower bound of the scale.
+\fIupper\fR is an optional numeric value representing the upper bound of the scale.
 
-\fB[dBFS] NOTE:\fR By default, the scale has a -120dB lower bound.
-You can adjust it by appending the custom lower bound after the scale string (e.g. \fB\-s dBFS-60\fR for a -60dB lower bound).
+Valid values for \fISCALE\fR specify either just the unit, the unit and the lower bound, or all three values.
+
+After normalization and prescaling (see \fB\-p, \-\-prescale\fR), the following transformations are applied to the input:
+  \(bu if \fIunit\fR starts with "dB", then a logarithmic decibel scale is assumed: Y=20*log10(X)
+  \(bu the values are clamped between \fIlower\fR and \fIupper\fR: Y=clamp(X, \fIlower\fR, \fIupper\fR)
+
+Default is dBFS,-120,0.
 
 \fB[dBFS] NOTE:\fR The peak amplitude assumed for dBFS, after normalization and prescaling (see \fB\-p, \-\-prescale\fR), is 1.0.
 Thus, the correct input domains are:

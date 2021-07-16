@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Thu Jul 15 19:45:50 2021 -->
+<!-- CreationDate: Fri Jul 16 11:40:40 2021 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -334,17 +334,32 @@ frequency spectrum, in Hz.</p>
 <p style="margin-left:11%;"><b>&minus;s</b>,
 <b>&minus;&minus;scale</b>=<i>SCALE</i></p>
 
-<p style="margin-left:22%;">Spectrogram scale. Valid values
-are: dBFS.</p>
+<p style="margin-left:22%;">Spectrogram scale, specified
+with the following format:
+<i>unit</i>[,<i>lower</i>[,<i>upper</i>]]</p>
+
+<p style="margin-left:22%; margin-top: 1em"><i>unit</i> is
+an arbitrary string representing the unit of measurement
+(e.g. <b>V</b>). <i>lower</i> is an optional numeric value
+representing the lower bound of the scale. <i>upper</i> is
+an optional numeric value representing the upper bound of
+the scale.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Valid values
+for <i>SCALE</i> specify either just the unit, the unit and
+the lower bound, or all three values.</p>
+
+<p style="margin-left:22%; margin-top: 1em">After
+normalization and prescaling (see <b>&minus;p,
+&minus;&minus;prescale</b>), the following transformations
+are applied to the input: <br>
+&bull; if <i>unit</i> starts with &quot;dB&quot;, then a
+logarithmic decibel scale is assumed: Y=20*log10(X) <br>
+&bull; the values are clamped between <i>lower</i> and
+<i>upper</i>: Y=clamp(X, <i>lower</i>, <i>upper</i>)</p>
 
 <p style="margin-left:22%; margin-top: 1em">Default is
-dBFS.</p>
-
-<p style="margin-left:22%; margin-top: 1em"><b>[dBFS]
-NOTE:</b> By default, the scale has a -120dB lower bound.
-You can adjust it by appending the custom lower bound after
-the scale string (e.g. <b>&minus;s dBFS-60</b> for a -60dB
-lower bound).</p>
+dBFS,-120,0.</p>
 
 <p style="margin-left:22%; margin-top: 1em"><b>[dBFS]
 NOTE:</b> The peak amplitude assumed for dBFS, after

@@ -146,14 +146,15 @@ main(int argc, char** argv)
     FFT fft(conf.GetFFTWidth(), win_function);
 
     /* create value map */
-    std::unique_ptr<ValueMap> value_map = nullptr;
-    if (conf.GetScale() == ValueMapType::kdBFS) {
-        value_map = std::make_unique<dBFSValueMap>(conf.GetScaleLowerBound());
-    } else {
-        assert(false);
-        spdlog::error("Internal error: unknown scale");
-        return 1;
-    }
+    spdlog::info("Scale {}, unit {}, bounds [{}, {}]",
+                 conf.GetScaleType() == ValueMapType::kLinear ? "linear" : "decibel",
+                 conf.GetScaleUnit(),
+                 conf.GetScaleLowerBound(),
+                 conf.GetScaleUpperBound());
+    std::unique_ptr<ValueMap> value_map = ValueMap::Build(conf.GetScaleType(),
+                                                          conf.GetScaleLowerBound(),
+                                                          conf.GetScaleUpperBound(),
+                                                          conf.GetScaleUnit());
 
     /* create color map */
     auto color_map = ColorMap::FromType(conf.GetColorMap(),

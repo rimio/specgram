@@ -15,15 +15,18 @@
 #include <complex>
 
 enum class ValueMapType {
-    kdBFS
+    kLinear,
+    kDecibel
 };
 
 class ValueMap {
 protected:
     const double lower_;
     const double upper_;
+    const std::string unit_;
 
-    ValueMap(double lower_, double upper);
+    ValueMap(double lower_, double upper, const std::string& unit);
+
 public:
     ValueMap() = delete;
 
@@ -31,18 +34,25 @@ public:
     auto GetUpperBound() const { return upper_; }
 
     virtual RealWindow Map(const RealWindow& input) = 0;
-    virtual std::string GetUnit() const = 0;
-    virtual std::string GetName() const = 0;
+    virtual std::string GetUnit() const;
+
+    static std::unique_ptr<ValueMap> Build(ValueMapType type, double lower, double upper, std::string unit);
 };
 
-class dBFSValueMap : public ValueMap {
-private:
+class LinearValueMap : public ValueMap {
 public:
-    explicit dBFSValueMap(double mindb);
+    LinearValueMap(double lower, double upper, const std::string& unit);
 
     RealWindow Map(const RealWindow& input) override;
-    std::string GetUnit() const override { return "dBFS"; }
-    std::string GetName() const override { return "dBFS"; }
+};
+
+class DecibelValueMap : public ValueMap {
+public:
+    /* unit parameter should NOT contain "dB" prefix */
+    DecibelValueMap(double lower, double upper, const std::string& unit);
+
+    RealWindow Map(const RealWindow& input) override;
+    std::string GetUnit() const override;
 };
 
 #endif

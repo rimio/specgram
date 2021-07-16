@@ -46,6 +46,7 @@ private:
     std::list<AxisTick> frequency_ticks_;
     std::list<AxisTick> live_ticks_;
 
+    [[maybe_unused]] /* need for this method disappeared when fixing #9, might be useful in the future */
     static std::list<AxisTick> GetLinearTicks(double v_min, double v_max, const std::string& v_unit,
                                               unsigned int num_ticks);
     static std::list<AxisTick> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
