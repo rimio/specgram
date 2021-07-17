@@ -13,8 +13,6 @@
 #include "fft.hpp"
 #include "live.hpp"
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -22,12 +20,25 @@
 #include <list>
 #include <random>
 #include <cstdio>
+#include <cassert>
 
 /* main loop exit condition */
 volatile bool main_loop_running = true;
 
 /* temporary output file name */
 std::string temp_file_name = "";
+
+/*
+ * logger - logging is minimal and only happens in this file
+ */
+#define RESET "\033[0m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define RED "\033[31m"
+
+#define INFO(str) { std::cerr << "[" << GREEN << "INFO" << RESET << "] " << str << std::endl; }
+#define WARN(str) { std::cerr << "[" << YELLOW << "WARN" << RESET << "] " << str << std::endl; }
+#define ERROR(str) { std::cerr << "[" << RED << "ERROR" << RESET << "] " << str << std::endl; }
 
 /*
  * SIGINT handler
@@ -94,7 +105,7 @@ dump_to_stdout(const sf::Image& image)
 
     /* save */
     temp_file_name = "/dev/shm/" + generate_random_string(TEMP_FILENAME_LENGTH) + ".png";
-    spdlog::info("Temporary file: {}", temp_file_name);
+    INFO("Temporary file: " << temp_file_name);
     image.saveToFile(temp_file_name);
 
     /* from now on we have a leakable resource (the file); if using STDIN for input, we're here from a SIGINT,
@@ -116,7 +127,7 @@ dump_to_stdout(const sf::Image& image)
 
     /* clean up */
     if (std::remove(temp_file_name.c_str()) != 0) {
-        spdlog::warn("Failed to delete temp file {}", temp_file_name);
+        WARN("Failed to delete temp file " << temp_file_name);
     }
 }
 
@@ -126,9 +137,6 @@ dump_to_stdout(const sf::Image& image)
 int
 main(int argc, char** argv)
 {
-    /* set spdlog to STDERR and make it multithreaded */
-    spdlog::set_default_logger(spdlog::stderr_color_mt("stderr"));
-
     /* parse command line arguments into global settings */
     auto [conf, conf_rc, conf_must_exit] = Configuration::FromArgs(argc, argv);
     if (conf_must_exit) {
@@ -142,15 +150,13 @@ main(int argc, char** argv)
     auto win_function = WindowFunction::FromType(conf.GetWindowFunction(), conf.GetFFTWidth());
 
     /* create FFT */
-    spdlog::info("Creating {}-wide FFTW plan", conf.GetFFTWidth());
+    INFO("Creating " << conf.GetFFTWidth() << "-wide FFTW plan");
     FFT fft(conf.GetFFTWidth(), win_function);
 
     /* create value map */
-    spdlog::info("Scale {}, unit {}, bounds [{}, {}]",
-                 conf.GetScaleType() == ValueMapType::kLinear ? "linear" : "decibel",
-                 conf.GetScaleUnit(),
-                 conf.GetScaleLowerBound(),
-                 conf.GetScaleUpperBound());
+    INFO("Scale " << (conf.GetScaleType() == ValueMapType::kLinear ? "linear" : "decibel") <<
+         ", unit " << conf.GetScaleUnit() << ", bounds [" << conf.GetScaleLowerBound() <<
+         ", " << conf.GetScaleUpperBound() << "]");
     std::unique_ptr<ValueMap> value_map = ValueMap::Build(conf.GetScaleType(),
                                                           conf.GetScaleLowerBound(),
                                                           conf.GetScaleUpperBound(),
@@ -178,17 +184,17 @@ main(int argc, char** argv)
     std::istream *input_stream = nullptr;
     std::unique_ptr<InputReader> reader = nullptr;
     if (conf.GetInputFilename().has_value()) {
-        spdlog::info("Input: {}", *conf.GetInputFilename());
+        INFO("Input: " << *conf.GetInputFilename());
         input_stream = new std::ifstream(*conf.GetInputFilename(), std::ios::in | std::ios::binary);
         assert(input_stream != nullptr);
         if (!input_stream->good()) {
-            spdlog::error("Failed to open input file '{}'", *conf.GetInputFilename());
+            ERROR("Failed to open input file " << *conf.GetInputFilename());
             return 1;
         }
         reader = std::make_unique<SyncInputReader>(input_stream,
                                                    input->GetDataTypeSize() * conf.GetBlockSize());
     } else {
-        spdlog::info("Input: STDIN");
+        INFO("Input: STDIN");
         input_stream = &std::cin;
         reader = std::make_unique<AsyncInputReader>(input_stream,
                                                     input->GetDataTypeSize() * conf.GetBlockSize());
@@ -196,14 +202,12 @@ main(int argc, char** argv)
 
     /* display initialization info */
     if (input->IsFloatingPoint()) {
-        spdlog::info("Input stream: {}{}bit floating point at {}Hz",
-                     input->IsComplex() ? "complex " : "",
-                     input->GetDataTypeSize() * 8, conf.GetRate());
+        INFO("Input stream: " << (input->IsComplex() ? "complex " : "") << input->GetDataTypeSize() * 8 <<
+             "bit floating point at " << conf.GetRate() << "Hz");
     } else {
-        spdlog::info("Input stream: {}{} {}bit integer at {}Hz",
-                     input->IsComplex() ? "complex " : "",
-                     input->IsSigned() ? "signed" : "unsigned",
-                     input->GetDataTypeSize() * 8, conf.GetRate());
+        INFO("Input stream: " << (input->IsComplex() ? "complex " : "") <<
+             (input->IsSigned() ? "signed " : "unsigned ") << input->GetDataTypeSize() * 8 <<
+             "bit integer at " << conf.GetRate() << "Hz");
     }
 
     /* install SIGINT handler for CTRL+C */
@@ -309,7 +313,7 @@ main(int argc, char** argv)
             v = 0.0f;
         }
     }
-    spdlog::info("Terminating ...");
+    INFO("Terminating ...");
 
     /* close input file */
     if (conf.GetInputFilename().has_value()) {
@@ -353,10 +357,10 @@ main(int argc, char** argv)
 
         /* dump to file or stdout */
         if (conf.GetOutputFilename().has_value()) {
-            spdlog::info("Output: {}", *conf.GetOutputFilename());
+            INFO("Output: " << *conf.GetOutputFilename());
             image.saveToFile(*conf.GetOutputFilename());
         } else if (conf.MustDumpToStdout()) {
-            spdlog::info("Output: STDOUT");
+            INFO("Output: STDOUT");
             dump_to_stdout(image);
         } else {
             throw std::runtime_error("don't know what to do with output");

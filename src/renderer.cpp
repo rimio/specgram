@@ -383,7 +383,7 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
         }
 
         iteration++;
-    } while (iteration < MAXIMUM_ITERATIONS); /* maybe we should spdlog::warn() if we reach max iterations? */
+    } while (iteration < MAXIMUM_ITERATIONS); /* maybe we should issue warning if we reach max iterations? */
 
     /* find the first nice value */
     double fval = v_min / factor;

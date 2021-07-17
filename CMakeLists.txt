@@ -12,7 +12,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Dependencies
-find_package (spdlog REQUIRED)
+set (THREADS_PREFER_PTHREAD_FLAG ON)
+find_package (Threads REQUIRED)
 find_package (SFML 2.5 COMPONENTS window graphics REQUIRED)
 find_library (FFTW3 fftw3)
 
@@ -63,7 +64,7 @@ set (SPECGRAM_SOURCES
 
 # Executable target
 add_executable (${PROJECT_NAME} ${SPECGRAM_SOURCES})
-target_link_libraries (${PROJECT_NAME} spdlog::spdlog sfml-window sfml-graphics ${FFTW3})
+target_link_libraries (${PROJECT_NAME} Threads::Threads sfml-window sfml-graphics ${FFTW3})
 
 # HTML manpage target
 add_custom_target(manpage
