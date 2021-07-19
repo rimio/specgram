@@ -5,9 +5,16 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 #include "value-map.hpp"
+#include <cmath>
 
 ValueMap::ValueMap(double lower, double upper, const std::string& unit) : lower_(lower), upper_(upper), unit_(unit)
 {
+    if (std::isnan(lower) || std::isnan(upper) || std::isinf(lower) || std::isinf(upper)) {
+        throw std::runtime_error("bounds cannot be nan or inf");
+    }
+    if (lower > upper) {
+        throw std::runtime_error("lower bound cannot exceed upper bound");
+    }
 }
 
 std::string
@@ -72,3 +79,4 @@ std::string DecibelValueMap::GetUnit() const
 {
     return "dB" + unit_;
 }
+
