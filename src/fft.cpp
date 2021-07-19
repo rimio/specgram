@@ -104,6 +104,11 @@ FFT::Compute(const ComplexWindow& input)
                 (void *) this->out_,
                 lhl * sizeof(fftw_complex));
 
+    /* fftw does not normalize; divide by the window size */
+    for (auto& v : output) {
+        v /= (double)output.size();
+    }
+
     return output;
 }
 

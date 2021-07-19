@@ -49,7 +49,7 @@ RealWindow LinearValueMap::Map(const RealWindow &input)
     RealWindow output(n);
 
     for (unsigned int i = 0; i < n; i ++) {
-        output[i] = std::clamp<double>(input[i] / n, this->lower_, this->upper_);
+        output[i] = std::clamp<double>(input[i], this->lower_, this->upper_);
         output[i] = (output[i] - this->lower_) / (this->upper_ - this->lower_);
     }
 
@@ -67,7 +67,7 @@ RealWindow DecibelValueMap::Map(const RealWindow &input)
     RealWindow output(n);
 
     for (unsigned int i = 0; i < n; i ++) {
-        output[i] = 20.0 * std::log10(input[i] / n);
+        output[i] = 20.0 * std::log10(input[i]);
         output[i] = std::clamp<double>(output[i], this->lower_, this->upper_);
         output[i] = (output[i] - this->lower_) / (this->upper_ - this->lower_);
     }
@@ -79,4 +79,3 @@ std::string DecibelValueMap::GetUnit() const
 {
     return "dB" + unit_;
 }
-
