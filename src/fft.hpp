@@ -33,6 +33,7 @@ public:
     FFT(FFT &&) = delete;
     FFT & operator=(const FFT&) = delete;
 
+    explicit FFT(std::size_t win_width);
     FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func);
     virtual ~FFT();
 

@@ -37,9 +37,13 @@ sinc(double x)
     }
 }
 
-FFT::FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func)
-    : window_width_(win_width), window_function_(std::move(win_func))
+FFT::FFT(std::size_t win_width) : window_width_(win_width)
 {
+    /* no zero-width fft */
+    if (win_width == 0) {
+        throw std::runtime_error("cannot compute zero-width fft");
+    }
+
     /* allocate buffers */
     this->in_ = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * win_width);
     assert(this->in_ != nullptr);
@@ -48,6 +52,11 @@ FFT::FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func)
 
     /* compute plan */
     this->plan_ = fftw_plan_dft_1d(win_width, this->in_, this->out_, FFTW_FORWARD, FFTW_ESTIMATE);
+}
+
+FFT::FFT(std::size_t win_width, std::unique_ptr<WindowFunction>& win_func) : FFT(win_width)
+{
+    this->window_function_ = std::move(win_func);
 }
 
 FFT::~FFT()
@@ -204,7 +213,9 @@ FFT::Resample(const RealWindow& input, double rate, std::size_t width, double fm
             }
         }
 
-        output[j] = std::clamp<double>(sum / lsum, 0.0f, 1.0f);
+        double value = sum / lsum;
+        value = std::isnan(value) ? 0.0 : value;
+        output[j] = std::clamp<double>(value, 0.0f, 1.0f);
     }
 
     return output;
@@ -225,15 +236,18 @@ FFT::Crop(const RealWindow& input, double rate, double fmin, double fmax)
     /*   [i_fmin..i_fmax]  ->    [fmin, fmax]    */
     double di_fmin = std::round(FFT::GetFrequencyIndex(rate, input.size(), fmin));
     double di_fmax = std::round(FFT::GetFrequencyIndex(rate, input.size(), fmax));
-    assert(di_fmin >= 0);
-    assert(di_fmax < input.size());
-    assert(di_fmin < di_fmax);
 
     /* we're cropping, so no interpolation allowed */
-    auto i_fmin = static_cast<std::size_t>(di_fmin);
-    auto i_fmax = static_cast<std::size_t>(di_fmax);
-    assert(i_fmax - i_fmin > 0);
+    auto i_fmin = static_cast<std::int64_t>(di_fmin);
+    auto i_fmax = static_cast<std::int64_t>(di_fmax);
+
+    if (i_fmin < 0) {
+        throw std::runtime_error("fmin outside of window");
+    }
+    if (i_fmax >= input.size()) {
+        throw std::runtime_error("fmax outside of window");
+    }
 
     /* return corresponding subvector */
-    return RealWindow(input.begin() + i_fmin, input.begin() + i_fmax);
+    return RealWindow(input.begin() + i_fmin, input.begin() + i_fmax + 1);
 }
