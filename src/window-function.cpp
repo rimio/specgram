@@ -7,6 +7,7 @@
 #include "window-function.hpp"
 
 #include <cassert>
+#include <numbers>
 
 WindowFunction::WindowFunction(std::size_t window_size) : window_size_(window_size)
 {
@@ -69,7 +70,7 @@ GeneralizedCosineWindowFunction::GeneralizedCosineWindowFunction(std::size_t win
         this->cached_factors_[n] = 0;
         for (unsigned int k = 0; k < a.size(); k++) {
             this->cached_factors_[n] +=
-                std::pow<double>(-1.0f, k) * a[k] * std::cos(2.0 * (double)M_PI * k * (double)n / N);
+                std::pow<double>(-1.0f, k) * a[k] * std::cos(2.0 * std::numbers::pi * k * (double)n / N);
         }
     }
 }
