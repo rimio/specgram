@@ -58,31 +58,38 @@ GeneralizedCosineWindowFunction::GeneralizedCosineWindowFunction(std::size_t win
                                                                  const std::vector<double>& a)
     : WindowFunction(window_size)
 {
+    if (this->window_size_ == 1) {
+        /* noop case */
+        this->cached_factors_[0] = 1.0;
+        return;
+    }
+
+    double N = (double)this->window_size_ - 1.0;
     for (std::size_t n = 0; n < this->window_size_; n++) {
         this->cached_factors_[n] = 0;
         for (unsigned int k = 0; k < a.size(); k++) {
             this->cached_factors_[n] +=
-                std::pow<double>(-1.0f, k) * a[k] * std::cos(2.0f * (double)M_PI * k * n / this->window_size_);
+                std::pow<double>(-1.0f, k) * a[k] * std::cos(2.0 * (double)M_PI * k * (double)n / N);
         }
     }
 }
 
 HannWindowFunction::HannWindowFunction(std::size_t window_size)
-    : GeneralizedCosineWindowFunction(window_size, { 0.5f, 0.5f })
+    : GeneralizedCosineWindowFunction(window_size, { 0.5, 0.5 })
 {
 }
 
 HammingWindowFunction::HammingWindowFunction(std::size_t window_size)
-        : GeneralizedCosineWindowFunction(window_size, { 0.53836f, 0.46164f })
+        : GeneralizedCosineWindowFunction(window_size, { 0.54, 0.46 })
 {
 }
 
 BlackmanWindowFunction::BlackmanWindowFunction(std::size_t window_size)
-        : GeneralizedCosineWindowFunction(window_size, { 7938.0f / 18608.0f, 9240.0f / 18608.0f, 1430.0f / 18608.0f })
+        : GeneralizedCosineWindowFunction(window_size, { 0.42, 0.5, 0.08 })
 {
 }
 
 NuttallWindowFunction::NuttallWindowFunction(std::size_t window_size)
-        : GeneralizedCosineWindowFunction(window_size, { 0.355768f, 0.487396f, 0.144232f, 0.012604f })
+        : GeneralizedCosineWindowFunction(window_size, { 0.3635819, 0.4891775, 0.1365995, 0.0106411 })
 {
 }
