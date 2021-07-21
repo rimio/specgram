@@ -146,7 +146,7 @@ Configuration::StringToScale(const std::string &str)
 }
 
 std::tuple<Configuration, int, bool>
-Configuration::FromArgs(int argc, char **argv)
+Configuration::Build(int argc, char **argv)
 {
     Configuration conf;
 

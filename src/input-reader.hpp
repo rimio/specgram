@@ -13,14 +13,18 @@
 #include <thread>
 #include <vector>
 
-/*
+/**
  * Input reader base class
  */
 class InputReader {
 protected:
-    std::istream * const stream_;
-    const std::size_t block_size_bytes_;
+    std::istream * const stream_;           /* stream we are straddling */
+    const std::size_t block_size_bytes_;    /* the size of a block in bytes */
 
+    /**
+     * Retrieves an internal buffer that may or may not be block sized.
+     * @return Buffer.
+     */
     virtual std::vector<char> GetBuffer() = 0;
 
 public:
@@ -29,15 +33,26 @@ public:
     InputReader(InputReader&&) = delete;
     InputReader & operator=(const InputReader&) = delete;
 
+    /**
+     * @param stream Input stream to use.
+     * @param block_size_bytes Block size in bytes.
+     */
     InputReader(std::istream * stream, std::size_t block_size_bytes);
     virtual ~InputReader() = default;
 
+    /**
+     * @return True if end of stream was received.
+     */
     virtual bool ReachedEOF() const = 0;
+
+    /**
+     * @return A block of bytes, if such a block exists.
+     */
     virtual std::optional<std::vector<char>> GetBlock() = 0;
 };
 
-/*
- * Synchronous input reader
+/**
+ * Synchronous input reader specialization
  */
 class SyncInputReader : public InputReader {
 protected:
@@ -50,8 +65,8 @@ public:
     std::optional<std::vector<char>> GetBlock() override;
 };
 
-/*
- * Asynchronous input reader
+/**
+ * Asynchronous input reader specialization.
  */
 class AsyncInputReader : public InputReader {
 private:
@@ -75,7 +90,7 @@ public:
     AsyncInputReader(std::istream * stream, std::size_t block_size_bytes);
     ~AsyncInputReader() override;
 
-    bool ReachedEOF() const override;
+    bool ReachedEOF() const override; /* no EOF support is assumed in async input */
     std::optional<std::vector<char>> GetBlock() override;
 };
 

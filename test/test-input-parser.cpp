@@ -41,18 +41,18 @@ TEST(TestInputParser, IsSigned)
         EXPECT_TRUE(FloatInputParser<double>(1.0, is_complex).IsSigned());
 
         /* factory */
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kUnsignedInt8, 1.0, is_complex)->IsSigned());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kUnsignedInt16, 1.0, is_complex)->IsSigned());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kUnsignedInt32, 1.0, is_complex)->IsSigned());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kUnsignedInt64, 1.0, is_complex)->IsSigned());
+        EXPECT_FALSE(InputParser::Build(DataType::kUnsignedInt8, 1.0, is_complex)->IsSigned());
+        EXPECT_FALSE(InputParser::Build(DataType::kUnsignedInt16, 1.0, is_complex)->IsSigned());
+        EXPECT_FALSE(InputParser::Build(DataType::kUnsignedInt32, 1.0, is_complex)->IsSigned());
+        EXPECT_FALSE(InputParser::Build(DataType::kUnsignedInt64, 1.0, is_complex)->IsSigned());
 
-        EXPECT_TRUE(InputParser::FromDataType(DataType::kSignedInt8, 1.0, is_complex)->IsSigned());
-        EXPECT_TRUE(InputParser::FromDataType(DataType::kSignedInt16, 1.0, is_complex)->IsSigned());
-        EXPECT_TRUE(InputParser::FromDataType(DataType::kSignedInt32, 1.0, is_complex)->IsSigned());
-        EXPECT_TRUE(InputParser::FromDataType(DataType::kSignedInt64, 1.0, is_complex)->IsSigned());
+        EXPECT_TRUE(InputParser::Build(DataType::kSignedInt8, 1.0, is_complex)->IsSigned());
+        EXPECT_TRUE(InputParser::Build(DataType::kSignedInt16, 1.0, is_complex)->IsSigned());
+        EXPECT_TRUE(InputParser::Build(DataType::kSignedInt32, 1.0, is_complex)->IsSigned());
+        EXPECT_TRUE(InputParser::Build(DataType::kSignedInt64, 1.0, is_complex)->IsSigned());
 
-        EXPECT_TRUE(InputParser::FromDataType(DataType::kFloat32, 1.0, is_complex)->IsSigned());
-        EXPECT_TRUE(InputParser::FromDataType(DataType::kFloat64, 1.0, is_complex)->IsSigned());
+        EXPECT_TRUE(InputParser::Build(DataType::kFloat32, 1.0, is_complex)->IsSigned());
+        EXPECT_TRUE(InputParser::Build(DataType::kFloat64, 1.0, is_complex)->IsSigned());
     }
 }
 
@@ -74,18 +74,18 @@ TEST(TestInputParser, IsFloatingPoint)
         EXPECT_TRUE(FloatInputParser<double>(1.0, is_complex).IsFloatingPoint());
 
         /* factory */
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kUnsignedInt8, 1.0, is_complex)->IsFloatingPoint());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kUnsignedInt16, 1.0, is_complex)->IsFloatingPoint());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kUnsignedInt32, 1.0, is_complex)->IsFloatingPoint());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kUnsignedInt64, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_FALSE(InputParser::Build(DataType::kUnsignedInt8, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_FALSE(InputParser::Build(DataType::kUnsignedInt16, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_FALSE(InputParser::Build(DataType::kUnsignedInt32, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_FALSE(InputParser::Build(DataType::kUnsignedInt64, 1.0, is_complex)->IsFloatingPoint());
 
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kSignedInt8, 1.0, is_complex)->IsFloatingPoint());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kSignedInt16, 1.0, is_complex)->IsFloatingPoint());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kSignedInt32, 1.0, is_complex)->IsFloatingPoint());
-        EXPECT_FALSE(InputParser::FromDataType(DataType::kSignedInt64, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_FALSE(InputParser::Build(DataType::kSignedInt8, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_FALSE(InputParser::Build(DataType::kSignedInt16, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_FALSE(InputParser::Build(DataType::kSignedInt32, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_FALSE(InputParser::Build(DataType::kSignedInt64, 1.0, is_complex)->IsFloatingPoint());
 
-        EXPECT_TRUE(InputParser::FromDataType(DataType::kFloat32, 1.0, is_complex)->IsFloatingPoint());
-        EXPECT_TRUE(InputParser::FromDataType(DataType::kFloat64, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_TRUE(InputParser::Build(DataType::kFloat32, 1.0, is_complex)->IsFloatingPoint());
+        EXPECT_TRUE(InputParser::Build(DataType::kFloat64, 1.0, is_complex)->IsFloatingPoint());
     }
 }
 
@@ -107,18 +107,18 @@ TEST(TestInputParser, IsComplex)
         EXPECT_EQ(is_complex, FloatInputParser<double>(1.0, is_complex).IsComplex());
 
         /* factory */
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kUnsignedInt8, 1.0, is_complex)->IsComplex());
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kUnsignedInt16, 1.0, is_complex)->IsComplex());
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kUnsignedInt32, 1.0, is_complex)->IsComplex());
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kUnsignedInt64, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kUnsignedInt8, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kUnsignedInt16, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kUnsignedInt32, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kUnsignedInt64, 1.0, is_complex)->IsComplex());
 
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kSignedInt8, 1.0, is_complex)->IsComplex());
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kSignedInt16, 1.0, is_complex)->IsComplex());
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kSignedInt32, 1.0, is_complex)->IsComplex());
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kSignedInt64, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kSignedInt8, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kSignedInt16, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kSignedInt32, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kSignedInt64, 1.0, is_complex)->IsComplex());
 
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kFloat32, 1.0, is_complex)->IsComplex());
-        EXPECT_EQ(is_complex, InputParser::FromDataType(DataType::kFloat64, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kFloat32, 1.0, is_complex)->IsComplex());
+        EXPECT_EQ(is_complex, InputParser::Build(DataType::kFloat64, 1.0, is_complex)->IsComplex());
     }
 }
 
@@ -140,18 +140,18 @@ TEST(TestInputParser, GetDataTypeSize)
         EXPECT_EQ(8 * (is_complex ? 2 : 1), FloatInputParser<double>(1.0, is_complex).GetDataTypeSize());
 
         /* factory */
-        EXPECT_EQ(1 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kUnsignedInt8, 1.0, is_complex)->GetDataTypeSize());
-        EXPECT_EQ(2 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kUnsignedInt16, 1.0, is_complex)->GetDataTypeSize());
-        EXPECT_EQ(4 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kUnsignedInt32, 1.0, is_complex)->GetDataTypeSize());
-        EXPECT_EQ(8 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kUnsignedInt64, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(1 * (is_complex ? 2 : 1), InputParser::Build(DataType::kUnsignedInt8, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(2 * (is_complex ? 2 : 1), InputParser::Build(DataType::kUnsignedInt16, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(4 * (is_complex ? 2 : 1), InputParser::Build(DataType::kUnsignedInt32, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(8 * (is_complex ? 2 : 1), InputParser::Build(DataType::kUnsignedInt64, 1.0, is_complex)->GetDataTypeSize());
 
-        EXPECT_EQ(1 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kSignedInt8, 1.0, is_complex)->GetDataTypeSize());
-        EXPECT_EQ(2 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kSignedInt16, 1.0, is_complex)->GetDataTypeSize());
-        EXPECT_EQ(4 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kSignedInt32, 1.0, is_complex)->GetDataTypeSize());
-        EXPECT_EQ(8 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kSignedInt64, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(1 * (is_complex ? 2 : 1), InputParser::Build(DataType::kSignedInt8, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(2 * (is_complex ? 2 : 1), InputParser::Build(DataType::kSignedInt16, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(4 * (is_complex ? 2 : 1), InputParser::Build(DataType::kSignedInt32, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(8 * (is_complex ? 2 : 1), InputParser::Build(DataType::kSignedInt64, 1.0, is_complex)->GetDataTypeSize());
 
-        EXPECT_EQ(4 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kFloat32, 1.0, is_complex)->GetDataTypeSize());
-        EXPECT_EQ(8 * (is_complex ? 2 : 1), InputParser::FromDataType(DataType::kFloat64, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(4 * (is_complex ? 2 : 1), InputParser::Build(DataType::kFloat32, 1.0, is_complex)->GetDataTypeSize());
+        EXPECT_EQ(8 * (is_complex ? 2 : 1), InputParser::Build(DataType::kFloat64, 1.0, is_complex)->GetDataTypeSize());
     }
 }
 
@@ -159,7 +159,7 @@ TEST(TestInputParser, ParseBlockWrongSize)
 {
     for (bool is_complex : { false, true }) {
         for (auto dt : ALL_DATA_TYPES) {
-            auto parser = InputParser::FromDataType(dt, 1.0, is_complex);
+            auto parser = InputParser::Build(dt, 1.0, is_complex);
             for (std::size_t bs = 0; bs < 512; bs++) {
                 if ((bs % parser->GetDataTypeSize()) == 0) {
                     EXPECT_NO_THROW(parser->ParseBlock(std::vector<char>(bs)));
@@ -398,7 +398,7 @@ TEST(TestInputParser, ParseBlock)
     for (bool is_complex : { false, true }) {
         for (auto dt : ALL_DATA_TYPES) {
             for (double prescale : {1.0, 33.49}) {
-                auto parser = InputParser::FromDataType(dt, prescale, is_complex);
+                auto parser = InputParser::Build(dt, prescale, is_complex);
 
                 auto[buf, res] = make_test(dt, is_complex);
                 std::size_t bs_idx = 0;
@@ -444,7 +444,7 @@ TEST(TestInputParser, PeekValues)
     std::vector<char> block(memory);
     for (bool is_complex : { false, true }) {
         for (auto dt : ALL_DATA_TYPES) {
-            auto parser = InputParser::FromDataType(dt, 1.0, is_complex);
+            auto parser = InputParser::Build(dt, 1.0, is_complex);
             std::size_t parsed_count = 0;
             EXPECT_NO_THROW(parsed_count = parser->ParseBlock(block));
             for (std::size_t i = 0; i < parsed_count + 100; i ++) {
@@ -462,8 +462,8 @@ TEST(TestInputParser, RemoveValues)
     std::vector<char> block(memory);
     for (bool is_complex : { false, true }) {
         for (auto dt : ALL_DATA_TYPES) {
-            for (std::size_t i = 0; i < (memory / InputParser::FromDataType(dt, 1.0, is_complex)->GetDataTypeSize()) + 100; i++) {
-                auto parser = InputParser::FromDataType(dt, 1.0, is_complex);
+            for (std::size_t i = 0; i < (memory / InputParser::Build(dt, 1.0, is_complex)->GetDataTypeSize()) + 100; i++) {
+                auto parser = InputParser::Build(dt, 1.0, is_complex);
                 std::size_t parsed_count = 0;
                 EXPECT_NO_THROW(parsed_count = parser->ParseBlock(block));
 

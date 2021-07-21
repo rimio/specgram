@@ -22,7 +22,7 @@ void run_tests(const std::list<std::vector<double>>& tests, WindowFunctionType t
 {
     for (const auto& test : tests) {
         /* create window */
-        auto win = WindowFunction::FromType(type, test.size());
+        auto win = WindowFunction::Build(type, test.size());
         /* create identity input */
         ComplexWindow input(test.size());
         for (auto& i : input) { i = 1.0; }
@@ -38,7 +38,7 @@ void run_tests(const std::list<std::vector<double>>& tests, WindowFunctionType t
 
 TEST(TestWindowFunction, FactoryWrongType)
 {
-    EXPECT_THROW_MATCH(auto ret = WindowFunction::FromType((WindowFunctionType)999, 10),
+    EXPECT_THROW_MATCH(auto ret = WindowFunction::Build((WindowFunctionType)999, 10),
                        std::runtime_error, "unknown window function");
 }
 
@@ -129,6 +129,6 @@ TEST(TestWindowFunction, TypeNuttall)
 
 TEST(TestWindowFunction, TypeNone)
 {
-    EXPECT_EQ(WindowFunction::FromType(WindowFunctionType::kNone, 1), nullptr);
-    EXPECT_EQ(WindowFunction::FromType(WindowFunctionType::kNone, 10), nullptr);
+    EXPECT_EQ(WindowFunction::Build(WindowFunctionType::kNone, 1), nullptr);
+    EXPECT_EQ(WindowFunction::Build(WindowFunctionType::kNone, 10), nullptr);
 }

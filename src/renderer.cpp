@@ -255,7 +255,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     }
 }
 
-[[maybe_unused]] std::list<AxisTick>
+[[maybe_unused]] std::list<Renderer::AxisTick>
 Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks)
 {
     if (num_ticks <= 1) {
@@ -286,7 +286,7 @@ Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, 
     return ticks;
 }
 
-std::list<AxisTick>
+std::list<Renderer::AxisTick>
 Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, unsigned int length_px,
                        unsigned int min_tick_length_px, bool rotated)
 {

@@ -14,7 +14,7 @@ WindowFunction::WindowFunction(std::size_t window_size) : window_size_(window_si
 }
 
 std::unique_ptr<WindowFunction>
-WindowFunction::FromType(WindowFunctionType type, std::size_t window_size)
+WindowFunction::Build(WindowFunctionType type, std::size_t window_size)
 {
     switch (type) {
         case WindowFunctionType::kNone:

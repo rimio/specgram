@@ -10,9 +10,7 @@
 #include <cassert>
 
 std::unique_ptr<ColorMap>
-ColorMap::FromType(ColorMapType type,
-                   const sf::Color& bg_color,
-                   const sf::Color& custom_color)
+ColorMap::Build(ColorMapType type, const sf::Color& bg_color, const sf::Color& custom_color)
 {
     /* colormaps are not allowed to be translucent */
     sf::Color opaque_bg_color(bg_color.r, bg_color.g, bg_color.b, 255);

@@ -11,7 +11,9 @@
 #include <complex>
 #include <memory>
 
-/* Input data type */
+/**
+ * Input data type
+ */
 enum class DataType {
     /* signed integer */
     kSignedInt8,
@@ -39,16 +41,22 @@ typedef std::vector<double> RealWindow;
 /* Window of complex numbers */
 typedef std::vector<Complex> ComplexWindow;
 
-/*
+/**
  * Input parser base class
  */
 class InputParser {
 protected:
-    double prescale_factor_;
-    bool is_complex_;
-    std::vector<Complex> values_;
+    double prescale_factor_;        /* factor that is applied before further processing */
+    bool is_complex_;               /* input is complex? */
+    std::vector<Complex> values_;   /* parsed values */
 
     InputParser() = delete;
+
+    /**
+     * @param prescale Prescale factor, applied after parsing.
+     * @param is_complex If true, input is treated as complex-typed. Two input
+     *                   values will be read for each output value.
+     */
     explicit InputParser(double prescale, bool is_complex);
 
 public:
@@ -57,22 +65,65 @@ public:
     InputParser & operator=(const InputParser&) = delete;
     virtual ~InputParser() = default;
 
-    static std::unique_ptr<InputParser> FromDataType(DataType dtype, double prescale, bool is_complex);
+    /**
+     * Factory method for retrieving a suitable parser.
+     * @param dtype Input data type.
+     * @param prescale Prescale factor to apply after parsing.
+     * @param is_complex If true, input is treated as complex-typed. Two input
+     *                   values will be read for each output value.
+     * @return New Parser object.
+     */
+    static std::unique_ptr<InputParser> Build(DataType dtype, double prescale, bool is_complex);
 
+    /**
+     * @return The number of values that have been parsed, but not yet retrieved.
+     */
     std::size_t GetBufferedValueCount() const;
 
+    /**
+     * Retrieves, without removing, from the parsed (buffered) value array.
+     * @param count Number of values to retrieve.
+     * @return
+     */
     std::vector<Complex> PeekValues(std::size_t count) const;
+
+    /**
+     * Removes values from the parsed (buffered) values array.
+     * @param count Number of values to remove.
+     */
     void RemoveValues(std::size_t count);
 
+    /**
+     * Parses a block of bytes.
+     * @param block Block of bytes that must have a size that is a multiple of
+     *              the underlying data type size (or twice that for complex).
+     * @return Number of parsed values.
+     */
     virtual std::size_t ParseBlock(const std::vector<char> &block) = 0;
+
+    /**
+     * @return Size of the underlying data type (or twice for complex).
+     */
     virtual std::size_t GetDataTypeSize() const = 0;
+
+    /**
+     * @return True if underlying data type is signed.
+     */
     virtual bool IsSigned() const = 0;
+
+    /**
+     * @return True if underlying data type is floating point.
+     */
     virtual bool IsFloatingPoint() const = 0;
+
+    /**
+     * @return True if parsing complex input.
+     */
     virtual bool IsComplex() const { return is_complex_; };
 };
 
-/*
- * Integer input parser
+/**
+ * Specialized parser for integer input.
  */
 template <class T>
 class IntegerInputParser : public InputParser {
@@ -87,8 +138,8 @@ public:
     bool IsFloatingPoint() const override { return false; };
 };
 
-/*
- * Floating point input parser
+/**
+ * Specialized parser for floating point input.
  */
 template <class T>
 class FloatInputParser : public InputParser {

@@ -28,7 +28,7 @@ const sf::Color WHITE(255, 255, 255);
 
 TEST(TestColorMap, FactoryWrongType)
 {
-    EXPECT_THROW_MATCH(auto ret = ColorMap::FromType((ColorMapType)999, sf::Color(0, 0, 0), sf::Color(0, 0, 0)),
+    EXPECT_THROW_MATCH(auto ret = ColorMap::Build((ColorMapType)999, sf::Color(0, 0, 0), sf::Color(0, 0, 0)),
                        std::runtime_error, "unknown color map");
 }
 

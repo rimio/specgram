@@ -138,7 +138,7 @@ int
 main(int argc, char** argv)
 {
     /* parse command line arguments into global settings */
-    auto [conf, conf_rc, conf_must_exit] = Configuration::FromArgs(argc, argv);
+    auto [conf, conf_rc, conf_must_exit] = Configuration::Build(argc, argv);
     if (conf_must_exit) {
         return conf_rc;
     }
@@ -147,7 +147,7 @@ main(int argc, char** argv)
     bool have_output = conf.GetOutputFilename().has_value() || conf.MustDumpToStdout();
 
     /* create window function */
-    auto win_function = WindowFunction::FromType(conf.GetWindowFunction(), conf.GetFFTWidth());
+    auto win_function = WindowFunction::Build(conf.GetWindowFunction(), conf.GetFFTWidth());
 
     /* create FFT */
     INFO("Creating " << conf.GetFFTWidth() << "-wide FFTW plan");
@@ -163,9 +163,8 @@ main(int argc, char** argv)
                                                           conf.GetScaleUnit());
 
     /* create color map */
-    auto color_map = ColorMap::FromType(conf.GetColorMap(),
-                                        conf.GetBackgroundColor(),
-                                        conf.GetColorMapCustomColor());
+    auto color_map = ColorMap::Build(conf.GetColorMap(), conf.GetBackgroundColor(),
+                                     conf.GetColorMapCustomColor());
 
     /* create live window */
     std::unique_ptr<LiveOutput> live = nullptr;
@@ -175,7 +174,7 @@ main(int argc, char** argv)
     }
 
     /* create input parser */
-    auto input = InputParser::FromDataType(conf.GetDataType(), conf.GetPrescaleFactor(), conf.HasComplexInput());
+    auto input = InputParser::Build(conf.GetDataType(), conf.GetPrescaleFactor(), conf.HasComplexInput());
     if (input == nullptr) {
         return 1;
     }

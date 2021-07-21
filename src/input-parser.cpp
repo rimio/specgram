@@ -38,7 +38,7 @@ InputParser::RemoveValues(std::size_t count)
 }
 
 std::unique_ptr<InputParser>
-InputParser::FromDataType(DataType dtype, double prescale, bool is_complex)
+InputParser::Build(DataType dtype, double prescale, bool is_complex)
 {
     if (dtype == DataType::kSignedInt8) {
         return std::make_unique<IntegerInputParser<std::int8_t>>(prescale, is_complex);

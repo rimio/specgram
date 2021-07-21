@@ -12,6 +12,9 @@
 #include "color-map.hpp"
 #include <SFML/Graphics.hpp>
 
+/**
+ * Live output God object, keeping track of rendering, window, history etc.
+ */
 class LiveOutput {
 private:
     /* configuration */
@@ -30,10 +33,29 @@ public:
     LiveOutput(LiveOutput &&) = delete;
     LiveOutput & operator=(const LiveOutput&) = delete;
 
+    /**
+     * @param conf Configuration to use.
+     * @param cmap Color map instance to use.
+     * @param vmap Value map instance to use.
+     */
     LiveOutput(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap);
 
+    /**
+     * Add a FFT window to the history and render it.
+     * @param win_values Window values, real, scaled.
+     * @return A copy of the colorized window that is rendered.
+     */
     std::vector<uint8_t> AddWindow(const RealWindow& win_values);
+
+    /**
+     * Handle window events.
+     * @return True if window was closed.
+     */
     bool HandleEvents();
+
+    /**
+     * Render live window.
+     */
     void Render();
 };
 
