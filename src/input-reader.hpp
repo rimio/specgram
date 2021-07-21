@@ -21,6 +21,8 @@ protected:
     std::istream * const stream_;
     const std::size_t block_size_bytes_;
 
+    virtual std::vector<char> GetBuffer() = 0;
+
 public:
     InputReader() = delete;
     InputReader(const InputReader&) = delete;
@@ -32,19 +34,20 @@ public:
 
     virtual bool ReachedEOF() const = 0;
     virtual std::optional<std::vector<char>> GetBlock() = 0;
-    virtual std::vector<char> GetBuffer() = 0;
 };
 
 /*
  * Synchronous input reader
  */
 class SyncInputReader : public InputReader {
+protected:
+    std::vector<char> GetBuffer() override;
+
 public:
     SyncInputReader(std::istream * stream, std::size_t block_size_bytes);
 
     bool ReachedEOF() const override;
     std::optional<std::vector<char>> GetBlock() override;
-    std::vector<char> GetBuffer() override;
 };
 
 /*
@@ -65,13 +68,15 @@ private:
 
     void Read();
 
+protected:
+    std::vector<char> GetBuffer() override;
+
 public:
     AsyncInputReader(std::istream * stream, std::size_t block_size_bytes);
     ~AsyncInputReader() override;
 
     bool ReachedEOF() const override;
     std::optional<std::vector<char>> GetBlock() override;
-    std::vector<char> GetBuffer() override;
 };
 
 #endif

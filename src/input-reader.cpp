@@ -13,6 +13,12 @@
 InputReader::InputReader(std::istream * stream, std::size_t block_size_bytes)
     : stream_(stream), block_size_bytes_(block_size_bytes)
 {
+    if (stream == nullptr) {
+        throw std::runtime_error("valid stream is required");
+    }
+    if (block_size_bytes == 0) {
+        throw std::runtime_error("block size in bytes must be positive");
+    }
 }
 
 SyncInputReader::SyncInputReader(std::istream * stream, std::size_t block_size_bytes)
@@ -54,9 +60,6 @@ SyncInputReader::GetBuffer()
 AsyncInputReader::AsyncInputReader(std::istream * stream, std::size_t block_size_bytes)
     : InputReader(stream, block_size_bytes)
 {
-    if (block_size_bytes == 0) {
-        throw std::runtime_error("block size in bytes must be positive");
-    }
     this->buffer_ = new char[block_size_bytes];
     assert(this->buffer_ != nullptr);
     this->bytes_in_buffer_ = 0;
