@@ -381,8 +381,12 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
             fval = std::floor(fval) + 1.0f;
         }
         fval *= factor;
-        assert(v_min <= fval);
-        assert(fval <= v_max);
+
+        if ((fval < v_min) || (fval > v_max)) {
+            /* there is no nice value here; usually this happens because the
+             * axis length is too small */
+            return v_min;
+        }
 
         return fval;
     };
