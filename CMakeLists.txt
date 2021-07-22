@@ -22,6 +22,7 @@ find_library (FFTW3 fftw3)
 
 if (TESTING)
     find_package(GTest)
+    find_package(X11)
 endif()
 
 # Compiler setup
@@ -31,7 +32,7 @@ add_compile_options (-Wall -Wextra -pedantic)
 set (SRC_DIR "${PROJECT_SOURCE_DIR}/src")
 set (MAN_DIR "${PROJECT_SOURCE_DIR}/man")
 
-include_directories (${SOURCE_DIR})
+include_directories (${SOURCE_DIR} ${X11_INCLUDE_DIR})
 
 # Get the latest abbreviated commit hash of the working branch
 # https://jonathanhamberg.com/post/cmake-embedding-git-hash/
@@ -107,6 +108,6 @@ if (TESTING)
     # Unit tests
     enable_testing ()
     add_executable(unittest ${UNIT_TEST_SOURCES})
-    target_link_libraries (unittest GTest::GTest ${PROJECT_NAME}_static Threads::Threads sfml-graphics ${FFTW3})
+    target_link_libraries (unittest GTest::GTest ${PROJECT_NAME}_static Threads::Threads sfml-graphics ${FFTW3} ${X11_LIBRARIES})
     gtest_discover_tests (unittest)
 endif()

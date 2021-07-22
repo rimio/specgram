@@ -6,6 +6,7 @@
  */
 #include "test.hpp"
 #include "../src/renderer.hpp"
+#include <X11/Xlib.h>
 
 class ExposedRenderer : public Renderer
 {
@@ -129,6 +130,15 @@ TEST(TestRenderer, GetLinearTicks)
 
 TEST(TestRenderer, GetNiceTicks)
 {
+    { /* skip if Xorg not started */
+        auto display = XOpenDisplay(nullptr);
+        if (display == nullptr) {
+            GTEST_SKIP();
+        } else {
+            XCloseDisplay(display);
+        }
+    }
+
     constexpr double epsilon = 1e-9;
 
     /* configuration */
