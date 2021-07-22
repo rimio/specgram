@@ -96,7 +96,7 @@ public:
      * @param argv Argument count.
      * @return New Configuration object instance.
      */
-    static std::tuple<Configuration, int, bool> Build(int argc, char **argv);
+    static std::tuple<Configuration, int, bool> Build(int argc, const char **argv);
 
     /* generic getters */
     Configuration GetForLive() const;

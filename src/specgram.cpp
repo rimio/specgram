@@ -138,7 +138,7 @@ int
 main(int argc, char** argv)
 {
     /* parse command line arguments into global settings */
-    auto [conf, conf_rc, conf_must_exit] = Configuration::Build(argc, argv);
+    auto [conf, conf_rc, conf_must_exit] = Configuration::Build(argc, (const char **)argv);
     if (conf_must_exit) {
         return conf_rc;
     }
