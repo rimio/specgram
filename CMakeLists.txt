@@ -96,6 +96,7 @@ if (TESTING)
     set (UNIT_TEST_SOURCES
         test/test.cpp
         test/test-fft.cpp
+        test/test-renderer.cpp
         test/test-input-reader.cpp
         test/test-input-parser.cpp
         test/test-color-map.cpp

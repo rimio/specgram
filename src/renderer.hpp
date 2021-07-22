@@ -24,7 +24,7 @@ enum class Orientation {
  * Spectrogram rendering class
  */
 class Renderer {
-private:
+protected: /* for all intents and purposes this should be private, but we want to unit test a few of the methods here */
     const Configuration configuration_; /* configuration is cached as it contains multiple settings regarding spacing and sizing */
     const std::size_t fft_count_;       /* number of windows to render */
     const std::unique_ptr<const ColorMap> color_map_; /* color map used for rendering */
@@ -51,6 +51,22 @@ private:
     std::list<AxisTick> live_ticks_;
 
     /**
+     * Return a short representation of the value (using unit prefixes like, m, k, M ...).
+     * @param value The value to encode.
+     * @param scale Scale of the value (in the numeric sense).
+     * @param unit Unit of the value.
+     * @return Short representation string.
+     *
+     * NOTE: The unit prefix is computed just from the scale, not the value itself.
+     *       For example, ValueToShortString(0.00004, 5, "V") will yield "0.04mV",
+     *       not "40uV" (which would otherwise be the more natural representation).
+     *       This behaviour is purposeful, as it allows more flexibility (e.g. if
+     *       we want the same prefix and number of decimal places for all values
+     *       of an axis).
+     */
+    static std::string ValueToShortString(double value, int scale, const std::string& unit);
+
+    /**
      * Build an array of ticks with linear spacing.
      * @param v_min Lowest value on the axis.
      * @param v_max Highest value on the axis.
@@ -74,6 +90,7 @@ private:
      *
      * NOTE: This method attempts to find some nice values for the ticks that
      *       also have sufficient spacing for the text to fit properly.
+     * NOTE: This method enforces an error of <1% between tick text and tick value.
      */
     std::list<AxisTick> GetNiceTicks(double v_min, double v_max, const std::string& v_unit,
                                      unsigned int length_px, unsigned int min_tick_length_px, bool rotated);

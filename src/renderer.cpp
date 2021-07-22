@@ -13,33 +13,38 @@
 #include <cassert>
 #include <cstring>
 
-static std::string
-ValueToShortString(double value, int prec, const std::string& unit)
+static double compute_error_for_scale(double v, int scale, double v_min, double v_max)
+{
+    double rsv = v * std::pow(10, scale);
+    double sv = std::round(rsv);
+    return std::abs(rsv - sv) / std::pow(10, scale) / (v_max - v_min);
+}
+
+std::string
+Renderer::ValueToShortString(double value, int scale, const std::string& unit)
 {
     static const std::vector<std::string> PREFIXES = { "p", "n", "u", "m", "", "k", "M", "G", "T" };
     std::size_t pidx = 4;
 
-    while ((prec >= 3) && (pidx > 0)) {
-        prec -= 3;
+    while ((scale >= 3) && (pidx > 0)) {
+        scale -= 3;
         pidx--;
         value *= 1000.0f;
     }
-    while ((prec <= -3) && (pidx < PREFIXES.size() - 1)) {
-        prec += 3;
+    while ((scale <= -3) && (pidx < PREFIXES.size() - 1)) {
+        scale += 3;
         pidx++;
         value /= 1000.0f;
     }
 
-    prec++;
-
-    /* round very low values to zero */
+    /* round very low values to zero, as to avoid printing "-0" */
     /* theoretically this function should not be asked to print values as small as 1e-9 */
     if (std::abs(value) < 1e-9) {
         value = 0.0;
     }
 
     std::stringstream ss;
-    ss << std::fixed << std::setprecision(prec > 0 ? prec : 0) << value << PREFIXES[pidx] << unit;
+    ss << std::fixed << std::setprecision(scale > 0 ? scale : 0) << value << PREFIXES[pidx] << unit;
     return ss.str();
 }
 
@@ -50,7 +55,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         throw std::runtime_error("failed to copy color map");
     }
     if (fft_count == 0) {
-        throw std::runtime_error("positive number of FFT windows required by rendere");
+        throw std::runtime_error("positive number of FFT windows required by renderer");
     }
 
     /* load font */
@@ -259,28 +264,40 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
 Renderer::GetLinearTicks(double v_min, double v_max, const std::string& v_unit, unsigned int num_ticks)
 {
     if (num_ticks <= 1) {
-        throw std::runtime_error("GetLinearTicks() requires at least two ticks");
+        throw std::runtime_error("requires at least two ticks");
     }
     if (v_min >= v_max) {
         throw std::runtime_error("minimum and maximum values are not in order");
     }
 
-    int prec = 0;
+    /* find a scale that advances each tick value in the single digits */
+    int scale = 0;
     double dist = (v_max - v_min) / ((double) num_ticks - 1);
     while (dist >= 10.0f) {
-        prec--;
+        scale--;
         dist /= 10.0f;
     }
     while (dist < 1.0f) {
-        prec++;
+        scale++;
         dist *= 10.0f;
+    }
+
+    /* still, if the error of this scale is comparable to the input domain, add one more decimal place */
+    for (unsigned int i = 0; i < num_ticks; i ++) {
+        double k = (double) i / (double)(num_ticks - 1);
+        double v = v_min + k * (v_max - v_min);
+
+        if (::compute_error_for_scale(v, scale, v_min, v_max) > 0.01) { /* greater than 1% => one more decimal place */
+            scale ++;
+            break;
+        }
     }
 
     std::list<AxisTick> ticks;
     for (unsigned int i = 0; i < num_ticks; i ++) {
         double k = (double) i / (double)(num_ticks - 1);
         double v = v_min + k * (v_max - v_min);
-        ticks.emplace_back(std::make_tuple(k, ::ValueToShortString(v, prec, v_unit)));
+        ticks.emplace_back(std::make_tuple(k, ValueToShortString(v, scale, v_unit)));
     }
 
     return ticks;
@@ -297,7 +314,7 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
         throw std::runtime_error("length in pixels must be positive");
     }
     if (min_tick_length_px == 0) {
-        throw std::runtime_error("estimate tick length in pixels must be positive");
+        throw std::runtime_error("minimum tick length in pixels must be positive");
     }
 
     std::list<AxisTick> ticks;
@@ -330,20 +347,20 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
         return mfact;
     };
 
-    /* computes precision */
-    auto compute_precision = [](double factor) -> int
+    /* computes scale */
+    auto compute_scale = [](double factor) -> int
     {
-        int prec = 0;
+        int scale = 0;
         double dist = factor;
         while (dist > 10.0f) {
-            prec--;
+            scale--;
             dist /= 10.0f;
         }
         while (dist < 1.0f) {
-            prec++;
+            scale++;
             dist *= 10.0f;
         }
-        return prec;
+        return scale;
     };
 
     /* computes text width */
@@ -356,24 +373,52 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
         return (rotated ? text.getLocalBounds().height : text.getLocalBounds().width);
     };
 
+    /* find the first nice value */
+    auto find_first_value = [v_min, v_max](double factor) -> double { ;
+        double fval = v_min / factor;
+        constexpr double ROUND_EPSILON = 1e-6;
+        if (std::abs(fval - std::floor(fval)) > ROUND_EPSILON) {
+            fval = std::floor(fval) + 1.0f;
+        }
+        fval *= factor;
+        assert(v_min <= fval);
+        assert(fval <= v_max);
+
+        return fval;
+    };
+
     /* find a factor and a precision for the ticks */
     double factor = 1.0;
-    int precision = 0;
+    int scale = 0;
     unsigned int target_tick_length = min_tick_length_px;
 
     constexpr std::size_t MAXIMUM_ITERATIONS = 10;
     std::size_t iteration = 0; /* theoretically the below loop will stop; practically, we don't take chances */
+    double fval = 0.0; /* first nice value */
+
+    /* adjust upper limit with a slight epsilon so that we have tickmark for v_max in most "nice" cases */
+    /* otherwise we might miss it because of representation errors */
+    double upper_limit = v_max + (v_max - v_min) * 1e-6;
 
     do {
         /* compute a nice factor and get the actual tick length */
         factor = find_factor(target_tick_length);
         auto actual_tick_length = px_per_v * factor;
-        precision = compute_precision(factor);
+        scale = compute_scale(factor);
+        fval = find_first_value(factor);
+
+        /* see if we need another decimal place */
+        for (double value = fval; value <= upper_limit; value += factor) {
+            if (::compute_error_for_scale(value, scale, v_min, v_max) > 0.01) { /* greater than 1% => one more decimal place */
+                scale ++;
+                break;
+            }
+        }
 
         /* make sure the tick length is higher than the label sizes for this precision */
         constexpr double min_tick_spacing = 5.0;
-        auto lb_size = compute_text_size(::ValueToShortString(v_min, precision, v_unit)) + min_tick_spacing;
-        auto ub_size = compute_text_size(::ValueToShortString(v_max, precision, v_unit)) + min_tick_spacing;
+        auto lb_size = compute_text_size(ValueToShortString(v_min, scale, v_unit)) + min_tick_spacing;
+        auto ub_size = compute_text_size(ValueToShortString(v_max, scale, v_unit)) + min_tick_spacing;
         if ((lb_size > actual_tick_length) || (ub_size > actual_tick_length)) {
             target_tick_length = std::max( { static_cast<unsigned int>(lb_size),
                                              static_cast<unsigned int>(ub_size),
@@ -385,24 +430,10 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
         iteration++;
     } while (iteration < MAXIMUM_ITERATIONS); /* maybe we should issue warning if we reach max iterations? */
 
-    /* find the first nice value */
-    double fval = v_min / factor;
-    constexpr double ROUND_EPSILON = 1e-6;
-    if (std::abs(fval - std::floor(fval)) > ROUND_EPSILON) {
-        fval = std::floor(fval) + 1.0f;
-    }
-    fval *= factor;
-    assert(v_min <= fval);
-    assert(fval <= v_max);
-
-    /* adjust upper limit with a slight epsilon so that we have tickmark for v_max in most "nice" cases */
-    /* otherwise we might miss it because of representation errors */
-    double upper_limit = v_max + (v_max - v_min) * 1e-6;
-
     /* add ticks */
     for (double value = fval; value <= upper_limit; value += factor) {
         double k = (value - v_min) / (v_max - v_min);
-        ticks.emplace_back(std::make_tuple(k, ::ValueToShortString(value, precision, v_unit)));
+        ticks.emplace_back(std::make_tuple(k, ValueToShortString(value, scale, v_unit)));
     }
 
     return ticks;
