@@ -526,7 +526,7 @@ Configuration::Build(int argc, const char **argv)
             return std::make_tuple(conf, 1, true);
         }
 
-        conf.width_ = maxi - mini;
+        conf.width_ = maxi - mini + 1; /* see also FFT::Crop() */
         if (conf.width_ == 0) {
             std::cerr
                     << "'fmin' and 'fmax' are either equal or very close, which is not allowed when not resampling (-q, --no_resampling)."
