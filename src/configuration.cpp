@@ -41,7 +41,7 @@ Configuration::Configuration()
     this->scale_unit_ = "FS";
     this->scale_lower_bound_ = -120.0f;
     this->scale_upper_bound_ = 0.0f;
-    this->color_map_ = ColorMapType::kJet;
+    this->color_map_ = ColorMapType::kInferno;
     this->background_color_ = sf::Color(0, 0, 0);
     this->foreground_color_ = sf::Color(255, 255, 255);
     this->has_axes_ = false;
@@ -196,7 +196,7 @@ Configuration::Build(int argc, const char **argv)
     args::ValueFlag<std::string>
         scale(display_opts, "string", "Display scale (default: dBFS,-120,0)", {'s', "scale"});
     args::ValueFlag<std::string>
-        colormap(display_opts, "string", "Colormap (default: jet)", {'c', "colormap"});
+        colormap(display_opts, "string", "Colormap (default: inferno)", {'c', "colormap"});
     args::ValueFlag<std::string>
         bgcolor(display_opts, "string", "Background color (default: 000000)", {"bg-color"});
     args::ValueFlag<std::string>
@@ -429,6 +429,10 @@ Configuration::Build(int argc, const char **argv)
             conf.color_map_ = ColorMapType::kGray;
         } else if (cmap_str == "jet") {
             conf.color_map_ = ColorMapType::kJet;
+        } else if (cmap_str == "hot") {
+            conf.color_map_ = ColorMapType::kHot;
+        } else if (cmap_str == "inferno") {
+            conf.color_map_ = ColorMapType::kInferno;
         } else if (cmap_str == "purple") {
             conf.color_map_ = ColorMapType::kPurple;
         } else if (cmap_str == "blue") {

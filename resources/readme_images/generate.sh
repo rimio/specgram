@@ -1,5 +1,7 @@
 #!/bin/sh
 specgram -eqz --bg-color=00000000 --fg-color=000000ff -i ../clips/norah_jones_dont_know_why colormap_jet.png -c jet
+specgram -eqz --bg-color=00000000 --fg-color=000000ff -i ../clips/norah_jones_dont_know_why colormap_hot.png -c hot
+specgram -eqz --bg-color=00000000 --fg-color=000000ff -i ../clips/norah_jones_dont_know_why colormap_inferno.png -c inferno
 specgram -eqz --bg-color=00000000 --fg-color=000000ff -i ../clips/norah_jones_dont_know_why colormap_gray.png -c gray
 specgram -eqz --bg-color=00000000 --fg-color=000000ff -i ../clips/norah_jones_dont_know_why colormap_purple.png -c purple
 specgram -eqz --bg-color=00000000 --fg-color=000000ff -i ../clips/norah_jones_dont_know_why colormap_blue.png -c blue
@@ -9,6 +11,8 @@ specgram -eqz --bg-color=00000000 --fg-color=000000ff -i ../clips/norah_jones_do
 
 montage \
 -label "jet" colormap_jet.png \
+-label "hot" colormap_hot.png \
+-label "inferno" colormap_inferno.png \
 -label "gray" colormap_gray.png \
 -label "purple" colormap_purple.png \
 -label "blue" colormap_blue.png \
@@ -19,10 +23,10 @@ montage \
 
 rm -rf colormap_*.png
 
-specgram -eq -f 8192 -y 4000 --bg-color=00000000 --fg-color=000000ff -i ../clips/rammstein_dalai_lama example_file.png
+specgram -eq -f 8192 -y 4000 --bg-color=00000000 --fg-color=000000ff -i ../clips/rammstein_dalai_lama example_file.png -s dBFS,-75,-25
 
 # Following command should be used for screenshot acquisition
-# cat ../clips/rammstein_dalai_lama | specgram -eql -f 8192 -y 4000 -k 440
+# cat ../clips/rammstein_dalai_lama | specgram -eql -f 8192 -y 4000 -k 440 -s dBFS,-75,-25
 
 montage \
 -label "Live view" example_live.png \

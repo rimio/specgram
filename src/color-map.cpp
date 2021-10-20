@@ -20,6 +20,12 @@ ColorMap::Build(ColorMapType type, const sf::Color& bg_color, const sf::Color& c
         case ColorMapType::kJet:
             return std::make_unique<JetColorMap>();
 
+        case ColorMapType::kHot:
+            return std::make_unique<HotColorMap>();
+
+        case ColorMapType::kInferno:
+            return std::make_unique<InfernoColorMap>();
+
         case ColorMapType::kGray:
             return std::make_unique<TwoColorMap>(sf::Color::Black, sf::Color::White);
 
@@ -148,6 +154,43 @@ JetColorMap::JetColorMap() : InterpolationColorMap(
                 sf::Color(127, 0, 0, 255),
             },
             { 0.0f, 1.0f / 9.0f, 23.0f / 63.0f, 13.0f / 21.0f, 47.0f / 63.0f, 55.0 / 63.0, 1.0f }
+        )
+{
+}
+
+HotColorMap::HotColorMap() : InterpolationColorMap(
+            {
+                sf::Color(0, 0, 0, 255),
+                sf::Color(255, 0, 0, 255),
+                sf::Color(255, 255, 0, 255),
+                sf::Color(255, 255, 255, 255),
+            },
+            { 0.0f, 1.0f / 3.0f, 2.0f / 3.0f, 1.0f }
+        )
+{
+}
+
+InfernoColorMap::InfernoColorMap() : InterpolationColorMap(
+            {
+                sf::Color(0, 0, 0, 255),
+                sf::Color(40, 11, 84, 255),
+                sf::Color(101, 21, 110, 255),
+                sf::Color(159, 42, 99, 255),
+                sf::Color(212, 72, 66, 255),
+                sf::Color(245, 125, 21, 255),
+                sf::Color(250, 193, 39, 255),
+                sf::Color(252, 255, 164, 255),
+            },
+            { 
+                0.0f,
+                0.142857142857143f,
+                0.285714285714286f,
+                0.428571428571429f,
+                0.571428571428571f,
+                0.714285714285714f,
+                0.857142857142857f,
+                1.0f
+            }
         )
 {
 }

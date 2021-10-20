@@ -19,6 +19,12 @@ enum class ColorMapType {
     /* MATLAB jet map */
     kJet,
 
+    /* Hot */
+    kHot,
+
+    /* Inferno */
+    kInferno,
+
     /* bicolor maps */
     kGray,
     kPurple,
@@ -133,6 +139,22 @@ public:
 class JetColorMap : public InterpolationColorMap {
 public:
     JetColorMap();
+};
+
+/**
+ * Hot colormap
+ */
+class HotColorMap : public InterpolationColorMap {
+public:
+    HotColorMap();
+};
+
+/**
+ * Inferno colormap
+ */
+class InfernoColorMap: public InterpolationColorMap {
+public:
+    InfernoColorMap();
 };
 
 #endif

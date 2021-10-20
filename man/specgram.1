@@ -1,4 +1,4 @@
-.TH SPECGRAM 1 "2021-07-16"
+.TH SPECGRAM 1 "2021-10-20"
 
 .SH NAME
 specgram \- create spectrograms from raw files or standard input
@@ -221,12 +221,12 @@ Integer inputs don't usually need prescaling, as they are normalized based on th
 .TP
 .BR \-c ", " \-\-colormap =\fICOLORMAP\fR
 Color scheme.
-Valid values are: jet, gray, purple, blue, green, orange, red.
+Valid values are: jet, hot, inferno, gray, purple, blue, green, orange, red.
 
 If \fICOLORMAP\fR is neither of these values, then it is interpreted either as a 6 character hex string (RGB color) or an 8 character hex string (RGBA color).
 In this case, a gradient between the background color and the color specified by the hex string will be used as a color map.
 
-Default is jet.
+Default is inferno.
 
 .TP
 .BR \-\-bg-color =\fIBGCOLOR\fR
