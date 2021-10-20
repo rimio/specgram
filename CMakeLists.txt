@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.10)
 
-project (specgram VERSION 1.0.0 LANGUAGES CXX)
+project (specgram LANGUAGES CXX)
 
 # Version
 set (VERSION_MAJOR 0)
