@@ -59,8 +59,11 @@ LiveOutput::HandleEvents()
 {
     sf::Event event;
     while (this->window_.pollEvent(event)) {
-        if (event.type == sf::Event::Closed)
+        if ((event.type == sf::Event::Closed)
+            || (event.type == sf::Event::KeyPressed
+                && event.key.code == sf::Keyboard::Escape)) {
             this->window_.close();
+        }
     }
     return this->window_.isOpen();
 }
