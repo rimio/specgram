@@ -1,8 +1,21 @@
 # IDE stuff
 .idea
 
+# Testing
+CTestTestfile.cmake
+Testing
+
 # CMake stuff
 cmake-*
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+compile_commands.json
+
+# Executables
+specgram
+unittest*
 
 # Prerequisites
 *.d
