@@ -244,7 +244,7 @@ FFT::Crop(const RealWindow& input, double rate, double fmin, double fmax)
     if (i_fmin < 0) {
         throw std::runtime_error("fmin outside of window");
     }
-    if (i_fmax >= input.size()) {
+    if (i_fmax >= (int64_t)input.size()) {
         throw std::runtime_error("fmax outside of window");
     }
 
