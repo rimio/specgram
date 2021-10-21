@@ -48,11 +48,14 @@ Renderer::ValueToShortString(double value, int scale, const std::string& unit)
     return ss.str();
 }
 
-Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap, std::size_t fft_count)
-    : configuration_(conf), fft_count_(fft_count), color_map_(cmap.Copy())
+Renderer::Renderer(const Configuration& conf, std::size_t fft_count)
+    : configuration_(conf)
+    , fft_count_(fft_count)
+    , color_map_(ColorMap::Build(conf.GetColorMap(), conf.GetBackgroundColor(),
+                                 conf.GetColorMapCustomColor()))
 {
     if (color_map_ == nullptr) {
-        throw std::runtime_error("failed to copy color map");
+        throw std::runtime_error("failed to build colormap");
     }
     if (fft_count == 0) {
         throw std::runtime_error("positive number of FFT windows required by renderer");
@@ -71,10 +74,14 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         Renderer::GetNiceTicks(0.0f, (double)fft_count * this->configuration_.GetAverageCount() * this->configuration_.GetFFTStride() / this->configuration_.GetRate(),
                                "s", fft_count, 30, !this->configuration_.IsHorizontal());
 
-    auto legend_ticks = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
-                                               vmap.GetUnit(), this->configuration_.GetWidth(), 50,
+    auto vmap = ValueMap::Build(conf.GetScaleType(),
+                                conf.GetScaleLowerBound(),
+                                conf.GetScaleUpperBound(),
+                                conf.GetScaleUnit());
+    auto legend_ticks = Renderer::GetNiceTicks(vmap->GetLowerBound(), vmap->GetUpperBound(),
+                                               vmap->GetUnit(), this->configuration_.GetWidth(), 50,
                                                this->configuration_.IsHorizontal());
-    this->live_ticks_ = Renderer::GetNiceTicks(vmap.GetLowerBound(), vmap.GetUpperBound(),
+    this->live_ticks_ = Renderer::GetNiceTicks(vmap->GetLowerBound(), vmap->GetUpperBound(),
                                                "", this->configuration_.GetLiveFFTHeight(), 20,
                                                !this->configuration_.IsHorizontal()); /* no unit, keep it short */
 
@@ -233,7 +240,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         this->canvas_.draw(legend_box, this->legend_transform_);
 
         /* legend gradient */
-        auto memory = cmap.Gradient(this->configuration_.GetWidth());
+        auto memory = color_map_->Gradient(this->configuration_.GetWidth());
         sf::Texture tex;
         tex.create(this->configuration_.GetWidth(), 1);
         tex.update(reinterpret_cast<const uint8_t *>(memory.data()));

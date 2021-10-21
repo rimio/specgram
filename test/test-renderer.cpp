@@ -13,8 +13,8 @@ class ExposedRenderer : public Renderer
 public:
     using AxisTick = Renderer::AxisTick;
 
-    ExposedRenderer(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap, std::size_t fft_count)
-        : Renderer(conf, cmap, vmap, fft_count) { };
+    ExposedRenderer(const Configuration& conf, std::size_t fft_count)
+        : Renderer(conf, fft_count) { };
 
     static std::string EValueToShortString(double value, int scale, const std::string& unit)
     {
@@ -148,9 +148,9 @@ TEST(TestRenderer, GetNiceTicks)
     EXPECT_FALSE(exit);
 
     /* renderer */
-    EXPECT_THROW_MATCH(ExposedRenderer(conf.GetForLive(), JetColorMap(), DecibelValueMap(-120.0, 0.0, "FS"), 0),
+    EXPECT_THROW_MATCH(ExposedRenderer(conf.GetForLive(), 0),
                        std::runtime_error, "positive number of FFT windows required by renderer");
-    ExposedRenderer renderer(conf.GetForLive(), JetColorMap(), DecibelValueMap(-120.0, 0.0, "FS"), 128);
+    ExposedRenderer renderer(conf.GetForLive(), 128);
 
     EXPECT_THROW_MATCH(renderer.EGetNiceTicks(1.0, 1.0, "", 100, 30, false),
                        std::runtime_error, "minimum and maximum values are not in order");

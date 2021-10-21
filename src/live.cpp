@@ -9,8 +9,10 @@
 #include <cassert>
 #include <cstring>
 
-LiveOutput::LiveOutput(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap)
-    : configuration_(conf), renderer_(conf.GetForLive(), cmap, vmap, conf.GetCount())
+LiveOutput::LiveOutput(const Configuration& conf)
+    : width_(conf.GetWidth())
+    , is_horizontal_(conf.IsHorizontal())
+    , renderer_(conf.GetForLive(), conf.GetCount())
 {
     auto width = conf.IsHorizontal() ? renderer_.GetHeight() : renderer_.GetWidth();
     auto height = conf.IsHorizontal() ? renderer_.GetWidth() : renderer_.GetHeight();
@@ -34,7 +36,7 @@ std::vector<uint8_t>
 LiveOutput::AddWindow(const RealWindow& win_values)
 {
     auto window = this->renderer_.RenderLiveFFT(win_values);
-    std::size_t wlen_bytes = this->configuration_.GetWidth() * 4;
+    std::size_t wlen_bytes = this->width_ * 4;
     if (window.size() != wlen_bytes) {
         throw std::runtime_error("input window size differs from live window size");
     }
@@ -74,7 +76,7 @@ LiveOutput::Render()
     /* draw renderer output to window */
     sf::Texture canvas_texture = this->renderer_.GetCanvas();
     sf::Sprite canvas_sprite(canvas_texture);
-    if (this->configuration_.IsHorizontal()) {
+    if (this->is_horizontal_) {
         canvas_sprite.setRotation(-90.0f);
         canvas_sprite.setPosition(0.0f, canvas_texture.getSize().x);
     }

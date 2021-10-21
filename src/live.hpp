@@ -18,7 +18,8 @@
 class LiveOutput {
 private:
     /* configuration */
-    const Configuration configuration_;
+    std::size_t width_;
+    bool is_horizontal_;
     Renderer renderer_;
 
     /* live window */
@@ -38,7 +39,7 @@ public:
      * @param cmap Color map instance to use.
      * @param vmap Value map instance to use.
      */
-    LiveOutput(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap);
+    LiveOutput(const Configuration& conf);
 
     /**
      * Add a FFT window to the history and render it.

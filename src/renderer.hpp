@@ -110,7 +110,7 @@ protected: /* for all intents and purposes this should be private, but we want t
 
 public:
     Renderer() = delete;
-    Renderer(const Configuration& conf, const ColorMap& cmap, const ValueMap& vmap, std::size_t fft_count);
+    Renderer(const Configuration& conf, std::size_t fft_count);
 
     /**
      * Render the spectrogram area.

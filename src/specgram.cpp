@@ -169,7 +169,7 @@ main(int argc, char** argv)
     /* create live window */
     std::unique_ptr<LiveOutput> live = nullptr;
     if (conf.IsLive()) {
-        live = std::make_unique<LiveOutput>(conf, *color_map, *value_map);
+        live = std::make_unique<LiveOutput>(conf);
         live->Render(); /* render empty window */
     }
 
@@ -324,7 +324,7 @@ main(int argc, char** argv)
 
     /* save file */
     if (have_output) {
-        Renderer file_renderer(conf, *color_map, *value_map, history.size());
+        Renderer file_renderer(conf, history.size());
         file_renderer.RenderFFTArea(history);
         auto image = file_renderer.GetCanvas().copyToImage();
 
