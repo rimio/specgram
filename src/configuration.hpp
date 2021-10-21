@@ -102,7 +102,7 @@ public:
     Configuration GetForLive() const;
     const auto & GetInputFilename() const { return input_filename_; }
     const auto & GetOutputFilename() const { return output_filename_; }
-    const auto MustDumpToStdout() const { return dump_to_stdout_; }
+    auto MustDumpToStdout() const { return dump_to_stdout_; }
 
     /* input getters */
     auto GetBlockSize() const { return block_size_; }
