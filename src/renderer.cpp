@@ -174,20 +174,20 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         this->height_ += conf.GetLegendHeight();
     }
 
-    this->fft_live_transform_.translate(0.0f, this->height_);
+    this->live_transform_.translate(0.0f, this->height_);
     if (conf.HasLiveWindow()) {
         if (this->configuration_.HasAxes()) {
-            this->fft_live_transform_.translate(conf.GetMarginSize() + horizontal_extra_spacing,
-                                                conf.GetMarginSize());
+            this->live_transform_.translate(conf.GetMarginSize() + horizontal_extra_spacing,
+                                            conf.GetMarginSize());
             this->height_ += conf.GetLiveMarginSize();
         }
         this->height_ += conf.GetLiveFFTHeight();
     }
 
-    this->fft_area_transform_.translate(0.0f, this->height_);
+    this->spectrogram_transform_.translate(0.0f, this->height_);
     if (conf.HasAxes()) {
-        this->fft_area_transform_.translate(conf.GetMarginSize() + horizontal_extra_spacing,
-                                            conf.GetMarginSize() + freq_axis_spacing);
+        this->spectrogram_transform_.translate(conf.GetMarginSize() + horizontal_extra_spacing,
+                                               conf.GetMarginSize() + freq_axis_spacing);
         this->height_ += conf.GetMarginSize() * 2 + freq_axis_spacing;
     }
     this->height_ += this->fft_count_;
@@ -197,7 +197,7 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     this->canvas_.clear(this->configuration_.GetBackgroundColor());
 
     /* allocate FFT area texture */
-    this->fft_area_texture_.create(conf.GetWidth(), fft_count);
+    this->spectrogram_texture_.create(conf.GetWidth(), fft_count);
 
     /*
      * render UI
@@ -210,15 +210,15 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
         fft_area_box.setFillColor(this->configuration_.GetBackgroundColor());
         fft_area_box.setOutlineColor(this->configuration_.GetForegroundColor());
         fft_area_box.setOutlineThickness(1);
-        this->canvas_.draw(fft_area_box, this->fft_area_transform_);
+        this->canvas_.draw(fft_area_box, this->spectrogram_transform_);
 
         /* frequency axis */
-        this->RenderAxis(this->canvas_, this->fft_area_transform_,
+        this->RenderAxis(this->canvas_, this->spectrogram_transform_,
                          true, this->configuration_.IsHorizontal() ? Orientation::k90CW : Orientation::kNormal,
                          this->configuration_.GetWidth(), this->frequency_ticks_);
 
         /* time axis */
-        this->RenderAxis(this->canvas_, this->fft_area_transform_ * sf::Transform().rotate(90.0f),
+        this->RenderAxis(this->canvas_, this->spectrogram_transform_ * sf::Transform().rotate(90.0f),
                          false, this->configuration_.IsHorizontal() ? Orientation::kNormal : Orientation::k90CCW,
                          fft_count, time_ticks);
     }
@@ -249,12 +249,12 @@ Renderer::Renderer(const Configuration& conf, const ColorMap& cmap, const ValueM
     if (this->configuration_.HasLiveWindow() && this->configuration_.HasAxes()) {
         /* value axis */
         this->RenderAxis(this->canvas_,
-                         this->fft_live_transform_ * sf::Transform().translate(0.0f, this->configuration_.GetLiveFFTHeight()).rotate(-90.0f),
+                         this->live_transform_ * sf::Transform().translate(0.0f, this->configuration_.GetLiveFFTHeight()).rotate(-90.0f),
                          true, this->configuration_.IsHorizontal() ? Orientation::k180 : Orientation::k90CW,
                          this->configuration_.GetLiveFFTHeight(), this->live_ticks_);
 
         /* frequency axis */
-        this->RenderAxis(this->canvas_, this->fft_live_transform_ * sf::Transform().translate(0.0f, this->configuration_.GetLiveFFTHeight()),
+        this->RenderAxis(this->canvas_, this->live_transform_ * sf::Transform().translate(0.0f, this->configuration_.GetLiveFFTHeight()),
                          false, this->configuration_.IsHorizontal() ? Orientation::k90CW : Orientation::kNormal,
                          this->configuration_.GetWidth(), freq_no_text_ticks);
     }
@@ -508,10 +508,10 @@ Renderer::RenderFFTArea(const std::vector<uint8_t>& memory)
     }
 
     /* update FFT area texture */
-    this->fft_area_texture_.update(reinterpret_cast<const uint8_t *>(memory.data()));
+    this->spectrogram_texture_.update(reinterpret_cast<const uint8_t *>(memory.data()));
 
     /* render FFT area on canvas */
-    this->canvas_.draw(sf::Sprite(this->fft_area_texture_), this->fft_area_transform_);
+    this->canvas_.draw(sf::Sprite(this->spectrogram_texture_), this->spectrogram_transform_);
 }
 
 void
@@ -553,7 +553,7 @@ Renderer::RenderLiveFFT(const RealWindow& window)
     fft_live_box.setFillColor(this->configuration_.GetBackgroundColor());
     fft_live_box.setOutlineColor(this->configuration_.GetForegroundColor());
     fft_live_box.setOutlineThickness(1);
-    this->canvas_.draw(fft_live_box, this->fft_live_transform_);
+    this->canvas_.draw(fft_live_box, this->live_transform_);
 
     /* horizontal live guidelines */
     for (std::size_t i = 0; i < this->live_ticks_.size(); i ++) {
@@ -562,7 +562,7 @@ Renderer::RenderLiveFFT(const RealWindow& window)
 
         sf::Transform tran;
         tran.translate(0.0f, (1.0 - std::get<0>(*std::next(this->live_ticks_.begin(), i))) * (this->configuration_.GetLiveFFTHeight() - 1.0f));
-        this->canvas_.draw(hline, this->fft_live_transform_ * tran);
+        this->canvas_.draw(hline, this->live_transform_ * tran);
     }
 
     /* vertical live guidelines */
@@ -572,7 +572,7 @@ Renderer::RenderLiveFFT(const RealWindow& window)
 
         sf::Transform tran;
         tran.translate(std::get<0>(*std::next(this->frequency_ticks_.begin(), i)) * (this->configuration_.GetWidth() - 1.0f), 0.0f);
-        this->canvas_.draw(vline, this->fft_live_transform_ * tran);
+        this->canvas_.draw(vline, this->live_transform_ * tran);
     }
 
     /* plot */
@@ -585,7 +585,7 @@ Renderer::RenderLiveFFT(const RealWindow& window)
                                  sf::Color(colors[i * 4 + 0], colors[i * 4 + 1], colors[i * 4 + 2]));
     }
     this->canvas_.draw(reinterpret_cast<sf::Vertex *>(vertices.data()), vertices.size(),
-                       sf::LineStrip, this->fft_live_transform_);
+                       sf::LineStrip, this->live_transform_);
 
     return colors;
 }

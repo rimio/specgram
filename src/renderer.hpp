@@ -32,14 +32,14 @@ protected: /* for all intents and purposes this should be private, but we want t
     sf::Font font_;
 
     sf::RenderTexture canvas_;
-    sf::Texture fft_area_texture_;      /* actual spectrogram area */
+    sf::Texture spectrogram_texture_;
 
     std::size_t width_;
     std::size_t height_;
 
     sf::Transform legend_transform_;
-    sf::Transform fft_live_transform_;
-    sf::Transform fft_area_transform_;
+    sf::Transform live_transform_;
+    sf::Transform spectrogram_transform_;
 
     /**
      * First value specifies the position of the tick in the domain [0..1].
