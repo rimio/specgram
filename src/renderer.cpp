@@ -420,7 +420,7 @@ Renderer::GetNiceTicks(double v_min, double v_max, const std::string& v_unit, un
 
         /* see if we need another decimal place */
         for (double value = fval; value <= upper_limit; value += factor) {
-            if (::compute_error_for_scale(value, scale, v_min, v_max) > 0.01) { /* greater than 1% => one more decimal place */
+            if (::compute_error_for_scale(value, scale, v_min, v_max) > 0.005) { /* greater than .5% => one more decimal place */
                 scale ++;
                 break;
             }
