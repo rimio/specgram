@@ -32,8 +32,6 @@ This program dynamically links against [FFTW](http://www.fftw.org/) and [SFML 2.
 
 The source code of [Taywee/args](https://github.com/Taywee/args) is embedded in the program (see ```src/args.hxx```).
 
-*NOTE: SFML 2.5 is part of the official Ubuntu 20.04 package repository. Users using older versions of Ubuntu will have to compile SFML 2.5 from source.*
-
 ## Usage
 
 For a complete description of the program functionality please see the [manpage](man/specgram.1.pdf).
