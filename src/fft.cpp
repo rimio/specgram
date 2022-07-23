@@ -6,6 +6,7 @@
  */
 #include "fft.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <cmath>

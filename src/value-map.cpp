@@ -5,6 +5,7 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 #include "value-map.hpp"
+#include <algorithm>
 #include <cmath>
 
 ValueMap::ValueMap(double lower, double upper, const std::string& unit) : lower_(lower), upper_(upper), unit_(unit)
