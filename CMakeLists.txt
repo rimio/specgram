@@ -5,7 +5,7 @@ project (specgram LANGUAGES CXX)
 # Version
 set (VERSION_MAJOR 0)
 set (VERSION_MINOR 9)
-set (VERSION_PATCH 2)
+set (VERSION_PATCH 3)
 
 # C++20
 set(CMAKE_CXX_STANDARD 20)

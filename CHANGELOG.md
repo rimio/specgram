@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2023-05-06
+### Added
+- Support to exit program with `Esc` key.
+- Support to wait for input with `-S` or `--sleep_for_input`; program can now _not_ busywait on sparse input.
+- Two new colormaps, `hot` and `inferno`; the latter is the new default.
+- Support for in-source build.
+
+### Fixed
+- Usage of bad version macros in generated header file.
+- Various warnings and compilation issues on newer versions of `g++`.
+
 ## [0.9.2] - 2021-07-22
 ### Added
 - Unit tests.
