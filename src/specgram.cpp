@@ -21,6 +21,8 @@
 #include <random>
 #include <cstdio>
 #include <cassert>
+#include <thread>
+#include <chrono>
 
 /* main loop exit condition */
 volatile bool main_loop_running = true;
@@ -237,6 +239,10 @@ main(int argc, char** argv)
         auto block = reader->GetBlock();
         if (!block) {
             /* block not finished yet */
+            if (auto sleep = conf.GetSleepForInput()) {
+                /* sleep for a bit so we don't busywait on sparse input */
+                std::this_thread::sleep_for(std::chrono::duration<size_t, std::milli>(sleep));
+            }
             continue;
         }
 

@@ -32,6 +32,7 @@ private:
     DataType datatype_;                     /* input data type (does not cover complex/real discrimination) */
     bool has_complex_input_;                /* true if input is complex */
     double prescale_factor_;                /* value to scale input with before applying other transformations */
+    std::size_t sleep_for_input_;           /* number of milliseconds to sleep when input is not ready */
 
     std::size_t fft_width_;                 /* size of FFT window, in values */
     std::size_t fft_stride_;                /* stride of FFT window, in values */
@@ -110,6 +111,7 @@ public:
     auto GetDataType() const { return datatype_; }
     auto HasComplexInput() const { return has_complex_input_; }
     auto GetPrescaleFactor() const { return prescale_factor_; }
+    auto GetSleepForInput() const { return sleep_for_input_; }
 
     /* FFT getters */
     auto GetFFTWidth() const { return fft_width_; }

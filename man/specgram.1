@@ -1,4 +1,4 @@
-.TH SPECGRAM 1 "2021-10-20"
+.TH SPECGRAM 1 "2023-05-06"
 
 .SH NAME
 specgram \- create spectrograms from raw files or standard input
@@ -14,6 +14,7 @@ specgram \- create spectrograms from raw files or standard input
 [\fB\-d, --datatype\fR=\fIDATA_TYPE\fR]
 [\fB\-p, --prescale\fR=\fIPRESCALE_FACTOR\fR]
 [\fB\-b, --block_size\fR=\fIBLOCK_SIZE\fR]
+[\fB\-S, --sleep_for_input\fR=\fISLEEP_MS\fR]
 [\fB\-f, --fft_width\fR=\fIFFT_WIDTH\fR]
 [\fB\-g, --fft_stride\fR=\fIFFT_STRIDE\fR]
 [\fB\-n, --window_function\fR=\fIWIN_FUNC\fR]
@@ -119,6 +120,14 @@ Block size, in data type sized values, that are to be read at a time from stdin.
 The larger this value, the larger the latency of the live spectrogram.
 
 Default is 256.
+
+.TP
+.BR \-S ", " \-\-sleep_for_input =\fISLEEP_MS\fR
+Duration in milliseconds to sleep for when input is not available.
+Set this to a reasonable value when input is sparse.
+Leave unset when input is constant and low latency is desired.
+
+Default is 0 (i.e. program busywaits).
 
 .TP
 \fBFFT OPTIONS\fR

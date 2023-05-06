@@ -26,6 +26,7 @@ Configuration::Configuration()
     this->datatype_ = DataType::kSignedInt16;
     this->has_complex_input_ = false;
     this->prescale_factor_ = 1.0f;
+    this->sleep_for_input_ = 0;
 
     this->fft_width_ = 1024;
     this->fft_stride_ = 1024;
@@ -169,6 +170,8 @@ Configuration::Build(int argc, const char **argv)
         prescale(input_opts, "float", "Prescaling factor (default: 1.0)", {'p', "prescale"});
     args::ValueFlag<int>
         block_size(input_opts, "integer", "Block size when reading input, in data types (default: 256)", {'b', "block_size"});
+    args::ValueFlag<int>
+        sleep_for_input(input_opts, "integer", "Duration in milliseconds to sleep for when input is not available (default: 0, busywaits)", {'S', "sleep_for_input"});
 
     args::Group fft_opts(parser, "FFT options:", args::Group::Validators::DontCare);
     args::ValueFlag<int>
@@ -267,6 +270,14 @@ Configuration::Build(int argc, const char **argv)
             return std::make_tuple(conf, 1, true);
         } else {
             conf.block_size_ = args::get(block_size);
+        }
+    }
+    if (sleep_for_input) {
+        if (args::get(sleep_for_input) < 0) {
+            std::cerr << "'sleep_for_input' must be zero or positive." << std::endl;
+            return std::make_tuple(conf, 1, true);
+        } else {
+            conf.sleep_for_input_ = args::get(sleep_for_input);
         }
     }
     if (rate) {
