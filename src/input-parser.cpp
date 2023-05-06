@@ -49,13 +49,13 @@ InputParser::Build(DataType dtype, double prescale, bool is_complex)
     } else if (dtype == DataType::kSignedInt64) {
         return std::make_unique<IntegerInputParser<int64_t>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt8) {
-        return std::make_unique<IntegerInputParser<int8_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<uint8_t>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt16) {
-        return std::make_unique<IntegerInputParser<int16_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<uint16_t>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt32) {
-        return std::make_unique<IntegerInputParser<int32_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<uint32_t>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt64) {
-        return std::make_unique<IntegerInputParser<int64_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<uint64_t>>(prescale, is_complex);
     } else if (dtype == DataType::kFloat32) {
         return std::make_unique<FloatInputParser<float>>(prescale, is_complex);
     } else if (dtype == DataType::kFloat64) {
