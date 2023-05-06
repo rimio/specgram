@@ -11,6 +11,7 @@
 #include <cstring>
 #include <cmath>
 #include <complex>
+#include <limits>
 
 static double
 sinc(double x)
@@ -25,11 +26,11 @@ sinc(double x)
     } else {
         double result = 1.0f;
 
-        if (abs(x) >= taylor_0_bound) {
+        if (std::abs(x) >= taylor_0_bound) {
             double x2 = x * x;
             result -= x2 / 6.0f;
 
-            if (abs(x) >= taylor_2_bound) {
+            if (std::abs(x) >= taylor_2_bound) {
                 result += (x2 * x2) / 120.0f;
             }
         }
@@ -239,8 +240,8 @@ FFT::Crop(const RealWindow& input, double rate, double fmin, double fmax)
     double di_fmax = std::round(FFT::GetFrequencyIndex(rate, input.size(), fmax));
 
     /* we're cropping, so no interpolation allowed */
-    auto i_fmin = static_cast<std::int64_t>(di_fmin);
-    auto i_fmax = static_cast<std::int64_t>(di_fmax);
+    auto i_fmin = static_cast<int64_t>(di_fmin);
+    auto i_fmax = static_cast<int64_t>(di_fmax);
 
     if (i_fmin < 0) {
         throw std::runtime_error("fmin outside of window");

@@ -41,21 +41,21 @@ std::unique_ptr<InputParser>
 InputParser::Build(DataType dtype, double prescale, bool is_complex)
 {
     if (dtype == DataType::kSignedInt8) {
-        return std::make_unique<IntegerInputParser<std::int8_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<int8_t>>(prescale, is_complex);
     } else if (dtype == DataType::kSignedInt16) {
-        return std::make_unique<IntegerInputParser<std::int16_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<int16_t>>(prescale, is_complex);
     } else if (dtype == DataType::kSignedInt32) {
-        return std::make_unique<IntegerInputParser<std::int32_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<int32_t>>(prescale, is_complex);
     } else if (dtype == DataType::kSignedInt64) {
-        return std::make_unique<IntegerInputParser<std::int64_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<int64_t>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt8) {
-        return std::make_unique<IntegerInputParser<std::uint8_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<int8_t>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt16) {
-        return std::make_unique<IntegerInputParser<std::uint16_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<int16_t>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt32) {
-        return std::make_unique<IntegerInputParser<std::uint32_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<int32_t>>(prescale, is_complex);
     } else if (dtype == DataType::kUnsignedInt64) {
-        return std::make_unique<IntegerInputParser<std::uint64_t>>(prescale, is_complex);
+        return std::make_unique<IntegerInputParser<int64_t>>(prescale, is_complex);
     } else if (dtype == DataType::kFloat32) {
         return std::make_unique<FloatInputParser<float>>(prescale, is_complex);
     } else if (dtype == DataType::kFloat64) {
@@ -152,15 +152,15 @@ FloatInputParser<T>::ParseBlock(const std::vector<char> &block)
     return count;
 }
 
-template class IntegerInputParser<std::uint8_t>;
-template class IntegerInputParser<std::uint16_t>;
-template class IntegerInputParser<std::uint32_t>;
-template class IntegerInputParser<std::uint64_t>;
+template class IntegerInputParser<int8_t>;
+template class IntegerInputParser<int16_t>;
+template class IntegerInputParser<int32_t>;
+template class IntegerInputParser<int64_t>;
 
-template class IntegerInputParser<std::int8_t>;
-template class IntegerInputParser<std::int16_t>;
-template class IntegerInputParser<std::int32_t>;
-template class IntegerInputParser<std::int64_t>;
+template class IntegerInputParser<uint8_t>;
+template class IntegerInputParser<uint16_t>;
+template class IntegerInputParser<uint32_t>;
+template class IntegerInputParser<uint64_t>;
 
 template class FloatInputParser<float>;
 template class FloatInputParser<double>;
