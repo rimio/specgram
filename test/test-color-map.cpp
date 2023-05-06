@@ -97,7 +97,7 @@ TEST(TestColorMap, InterpolationColorMap)
             EXPECT_EQ(out.size(), 4 * steps);
             for (std::size_t i = 0; i < steps; i++) {
                 double ev = (double)i / (double)(steps-1);
-                std::uint8_t color = (std::uint8_t)std::round(ev * 255.0);
+                uint8_t color = (uint8_t)std::round(ev * 255.0);
                 EXPECT_EQ(out[i * 4 + 0], color);
                 EXPECT_EQ(out[i * 4 + 1], color);
                 EXPECT_EQ(out[i * 4 + 2], color);
@@ -113,10 +113,10 @@ TEST(TestColorMap, InterpolationColorMap)
         EXPECT_EQ(map.Gradient(0).size(), 0);
 
         constexpr std::size_t steps = 9;
-        std::vector<std::uint8_t> exp_r { 0, 128, 255, 128, 0, 0, 0, 0, 0 };
-        std::vector<std::uint8_t> exp_g { 0, 0, 0, 128, 255, 128, 0, 0, 0 };
-        std::vector<std::uint8_t> exp_b { 0, 0, 0, 0, 0, 128, 255, 128, 0 };
-        std::vector<std::uint8_t> exp_a { 255, 128, 0, 0, 0, 0, 0, 128, 255 };
+        std::vector<uint8_t> exp_r { 0, 128, 255, 128, 0, 0, 0, 0, 0 };
+        std::vector<uint8_t> exp_g { 0, 0, 0, 128, 255, 128, 0, 0, 0 };
+        std::vector<uint8_t> exp_b { 0, 0, 0, 0, 0, 128, 255, 128, 0 };
+        std::vector<uint8_t> exp_a { 255, 128, 0, 0, 0, 0, 0, 128, 255 };
 
         { /* 1-length inputs, test simple interpolation */
             for (std::size_t i = 0; i < steps; i++) {
@@ -201,7 +201,7 @@ TEST(TestColorMap, TwoColorMap)
             EXPECT_EQ(out.size(), 4 * steps);
             for (std::size_t i = 0; i < steps; i++) {
                 double ev = (double)i / (double)(steps-1);
-                std::uint8_t color = (std::uint8_t)std::round(ev * 255.0);
+                uint8_t color = (uint8_t)std::round(ev * 255.0);
                 EXPECT_EQ(out[i * 4 + 0], color);
                 EXPECT_EQ(out[i * 4 + 1], color);
                 EXPECT_EQ(out[i * 4 + 2], color);
@@ -220,10 +220,10 @@ TEST(TestColorMap, ThreeColorMap)
         EXPECT_EQ(map.Gradient(0).size(), 0);
 
         constexpr std::size_t steps = 5;
-        std::vector<std::uint8_t> exp_r { 255, 128, 0, 0, 0,  };
-        std::vector<std::uint8_t> exp_g { 0, 128, 255, 128, 0 };
-        std::vector<std::uint8_t> exp_b { 0, 0, 0, 128, 255 };
-        std::vector<std::uint8_t> exp_a { 0, 0, 0, 0, 0 };
+        std::vector<uint8_t> exp_r { 255, 128, 0, 0, 0,  };
+        std::vector<uint8_t> exp_g { 0, 128, 255, 128, 0 };
+        std::vector<uint8_t> exp_b { 0, 0, 0, 128, 255 };
+        std::vector<uint8_t> exp_a { 0, 0, 0, 0, 0 };
 
         { /* 1-length inputs, test simple interpolation */
             for (std::size_t i = 0; i < steps; i++) {
@@ -274,10 +274,10 @@ TEST(TestColorMap, CopyColorMap)
         EXPECT_EQ(map->Gradient(0).size(), 0);
 
         constexpr std::size_t steps = 5;
-        std::vector<std::uint8_t> exp_r { 255, 128, 0, 0, 0,  };
-        std::vector<std::uint8_t> exp_g { 0, 128, 255, 128, 0 };
-        std::vector<std::uint8_t> exp_b { 0, 0, 0, 128, 255 };
-        std::vector<std::uint8_t> exp_a { 0, 0, 0, 0, 0 };
+        std::vector<uint8_t> exp_r { 255, 128, 0, 0, 0,  };
+        std::vector<uint8_t> exp_g { 0, 128, 255, 128, 0 };
+        std::vector<uint8_t> exp_b { 0, 0, 0, 128, 255 };
+        std::vector<uint8_t> exp_a { 0, 0, 0, 0, 0 };
 
         auto out = map->Gradient(steps);
         EXPECT_EQ(out.size(), 4 * steps);
