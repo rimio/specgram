@@ -1,5 +1,6 @@
 # IDE stuff
 .idea
+.cache
 
 # Testing
 CTestTestfile.cmake
