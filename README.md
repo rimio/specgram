@@ -118,6 +118,23 @@ There's nothing stopping us from using a different rate than the actual device r
 $ parec --channels=1 --device="${PASOURCE}" --raw | specgram -l -r 1e-8
 ```
 
+#### Usage with FFmpeg
+
+In order to generate a spectrogram for an encoded audio file, it is neccesarily to decode it first. This can be done with FFmpeg, using any of the [raw audio formats available](https://trac.ffmpeg.org/wiki/audio%20types#SampleFormats).
+
+For example, to generate the spectrogram for an MP3 file:
+
+```bash
+$ ffmpeg -i input.mp3 -f s16le - | specgram output.png
+```
+
+Or, in order to use 32-bit data:
+
+```bash
+$ ffmpeg -i input.mp3 -f s32le - | specgram -d s32 output.png
+```
+Note that you will have to manually stop specgram with a SIGINT once the ffmpeg stream is finished.
+
 ### FFT options
 
 The FFT window width can be specified with ```-f, --fft_width``` and the stride, that is the distance between the beginning of two subsequent FFT windows, can be specified with ```-g, --fft_stride```:
