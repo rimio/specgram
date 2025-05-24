@@ -108,7 +108,8 @@ dump_to_stdout(const sf::Image& image)
     /* save */
     temp_file_name = "/dev/shm/" + generate_random_string(TEMP_FILENAME_LENGTH) + ".png";
     INFO("Temporary file: " << temp_file_name);
-    image.saveToFile(temp_file_name);
+    auto success = image.saveToFile(temp_file_name);
+    assert(success && "failed to save image to file");
 
     /* from now on we have a leakable resource (the file); if using STDIN for input, we're here from a SIGINT,
      * and we expect a SIGPIPE soon; install a handler that will clean up */
@@ -354,7 +355,7 @@ main(int argc, char** argv)
 
             /* create rotated image */
             sf::Image rimage;
-            rimage.create(h, w, reinterpret_cast<const uint8_t *>(optr));
+            rimage.resize({ (uint32_t)h, (uint32_t)w }, reinterpret_cast<const uint8_t *>(optr));
             delete[] optr;
 
             image = rimage;
@@ -363,7 +364,8 @@ main(int argc, char** argv)
         /* dump to file or stdout */
         if (conf.GetOutputFilename().has_value()) {
             INFO("Output: " << *conf.GetOutputFilename());
-            image.saveToFile(*conf.GetOutputFilename());
+            auto success = image.saveToFile(*conf.GetOutputFilename());
+            assert(success && "failed to save output");
         } else if (conf.MustDumpToStdout()) {
             INFO("Output: STDOUT");
             dump_to_stdout(image);

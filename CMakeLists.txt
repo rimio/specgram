@@ -17,7 +17,7 @@ option (TESTING "Build test targets" OFF)
 # Dependencies
 set (THREADS_PREFER_PTHREAD_FLAG ON)
 find_package (Threads REQUIRED)
-find_package (SFML 2.5 COMPONENTS window graphics REQUIRED)
+find_package (SFML 3 COMPONENTS Window Graphics REQUIRED)
 find_library (FFTW3 fftw3)
 
 if (TESTING)
@@ -74,7 +74,7 @@ add_library (${PROJECT_NAME}_static STATIC ${SPECGRAM_SOURCES})
 
 # Executable target
 add_executable (${PROJECT_NAME} ${SRC_DIR}/specgram.cpp)
-target_link_libraries (${PROJECT_NAME} ${PROJECT_NAME}_static Threads::Threads sfml-window sfml-graphics ${FFTW3})
+target_link_libraries (${PROJECT_NAME} ${PROJECT_NAME}_static Threads::Threads SFML::Window SFML::Graphics ${FFTW3})
 
 # HTML manpage target
 add_custom_target(manpage
