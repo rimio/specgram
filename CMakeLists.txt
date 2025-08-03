@@ -108,6 +108,6 @@ if (TESTING)
     # Unit tests
     enable_testing ()
     add_executable(unittest ${UNIT_TEST_SOURCES})
-    target_link_libraries (unittest GTest::GTest ${PROJECT_NAME}_static Threads::Threads sfml-graphics ${FFTW3} ${X11_LIBRARIES})
+    target_link_libraries (unittest GTest::GTest ${PROJECT_NAME}_static Threads::Threads SFML::Window SFML::Graphics ${FFTW3} ${X11_LIBRARIES})
     gtest_discover_tests (unittest)
 endif()
