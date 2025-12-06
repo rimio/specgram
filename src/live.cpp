@@ -6,6 +6,7 @@
  */
 #include "live.hpp"
 
+#include <SFML/System/Angle.hpp>
 #include <cassert>
 #include <cstring>
 
@@ -18,7 +19,7 @@ LiveOutput::LiveOutput(const Configuration& conf)
     auto height = conf.IsHorizontal() ? renderer_.GetWidth() : renderer_.GetHeight();
 
     /* create non-resizable window */
-    this->window_.create(sf::VideoMode(width, height),
+    this->window_.create(sf::VideoMode({(uint32_t)width, (uint32_t)height}),
                          conf.GetTitle(),
                          sf::Style::Close);
     this->window_.setFramerateLimit(0);
@@ -59,12 +60,13 @@ LiveOutput::AddWindow(const RealWindow& win_values)
 bool
 LiveOutput::HandleEvents()
 {
-    sf::Event event;
-    while (this->window_.pollEvent(event)) {
-        if ((event.type == sf::Event::Closed)
-            || (event.type == sf::Event::KeyPressed
-                && event.key.code == sf::Keyboard::Escape)) {
+    while (const auto event = this->window_.pollEvent()) {
+        if (event->is<sf::Event::Closed>()) {
             this->window_.close();
+        } else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+            if (keyPressed->scancode == sf::Keyboard::Scancode::Escape) {
+                this->window_.close();
+            }
         }
     }
     return this->window_.isOpen();
@@ -77,8 +79,8 @@ LiveOutput::Render()
     sf::Texture canvas_texture = this->renderer_.GetCanvas();
     sf::Sprite canvas_sprite(canvas_texture);
     if (this->is_horizontal_) {
-        canvas_sprite.setRotation(-90.0f);
-        canvas_sprite.setPosition(0.0f, canvas_texture.getSize().x);
+        canvas_sprite.setRotation(sf::degrees(-90.0f));
+        canvas_sprite.setPosition({ 0.0f, (float)canvas_texture.getSize().x });
     }
 
     this->window_.draw(canvas_sprite);
